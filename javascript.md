@@ -332,34 +332,103 @@ async function processArray(arr) {
 }
 ```
 
-## Closures
+## `Set`
 
 ...
+
+## `Map`
+
+...
+
+## Closures
+
+```javascript
+function makeFunc() {
+  const name = 'foo'
+  function displayName() {
+    console.log(name)
+  }
+  return displayName
+}
+
+const myFunc = makeFunc()
+myFunc() // foo
+```
+
+```javascript
+function makeCounter() {
+  let count = 0
+
+  return function() {
+    return count++
+  }
+}
+
+let counter = makeCounter()
+
+console.log(counter()) // 0
+console.log(counter()) // 1
+console.log(counter()) // 2
+```
 
 ## Symbols
 
-...
+```javascript
+const sym1 = Symbol()
+const sym2 = Symbol('foo')
+const sym3 = Symbol('foo')
 
-## Iterators
+Symbol('foo') === Symbol('foo') // false
 
-...
+// WRONG!
+const sym = new Symbol() // TypeError
+
+const sym = Symbol('foo')
+typeof sym // "symbol"
+const symObj = Object(sym)
+typeof symObj // "object"
+
+Symbol.keyFor(Symbol.for('tokenString')) === 'tokenString' // true
+```
+
+```javascript
+const obj = {}
+
+obj[Symbol('a')] = 'abc'
+obj[Symbol.for('b')] = 'def'
+obj['c'] = 'ghi'
+obj.d = 'jkl'
+
+for (const i in obj) {
+  console.log(i)
+}
+// c d
+```
+
+```javascript
+JSON.stringify({ [Symbol('foo')]: 'foo' })
+// "{}"
+```
 
 ## Generators
 
 ```javascript
+// declaration
+function* myFunc() { /* ... */ }
+const myFunc = function* () { /* ... */ }
+```
+
+```javascript
 // walk values in loop
-// for anonymous: `const myFunc = function* () {}`
 function* myFunc() {
   yield 'a'
   yield 'b'
   yield 'c'
 }
 
-let str = ''
 for (const item of myFunc()) {
-  str += item
+  console.log(item) // a b c
 }
-console.log(str) // abc
 ```
 
 ```javascript
@@ -405,6 +474,37 @@ console.log(myFunc().next().value) // 0
 console.log(myFunc().next().value) // 0
 ```
 
+## Iterators
+
+```javascript
+const myIterable = {}
+myIterable[Symbol.iterator] = function* () {
+  yield 1
+  yield 2
+  yield 3
+}
+console.log([...myIterable]) // [ 1, 2, 3 ]
+```
+
+```javascript
+class Foo {
+  *[Symbol.iterator]() {
+    yield 1
+    yield 2
+  }
+}
+
+const bar = {
+  *[Symbol.iterator]() {
+    yield 'a'
+    yield 'b'
+  },
+}
+
+console.log(...new Foo()) // 1, 2
+console.log(...bar) // 'a', 'b'
+```
+
 ## OOP
 
 ...
@@ -413,7 +513,7 @@ console.log(myFunc().next().value) // 0
 
 ...
 
-#### Static classes
+#### Static properties and methods
 
 ...
 
