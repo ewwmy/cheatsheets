@@ -314,7 +314,64 @@ async function asyncFunction() {
 
 ## Generators
 
-...
+```javascript
+// walk values in loop
+// for anonymous: `const myFunc = function* () {}`
+function* myFunc() {
+  yield 'a'
+  yield 'b'
+  yield 'c'
+}
+
+let str = ''
+for (const item of myFunc()) {
+  str += item
+}
+console.log(str) // abc
+```
+
+```javascript
+// work with generator instance
+function* myFunc() {
+  yield 1
+  yield 2
+  yield 3
+}
+
+const gen = myFunc() // Generator { }
+
+console.log(gen.next().value) // 1
+console.log(gen.next().value) // 2
+console.log(gen.next().value) // 3
+console.log(gen.next().value) // undefined
+```
+
+```javascript
+// infinite generator
+function* myFunc() {
+  let index = 0
+  while (true) yield index++
+}
+
+const gen = myFunc() // Generator { }
+
+console.log(gen.next().value) // 0
+console.log(gen.next().value) // 1
+console.log(gen.next().value) // 2
+// ...
+```
+
+```javascript
+// WRONG!
+function* myFunc() {
+  let index = 0
+  while (true) yield index++
+}
+
+console.log(myFunc().next().value) // 0
+console.log(myFunc().next().value) // 0
+console.log(myFunc().next().value) // 0
+```
 
 ## OOP
 
