@@ -326,7 +326,7 @@ async function processArray(arr) {
 // parallel
 async function processArray(arr) {
   // pass our `func` as callback to get array of promises
-  const promises = array.map(func)
+  const promises = arr.map(func)
   await Promise.all(promises)
   console.log('Done!')
 }
