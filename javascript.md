@@ -300,6 +300,38 @@ async function asyncFunction() {
 }
 ```
 
+### Promises in Loops
+
+```javascript
+// without waiting
+async function processArray(arr) {
+  arr.forEach(async item => {
+    await func(item)
+  })
+  console.log('Done!')
+}
+```
+
+```javascript
+// wait on each iteration
+async function processArray(arr) {
+  for (const item of arr) {
+    await func(item)
+  }
+  console.log('Done!')
+}
+```
+
+```javascript
+// parallel
+async function processArray(arr) {
+  // pass our `func` as callback to get array of promises
+  const promises = arr.map(func)
+  await Promise.all(promises)
+  console.log('Done!')
+}
+```
+
 ## Closures
 
 ...
