@@ -334,11 +334,45 @@ async function processArray(arr) {
 
 ## `Set`
 
-...
+```javascript
+const mySet = new Set()
+
+mySet.add(1) // Set(1) { 1 }
+mySet.add(5) // Set(2) { 1, 5 }
+mySet.add(5) // Set(2) { 1, 5 }
+mySet.add('some text') // Set(3) [ 1, 5, "some text" ]
+
+const obj = { a: 1, b: 2 }
+mySet.add(obj) // Set(4) [ 1, 5, "some text", {…} ]
+
+// Important!
+mySet.add({ a: 1, b: 2 }) // Set(5) [ 1, 5, "some text", {…}, {…} ]
+
+mySet.has('some text') // true
+mySet.size // 5
+mySet.delete(obj) // true
+mySet // Set(4) [ 1, 5, "some text", {…} ]
+```
 
 ## `Map`
 
-...
+```javascript
+const myMap = new Map()
+
+myMap.set('a', 1)
+myMap.set('b', 2)
+myMap.set('c', 3)
+
+console.log(myMap.get('a')) // 1
+
+myMap.set('a', 97)
+console.log(myMap.get('a')) // 97
+
+console.log(myMap.size) // 3
+
+myMap.delete('b')
+console.log(myMap.size) // 2
+```
 
 ## Closures
 
