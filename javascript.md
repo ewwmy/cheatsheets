@@ -68,11 +68,43 @@ try {
 class CustomError extends Error {
   constructor(message) {
     super(message)
-    this.name = 'CustomError'
+    this.name = this.constructor.name // CustomError
     // For example, remove call stack information:
     this.stack = undefined
   }
 }
+```
+
+### Another Example
+
+```javascript
+class MyErrRoot extends Error {
+  constructor(msg) {
+    super(msg + '_PARENT')
+    this.name = this.constructor.name
+  }
+}
+
+class MyErr extends MyErrRoot {
+  constructor(msg) {
+    super()
+    this.name = this.constructor.name
+    this.message = msg + '_CHILD'
+  }
+}
+
+throw new MyErrRoot('foo')
+// Uncaught MyErrRoot: foo_PARENT
+//     MyErrRoot debugger eval code:1
+//     <anonymous> debugger eval code:1
+// debugger eval code:1:7
+
+throw new MyErr('foo')
+// Uncaught MyErr: foo_CHILD
+//     MyErrRoot debugger eval code:1
+//     MyErr debugger eval code:1
+//     <anonymous> debugger eval code:1
+// debugger eval code:1:7
 ```
 
 ## Import/Export
@@ -591,7 +623,69 @@ console.log(employee.position) // Output: Manager
 
 ### `bind`, `apply`, `call`
 
+```javascript
+const maxBound = Math.max.bind(null, 1, 2, 3, 4, 5)
+console.log(maxBound()) // 5
+
+const maxApplied = Math.max.apply(null, [1, 2, 3, 4, 5])
+console.log(maxApplied) // 5
+
+const max = Math.max.call(null, 1, 2, 3, 4, 5)
+console.log(max) // 5
+```
+
+```javascript
+const obj = {
+  a: 3,
+  b: 5,
+  f1(val) {
+    return this.a + this.b + val
+  },
+  f2: function(val) {
+    return this.a + this.b + val
+  },
+  f3: (val) => {
+    return this.a + this.b + val
+  }
+}
+
+console.log(obj.f1(7)) // 15
+console.log(obj.f2(7)) // 15
+console.log(obj.f3(7)) // NaN
+
+console.log(obj.f1.call(obj, 7)) // 15
+console.log(obj.f2.call(obj, 7)) // 15
+console.log(obj.f3.call(obj, 7)) // NaN
+```
+
 #### `bind`
+
+```javascript
+Function.prototype.bind()
+```
+
+```javascript
+bind(thisArg)
+bind(thisArg, arg1)
+bind(thisArg, arg1, arg2)
+bind(thisArg, arg1, arg2, /* …, */ argN)
+```
+
+```javascript
+const module = {
+  x: 42,
+  getX: function() {
+    return this.x
+  },
+};
+
+const unboundGetX = module.getX
+ // The function gets invoked at the global scope
+console.log(unboundGetX()) // undefined
+
+const boundGetX = unboundGetX.bind(module)
+console.log(boundGetX()) // 42
+```
 
 ```javascript
 const person = {
@@ -608,6 +702,15 @@ greet() // Output: Hello, my name is John
 #### `apply`
 
 ```javascript
+Function.prototype.apply()
+```
+
+```javascript
+apply(thisArg)
+apply(thisArg, argsArray)
+```
+
+```javascript
 const numbers = [1, 2, 3, 4, 5]
 
 const max = Math.max.apply(null, numbers)
@@ -615,6 +718,30 @@ console.log(max) // Output: 5
 ```
 
 #### `call`
+
+```javascript
+Function.prototype.call()
+```
+
+```javascript
+call(thisArg)
+call(thisArg, arg1)
+call(thisArg, arg1, /* …, */ argN)
+```
+
+```javascript
+function Product(name, price) {
+  this.name = name
+  this.price = price
+}
+
+function Food(name, price) {
+  Product.call(this, name, price)
+  this.category = 'food'
+}
+
+console.log(new Food('cheese', 5).name) // cheese
+```
 
 ```javascript
 const person = {
@@ -709,4 +836,24 @@ obj1.c = 3
 console.log(obj1) // Object { a: 1, b: 2, c: 3 }
 console.log(obj2) // Object { a: 1, b: 2, c: 3 }
 console.log(obj3) // Object { a: 1, b: 2 }
+```
+
+### Functions
+
+#### Rest
+
+```javascript
+function sum(...theArgs) {
+  let total = 0
+  for (const arg of theArgs) {
+    total += arg
+  }
+  return total
+}
+
+console.log(sum(1, 2, 3))
+// Expected output: 6
+
+console.log(sum(1, 2, 3, 4))
+// Expected output: 10
 ```
