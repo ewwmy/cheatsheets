@@ -573,7 +573,26 @@ console.log(...bar) // 'a', 'b'
 
 ## OOP
 
-...
+### `this`
+
+```javascript
+this.prop = 53
+
+const test = {
+  prop: 42,
+  // has its own `this` context
+  func: function() {
+    return this.prop
+  },
+  // doesn't have its own `this` context
+  arrow: () => {
+    return this.prop
+  }
+}
+
+console.log(test.func()) // 42
+console.log(test.arrow()) // 53
+```
 
 ### Classes
 
