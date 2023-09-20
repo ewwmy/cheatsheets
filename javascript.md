@@ -635,9 +635,15 @@ console.log(max) // 5
 ```
 
 ```javascript
-const obj = {
-  a: 3,
-  b: 5,
+const a = 'abc'
+const b = 'def'
+
+this.a = 'ghi'
+this.b = 'jkl'
+
+const foo = {
+  a: 'lmn',
+  b: 'opq',
   f1(val) {
     return this.a + this.b + val
   },
@@ -649,13 +655,22 @@ const obj = {
   }
 }
 
-console.log(obj.f1(7)) // 15
-console.log(obj.f2(7)) // 15
-console.log(obj.f3(7)) // NaN
+const bar = {
+  a: 'rst',
+  b: 'uvw'
+}
 
-console.log(obj.f1.call(obj, 7)) // 15
-console.log(obj.f2.call(obj, 7)) // 15
-console.log(obj.f3.call(obj, 7)) // NaN
+console.log(foo.f1(7)) // lmnopq7
+console.log(foo.f2(7)) // lmnopq7
+console.log(foo.f3(7)) // ghijkl7
+
+console.log(foo.f1.call(foo, 7)) // lmnopq7
+console.log(foo.f2.call(foo, 7)) // lmnopq7
+console.log(foo.f3.call(foo, 7)) // ghijkl7
+
+console.log(foo.f1.call(bar, 7)) // rstuvw7
+console.log(foo.f2.call(bar, 7)) // rstuvw7
+console.log(foo.f3.call(bar, 7)) // ghijkl7
 ```
 
 #### `bind`
