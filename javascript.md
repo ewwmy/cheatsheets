@@ -727,6 +727,18 @@ employee.greet(); // Output: Hello, my name is Bob
 console.log(employee.position) // Output: Manager
 ```
 
+#### `.prototype`
+
+```javascript
+// ...
+```
+
+#### `.constructor`
+
+```javascript
+// ...
+```
+
 ### `bind`, `apply`, `call`
 
 ```javascript
