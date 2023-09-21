@@ -571,6 +571,37 @@ console.log(...new Foo()) // 1, 2
 console.log(...bar) // 'a', 'b'
 ```
 
+## Functions
+
+### Syntax
+
+```javascript
+function func1(a, b) {} // regular function
+const func2 = function(a, b) {} // function expression
+const func31 = (a, b) => { // arrow function
+  return a + b
+}
+const func32 = (a, b) => a + b // same as { return a + b }
+const func33 = (a, b) => ({ // return object
+  a: 1,
+  b: 2,
+}) // return object
+const func4 = new Function('a', 'b', 'return a + b') // function constructor
+```
+
+### Function as constructor
+
+```javascript
+function Foo {
+  this.a = 1
+  this.b = 2
+}
+// or `const Foo = function() {/* ... */}` (except arrow function syntax)
+
+const foo = new Foo()
+console.log(foo.a, foo.b) // 1 2
+```
+
 ## OOP
 
 ### `this`
@@ -596,15 +627,71 @@ console.log(test.arrow()) // 53
 
 ### Classes
 
-...
+```javascript
+class Shape {
+  _name = null
+  _title = null
+  
+  constructor(name, title = 'Shape') {
+    this._name = name
+    this._title = title
+  }
+}
 
-#### Static properties and methods
+class Rectangle extends Shape {
+  width = null
+  height = null
+  modified = false
+  
+  static info = 'This is a static field'
+  
+  static foo() {
+    return this.info + ' about Rectangle class'
+  }
+  
+  constructor(width, height) {
+    super('rectangle', 'Rectangle')
+    
+    this.width = width
+    this.height = height
+  }
+  
+  get area() {
+    return this.width * this.height
+  }
+  
+  get title() {
+    return `Title: ${this._title}`
+  }
+  
+  set title(value) {
+    this._title = value
+    this.modified = true
+  }
+  
+  info() {
+    return `Full info:
+    ${this._title} [${this._name}]:
+    	w=${this.width}, h=${this.height}, area=${this.area}`
+  }
+}
 
-...
+const rect = new Rectangle(3, 5)
 
-### Interfaces
+console.log(rect._name) // rectangle
+console.log(rect.area) // 15
 
-...
+rect.title = 'Square'
+
+console.log(rect._name) // rectangle
+console.log(rect.title) // Title: Square
+console.log(rect.modified) // true
+
+console.log(rect.info())
+// Full info:
+//    Square [rectangle]:
+//    	w=3, h=5, area=15
+```
 
 ### Constructors and Prototypes
 
