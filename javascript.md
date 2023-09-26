@@ -706,6 +706,31 @@ console.log(rect.info())
 //    	w=3, h=5, area=15
 ```
 
+#### Static examples
+
+```javascript
+class MySuperClass {
+  a = 1
+  static a = 2
+  
+  b() {
+    return this.a
+  }
+  
+  static b() {
+    return this.a
+  }
+}
+
+const obj = new MySuperClass()
+
+console.log(obj.a) // 1
+console.log(MySuperClass.a) // 2
+
+console.log(obj.b()) // 1
+console.log(MySuperClass.b()) // 2
+```
+
 ### Constructors and Prototypes
 
 ```javascript
