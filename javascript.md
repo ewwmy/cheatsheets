@@ -638,6 +638,69 @@ console.log(test.func()) // 42
 console.log(test.arrow()) // 53
 ```
 
+```javascript
+function Foo() {
+	return this.a
+}
+
+function Bar() {
+  this.a = 'a'
+  return this.a  
+}
+
+function Baz() {
+  return this.a
+}
+
+const Zab1 = function() {
+  return this.a
+}
+
+const Zab2 = () => {
+  return this.a
+}
+
+const Zab3 = () => {
+  this.a = 1
+  return this.a
+}
+
+class MySuperClass {
+  a = 1
+  
+  f1() {
+    return this.a
+  }
+  
+  f2 = function() {
+    return this.a
+  }
+    
+  f3 = () => this.a
+  
+  f4 = Foo
+  f5 = Bar
+  f6 = Baz
+  
+  f7 = Zab1
+  f8 = Zab2
+  f9 = Zab3
+}
+
+const obj = new MySuperClass()
+
+console.log(obj.f1()) // 1
+console.log(obj.f2()) // 1
+console.log(obj.f3()) // 1
+console.log(obj.f4()) // 1
+console.log(obj.f5()) // a
+console.log(obj.f6()) // a
+console.log(obj.f7()) // a
+console.log(obj.f8()) // undefined
+console.log(obj.f9()) // 1
+console.log(obj.a) // a
+```
+
 ### Classes
 
 ```javascript
@@ -729,6 +792,26 @@ console.log(MySuperClass.a) // 2
 
 console.log(obj.b()) // 1
 console.log(MySuperClass.b()) // 2
+```
+
+#### Link to class
+
+```javascript
+class MySuperClass {
+  a = 1
+  
+  f = function() {
+    return this.a
+  }
+}
+
+const A = MySuperClass
+const B = MySuperClass
+
+console.log( new A().a ) // 1
+console.log( new B().a ) // 1
+console.log( new A().f() ) // 1
+console.log( new B().f() ) // 1
 ```
 
 ### Constructors and Prototypes
