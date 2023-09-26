@@ -571,6 +571,19 @@ console.log(...new Foo()) // 1, 2
 console.log(...bar) // 'a', 'b'
 ```
 
+```javascript
+function* myIterable() {
+  const values = [1, 2, 3, 4, 5]
+  for (const value of values) {
+    yield value
+  }
+}
+
+for (const value of myIterable()) {
+  console.log(value) // 1 2 3 4 5
+}
+```
+
 ## Functions
 
 ### Syntax
