@@ -785,8 +785,11 @@ class B extends A {
   }
 }
 
-const foo = new B()
-console.log(foo.prop) // 2
+const foo = new A()
+console.log(foo.prop) // 1
+
+const bar = new B()
+console.log(bar.prop) // 2
 ```
 
 #### Static examples
