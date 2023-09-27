@@ -769,6 +769,26 @@ console.log(rect.info())
 //    	w=3, h=5, area=15
 ```
 
+#### Inheritance
+
+```javascript
+class A {
+  constructor() {
+    this.prop = 1
+  }
+}
+
+class B extends A {
+  constructor() {
+    super() // parent constructor
+    super.prop = 2 // same as `this.prop = 2`
+  }
+}
+
+const foo = new B()
+console.log(foo.prop) // 2
+```
+
 #### Static examples
 
 ```javascript
