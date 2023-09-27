@@ -924,6 +924,18 @@ console.log(sveta.__proto__.name) // Alex
 sveta.sayHello() // Hi!
 ```
 
+Extending functionality of built-in classes:
+
+```javascript
+const arr = [1, 2, 3, 4, 5]
+
+Array.prototype.multBy = function(n) {
+  return this.map(item => item * n)
+}
+
+console.log(arr.multBy(5)) // Array(5) [ 5, 10, 15, 20, 25 ]
+```
+
 #### `.constructor`
 
 ```javascript
