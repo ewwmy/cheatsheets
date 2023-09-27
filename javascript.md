@@ -780,7 +780,7 @@ class A {
 
 class B extends A {
   constructor() {
-    super() // parent constructor
+    super() // parent constructor, must be called!
     super.prop = 2 // same as `this.prop = 2`
   }
 }
