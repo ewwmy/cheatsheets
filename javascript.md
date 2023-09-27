@@ -945,6 +945,48 @@ const max = Math.max.call(null, 1, 2, 3, 4, 5)
 console.log(max) // 5
 ```
 
+Example:
+
+```javascript
+const bob = {
+  name: 'Bob',
+  age: 25,
+  info(position, salary) {
+    console.group('User Info')
+    console.log(`Username is ${this.name} and age is ${this.age}`)
+    if (position) {
+      console.log(`Position of ${this.name} is "${position}"`)
+    }
+    if (salary) {
+      console.log(`Salary of ${this.name} is ${salary}`)
+    }
+    console.groupEnd()
+  }
+}
+
+const lena = {
+  name: 'Elena',
+  age: 31,
+}
+
+bob.info()
+
+// bind
+
+// bind with arbitrary arguments
+bob.info.bind(lena)('Frontend Developer', 2500)
+
+// bind with predefined arguments
+bob.info.bind(lena, 'Frontend Developer', 2500)()
+
+// call (same as bind but call immediately)
+bob.info.call(lena, 'Frontend Developer', 2500)
+
+// apply (same as call but arguments should be passed as array)
+bob.info.apply(lena, ['Frontend Developer', 2500])
+
+```
+
 Extended example:
 
 ```javascript
