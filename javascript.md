@@ -874,7 +874,54 @@ console.log(employee.position) // Output: Manager
 #### `.prototype`
 
 ```javascript
-// ...
+Object.prototype.sayHello = function() {
+  console.log('Hi!')
+}
+
+// define object + different ways to define methods
+const alex = {
+  name: 'Alex',
+  age: 35,
+  greet1() {
+    console.log(`Hello, ${this.name}!`)
+  },
+  greet2: function() {
+    console.log(`Hello, ${this.name}!`)
+  },
+  greet3: () => {
+    console.log(`Hello, ${this.name}!`) // !!!
+  },
+}
+
+alex.greet1() // Hello, Alex!
+alex.greet2() // Hello, Alex!
+alex.greet3() // Hello, !
+alex.sayHello() // Hi!
+
+
+// identical way to define objects
+const bob = new Object({
+  name: 'Bob',
+  age: 29,
+  greet: function() {
+    console.log(`Hello, ${this.name}!`)
+  },
+})
+
+bob.greet() // Hello, Bob!
+bob.sayHello() // Hi!
+
+// use `alex` as prototype for `sveta`
+const sveta = Object.create(alex)
+console.log(sveta.name) // Alex
+// `name` property has been read from the prototype of `sveta` (from `alex`)
+
+sveta.name = 'Sveta'
+console.log(sveta.name) // Sveta
+// but:
+console.log(sveta.__proto__.name) // Alex
+
+sveta.sayHello() // Hi!
 ```
 
 #### `.constructor`
@@ -885,6 +932,8 @@ console.log(employee.position) // Output: Manager
 
 ### `bind`, `apply`, `call`
 
+Basic usage:
+
 ```javascript
 const maxBound = Math.max.bind(null, 1, 2, 3, 4, 5)
 console.log(maxBound()) // 5
@@ -894,6 +943,64 @@ console.log(maxApplied) // 5
 
 const max = Math.max.call(null, 1, 2, 3, 4, 5)
 console.log(max) // 5
+```
+
+Extended example:
+
+```javascript
+const bob = {
+  name: 'Bob',
+  age: 25,
+  info(position, salary) {
+    console.group('User Info')
+    console.log(`Username is ${this.name} and age is ${this.age}`)
+    if (position) {
+      console.log(`Position of ${this.name} is "${position}"`)
+    }
+    if (salary) {
+      console.log(`Salary of ${this.name} is ${salary}`)
+    }
+    console.groupEnd()
+  }
+}
+
+const lena = {
+  name: 'Elena',
+  age: 31,
+}
+
+bob.info() // User Info < Username is Bob and age is 25 >
+
+// bind
+
+const info = bob.info.bind(lena)
+
+info() // User Info < Username is Elena and age is 31 >
+info('Frontend Developer') // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" >
+info('Frontend Developer', 2500) // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" | Salary of Elena is 2500 >
+
+bob.info.bind(lena)() // User Info < Username is Elena and age is 31 >
+bob.info.bind(lena)('Frontend Developer') // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" >
+bob.info.bind(lena)('Frontend Developer', 2500) // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" | Salary of Elena is 2500 >
+
+bob.info.bind(lena)() // User Info < Username is Elena and age is 31 >
+bob.info.bind(lena, 'Frontend Developer')() // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" >
+bob.info.bind(lena, 'Frontend Developer', 2500)() // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" | Salary of Elena is 2500 >
+
+const logInfo = bob.info.bind(lena, 'Frontend Developer', 2500)
+logInfo() // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" | Salary of Elena is 2500 >
+
+// call (same as bind but call immediately)
+
+bob.info.call(lena) // User Info < Username is Elena and age is 31 >
+bob.info.call(lena, 'Frontend Developer') // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" >
+bob.info.call(lena, 'Frontend Developer', 2500) // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" | Salary of Elena is 2500 >
+
+// apply (same as call but arguments should be passed as array)
+
+bob.info.apply(lena) // User Info < Username is Elena and age is 31 >
+bob.info.apply(lena, ['Frontend Developer']) // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" >
+bob.info.apply(lena, ['Frontend Developer', 2500]) // User Info < Username is Elena and age is 31 | Position of Elena is "Frontend Developer" | Salary of Elena is 2500 >
 ```
 
 ```javascript
