@@ -406,6 +406,114 @@ myMap.delete('b')
 console.log(myMap.size) // 2
 ```
 
+## `Proxy`
+
+### Objects
+
+```javascript
+const person = {
+  name: 'Tom',
+  age: 32,
+  job: 'UX/UI Designer',
+}
+
+const op = new Proxy(person, {
+  get(target, prop) {
+    console.log(`Getting property "${prop}"...`)
+    return target[prop]
+  },
+  
+  set(target, prop, value) {
+    if (prop in target) {
+      target[prop] = value
+    } else {
+      throw new Error(`Unknown property "${prop}"...`)
+    }
+  },
+  
+  has(target, prop) {
+    return ['name', 'age'].includes(prop)
+  },
+  
+  deleteProperty(target, prop) {
+    console.log(`Deleting property "${prop}"...`)
+    delete target[prop]
+    return true
+  },
+})
+
+console.log(op) // Proxy { <target>: {…}, <handler>: {…} }
+console.log(op.name) // Getting property "name"... Tom
+console.log(op.job) // Getting property "job"... UX/UI Designer
+console.log(op.age = 45) // 45
+console.log('name' in op) // true
+console.log('job' in op) // false
+console.log(delete op.job) // Deleting property "job"... true
+
+```
+
+### Functions
+
+```javascript
+const log = text => `Log: ${text}`
+
+const fp = new Proxy(log, {
+  apply(target, thisArg, args) {
+    console.log(`Calling "${target.name}"`)
+    return target.apply(thisArg, args).toUpperCase()
+  },
+})
+
+console.log(log('Test')) // Log: Test
+console.log(fp('Test')) // Calling "log" LOG: TEST
+```
+
+### Classes
+
+```javascript
+class Person {
+  constructor(name, age) {
+    this.name = name
+    this.age = age
+  }
+}
+
+const PersonProxy = new Proxy(Person, {
+  construct(target, args) {
+    console.log('Preson constructor called...')
+    return new target(...args)
+  },
+  
+  get(target, prop) {
+    console.log('Getting property...')
+  	return target[prop]
+	},
+})
+
+const PersonProxyExtended = new Proxy(Person, {
+  construct(target, args) {
+    console.log('Preson constructor called...')
+        
+    return new Proxy(new target(...args), {
+      get(t, prop) {
+        console.log('Getting property...')
+        return t[prop]
+      }
+    })
+  },
+})
+
+const p1 = new PersonProxy('Alena', 30) // Preson constructor called...
+console.log(p1) // Object { name: "Alena", age: 30 }
+console.log(p1.age) // 30
+console.log(PersonProxy.age) // Getting property... undefined
+
+const p2 = new PersonProxyExtended('Tom', 25) // Preson constructor called...
+console.log(p2.age) // Getting property... 25
+console.log(p2) // Proxy { <target>: {…}, <handler>: {…} }
+console.log(p2.__proto__.constructor.name) // Getting property... Person
+```
+
 ## Closures
 
 ```javascript
