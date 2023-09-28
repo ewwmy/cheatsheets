@@ -639,6 +639,89 @@ console.log(test.arrow()) // 53
 ```
 
 ```javascript
+function agg() {
+  console.log('Hello', this)
+}
+
+function hello1() {
+  // passing `this` context of hello1() to agg()
+  agg.call(this)
+}
+
+const hello2 = function() {
+  // passing `this` context of hello2() to agg()
+  agg.call(this)
+}
+
+const hello3 = () => {
+  // passing `this` context of hello3() to agg(), but it has no effect due to arrow functions don't have their own this context, so `this` will be used from outer context
+  agg.call(this)
+}
+
+const obj = {
+  a: 1,
+  b: 2,
+  c: 3,
+  f1: hello1,
+  f2: hello2,
+  f3: hello3,
+}
+
+obj.f1() // Hello > Object { a: 1, b: 2, c: 3, f1: hello1(), f2: hello2(), f3: hello3() }
+obj.f2() // Hello > Object { a: 1, b: 2, c: 3, f1: hello1(), f2: hello2(), f3: hello3() }
+obj.f3() // Hello > Window about:newtab
+```
+
+More extended example of using `this`:
+
+```javascript
+function agg() {
+  console.log('Hello', this)
+}
+
+function hello1() {
+  // passing `this` context of hello1() to agg()
+  agg.call(this)
+}
+
+const hello2 = function() {
+  // passing `this` context of hello2() to agg()
+  agg.call(this)
+}
+
+const hello3 = () => {
+  // passing `this` context of hello3() to agg(), but it has no effect due to arrow functions don't have their own this context, so `this` will be used from outer context
+  agg.call(this)
+}
+
+const foo = {
+  a: 'Something',
+  b: 'Somewhere',
+}
+
+const bar = {
+  a: 1,
+  b: 2,
+  c: 3,
+  f1: hello1,
+  f2: hello2,
+  f3: hello3,
+  f4: hello1.bind(this), // this refers to outer object due to simple objects don't heve their own `this` context
+  f5: hello1.bind(foo),
+  f6: hello2.bind(foo),
+  f7: hello3.bind(foo),
+}
+
+bar.f1() // Hello > Object { a: 1, b: 2, c: 3, ... } (bar)
+bar.f2() // Hello > Object { a: 1, b: 2, c: 3, ... } (bar)
+bar.f3() // Hello > Window (or global object in Node.js)
+bar.f4() // Hello > Window (or global object in Node.js)
+bar.f5() // Hello > Object { a: "Something", ... } (foo)
+bar.f6() // Hello > Object { a: "Something", ... } (foo)
+bar.f7() // Hello > Window (or global object in Node.js)
+```
+
+```javascript
 function Foo() {
 	return this.a
 }
