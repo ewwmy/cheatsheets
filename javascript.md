@@ -711,13 +711,13 @@ const bar = {
   f6: hello2.bind(foo),
   f7: hello3.bind(foo),
   f8() {
-    console.log(this)
+    console.log(this) // has context of its object
   },
   f9: function() {
-    console.log(this)
+    console.log(this) // has context of its object
   },
   f10: () => {
-    console.log(this)
+    console.log(this) // has no own context
   }
 }
 
