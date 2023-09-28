@@ -717,7 +717,7 @@ const bar = {
     console.log(this) // has context of its object
   },
   f10: () => {
-    console.log(this) // has no own context
+    console.log(this) // has no own context due to this is arrow function
   }
 }
 
