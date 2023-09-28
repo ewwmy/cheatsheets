@@ -706,12 +706,25 @@ const bar = {
   f1: hello1,
   f2: hello2,
   f3: hello3,
-  f4: hello1.bind(this), // this refers to outer object due to simple objects don't heve their own `this` context
+  f4: hello1.bind(this), // `this` refers to outer object due to simple objects don't heve their own `this` context
   f5: hello1.bind(foo),
   f6: hello2.bind(foo),
   f7: hello3.bind(foo),
+  f8() {
+    console.log(this)
+  },
+  f9: function() {
+    console.log(this)
+  },
+  f10: () => {
+    console.log(this)
+  }
 }
 
+agg()    // Hello > Window (or global object in Node.js)
+hello1() // Hello > Window (or global object in Node.js)
+hello2() // Hello > Window (or global object in Node.js)
+hello3() // Hello > Window (or global object in Node.js)
 bar.f1() // Hello > Object { a: 1, b: 2, c: 3, ... } (bar)
 bar.f2() // Hello > Object { a: 1, b: 2, c: 3, ... } (bar)
 bar.f3() // Hello > Window (or global object in Node.js)
@@ -719,6 +732,9 @@ bar.f4() // Hello > Window (or global object in Node.js)
 bar.f5() // Hello > Object { a: "Something", ... } (foo)
 bar.f6() // Hello > Object { a: "Something", ... } (foo)
 bar.f7() // Hello > Window (or global object in Node.js)
+bar.f8() // Hello > Object { a: 1, b: 2, c: 3, ... } (bar)
+bar.f9() // Hello > Object { a: 1, b: 2, c: 3, ... } (bar)
+bar.f10() // Hello > Window (or global object in Node.js)
 ```
 
 ```javascript
