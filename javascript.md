@@ -555,8 +555,13 @@ function foo(outerArg) {
 
 const bar = foo(5)
  
-console.log(bar(4)) // 9
-console.log(bar(3)) // 8
+console.log(
+  bar(4)
+) // 9
+
+console.log(
+  bar(3)
+) // 8
 ```
 
 ```javascript
@@ -566,8 +571,13 @@ function sum(a) {
   }
 }
 
-console.log(sum(1)(2)) // 3
-console.log(sum(5)(-1)) // 4
+console.log(
+  sum(1)(2)
+) // 3
+
+console.log(
+  sum(5)(-1)
+) // 4
 ```
 
 ```javascript
@@ -585,8 +595,13 @@ function inArray(arr) {
   }
 }
 
-console.log(arr.filter(inBetween(3, 6))) // Array(4) [ 3, 4, 5, 6 ]
-console.log(arr.filter(inArray([1, 2, 10]))) // Array [ 1, 2 ]
+console.log(
+  arr.filter(inBetween(3, 6))
+) // Array(4) [ 3, 4, 5, 6 ]
+
+console.log(
+  arr.filter(inArray([1, 2, 10]))
+) // Array [ 1, 2 ]
 ```
 
 ```javascript
@@ -603,10 +618,11 @@ function byField(fieldName) {
 }
 
 console.log(
-	users.toSorted(byField('name'))
+  users.toSorted(byField('name'))
 ) // [ { name: "Ann", ... }, { name: "John", ... }, { name: "Pete", ... } ]
+
 console.log(
-	users.toSorted(byField('age'))
+  users.toSorted(byField('age'))
 ) // [ { age: 18, ... }, { age: 23, ... }, { age: 25, ... } ]
 ```
 
