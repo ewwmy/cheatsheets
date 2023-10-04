@@ -545,6 +545,71 @@ console.log(counter()) // 1
 console.log(counter()) // 2
 ```
 
+```javascript
+function foo(outerArg) {
+  function inner(innerArg) {
+    return outerArg + innerArg
+  }
+  return inner
+}
+
+const bar = foo(5)
+ 
+console.log(bar(4)) // 9
+console.log(bar(3)) // 8
+```
+
+```javascript
+function sum(a) {
+  return function(b) {
+    return a + b
+  }
+}
+
+console.log(sum(1)(2)) // 3
+console.log(sum(5)(-1)) // 4
+```
+
+```javascript
+const arr = [1, 2, 3, 4, 5, 6, 7]
+
+function inBetween(a, b) {
+  return function(item) {
+    return item >= a && item <= b
+  }
+}
+
+function inArray(arr) {
+  return function(item) {
+    return arr.includes(item)
+  }
+}
+
+console.log(arr.filter(inBetween(3, 6))) // Array(4) [ 3, 4, 5, 6 ]
+console.log(arr.filter(inArray([1, 2, 10]))) // Array [ 1, 2 ]
+```
+
+```javascript
+const users = [
+  { name: 'John', age: 25, surname: 'Johnson' },
+  { name: 'Pete', age: 18, surname: 'Peterson' },
+  { name: 'Ann', age: 23, surname: 'Hathaway' },
+]
+
+function byField(fieldName) {
+  return function(a, b) {
+    return a[fieldName] > b[fieldName] ? 1 : -1
+  }
+}
+
+console.log(
+	users.toSorted(byField('name'))
+) // [ { name: "Ann", ... }, { name: "John", ... }, { name: "Pete", ... } ]
+console.log(
+	users.toSorted(byField('age'))
+) // [ { age: 18, ... }, { age: 23, ... }, { age: 25, ... } ]
+```
+
 ## Symbols
 
 ```javascript
