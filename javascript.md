@@ -1162,6 +1162,39 @@ console.log(employee.position) // Output: Manager
 #### `.prototype`
 
 ```javascript
+class Foo {
+  a = 1
+}
+
+function Bar(a, b) {
+  this.a = a
+  this.b = b
+}
+
+const foo = new Foo()
+const bar = new Bar()
+
+console.log(Foo.prototype) // Object { ... }
+console.log(Foo.prototype.prototype) // undefined
+console.log(Foo.constructor) // function Function()
+console.log(Foo.constructor.prototype) // function ()
+console.log(Foo.constructor.prototype.constructor) // function Function()
+console.log(Foo.constructor === Foo.constructor.prototype.constructor) // true
+
+console.log(foo.prototype) // undefined
+console.log(foo.constructor) // class Foo {}
+console.log(foo.constructor.prototype) // Object { ... }
+console.log(foo.constructor.prototype.constructor) // class Foo {}
+console.log(foo.constructor === foo.constructor.prototype.constructor) // true
+
+console.log(bar.prototype) // undefined
+console.log(bar.constructor) // function Bar(a, b)
+console.log(bar.constructor.prototype) // Object { ... }
+console.log(bar.constructor.prototype.constructor) // function Bar(a, b)
+console.log(bar.constructor === bar.constructor.prototype.constructor) // true
+```
+
+```javascript
 Object.prototype.sayHello = function() {
   console.log('Hi!')
 }
@@ -1224,10 +1257,49 @@ Array.prototype.multBy = function(n) {
 console.log(arr.multBy(5)) // Array(5) [ 5, 10, 15, 20, 25 ]
 ```
 
+```javascript
+// constructor function
+function Foo(a, b) {
+  this.a = a
+  this.b = b
+}
+
+// extending prototype
+Foo.prototype.f = function() {
+  return this.a * this.b
+}
+
+// creating new object using constructor
+const foo = new Foo(2, 3)
+console.log(foo.f()) // 6
+```
+
 #### `.constructor`
 
 ```javascript
-// ...
+class Foo {
+  a = 1
+}
+
+function Bar(a, b) {
+  this.a = a
+  this.b = b
+}
+
+const foo = new Foo()
+const bar = new Bar()
+
+console.log(foo.constructor) // class Foo {}
+console.log(foo.constructor.name) // 'Foo'
+console.log(foo.constructor === Foo) // true
+console.log(foo.constructor.prototype === Foo.prototype) // true
+console.log(foo.constructor.constructor === Foo.constructor) // true
+
+console.log(bar.constructor) // function Bar(a, b)
+console.log(bar.constructor.name) // 'Bar'
+console.log(bar.constructor === Bar) // true
+console.log(bar.constructor.prototype === Bar.prototype) // true
+console.log(bar.constructor.constructor === Bar.constructor) // true
 ```
 
 ### `bind`, `apply`, `call`
