@@ -1294,8 +1294,6 @@ const foo = new Foo(2, 3)
 console.log(foo.f()) // 6
 ```
 
-#### `.constructor`
-
 ### `bind`, `apply`, `call`
 
 Basic usage:
