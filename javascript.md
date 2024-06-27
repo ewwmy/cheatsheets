@@ -1159,8 +1159,6 @@ employee.greet(); // Output: Hello, my name is Bob
 console.log(employee.position) // Output: Manager
 ```
 
-#### `.prototype`
-
 ```javascript
 class Foo {
   a = 1
@@ -1174,25 +1172,47 @@ function Bar(a, b) {
 const foo = new Foo()
 const bar = new Bar()
 
+console.log(foo.prototype) // undefined
+console.log(bar.prototype) // undefined
+
 console.log(Foo.prototype) // Object { ... }
+console.log(Foo.prototype.constructor) // class Foo {}
 console.log(Foo.prototype.prototype) // undefined
+
+console.log(Bar.prototype) // Object { ... }
+console.log(Bar.prototype.constructor) // function Bar(a, b)
+console.log(Bar.prototype.prototype) // undefined 
+
+console.log(foo.constructor) // class Foo {}
+console.log(foo.constructor.name) // 'Foo'
+console.log(foo.constructor === Foo) // true
+console.log(foo.constructor.prototype) // Object { ... }
+console.log(foo.constructor.prototype === Foo.prototype) // true
+console.log(foo.constructor.constructor === Foo.constructor) // true
+console.log(foo.constructor.prototype.constructor) // class Foo {}
+console.log(foo.constructor === foo.constructor.prototype.constructor) // true
+
+console.log(bar.constructor) // function Bar(a, b)
+console.log(bar.constructor.name) // 'Bar'
+console.log(bar.constructor === Bar) // true
+console.log(bar.constructor.prototype) // Object { ... }
+console.log(bar.constructor.prototype === Bar.prototype) // true
+console.log(bar.constructor.constructor === Bar.constructor) // true
+console.log(bar.constructor.prototype.constructor) // function Bar(a, b)
+console.log(bar.constructor === bar.constructor.prototype.constructor) // true
+
 console.log(Foo.constructor) // function Function()
 console.log(Foo.constructor.prototype) // function ()
 console.log(Foo.constructor.prototype.constructor) // function Function()
 console.log(Foo.constructor === Foo.constructor.prototype.constructor) // true
 
-console.log(foo.prototype) // undefined
-console.log(foo.constructor) // class Foo {}
-console.log(foo.constructor.prototype) // Object { ... }
-console.log(foo.constructor.prototype.constructor) // class Foo {}
-console.log(foo.constructor === foo.constructor.prototype.constructor) // true
-
-console.log(bar.prototype) // undefined
-console.log(bar.constructor) // function Bar(a, b)
-console.log(bar.constructor.prototype) // Object { ... }
-console.log(bar.constructor.prototype.constructor) // function Bar(a, b)
-console.log(bar.constructor === bar.constructor.prototype.constructor) // true
+console.log(Bar.constructor) // function Function()
+console.log(Bar.constructor.prototype) // function ()
+console.log(Bar.constructor.prototype.constructor) // function Function()
+console.log(Bar.constructor === Bar.constructor.prototype.constructor) // true
 ```
+
+#### `.prototype`
 
 ```javascript
 Object.prototype.sayHello = function() {
@@ -1275,32 +1295,6 @@ console.log(foo.f()) // 6
 ```
 
 #### `.constructor`
-
-```javascript
-class Foo {
-  a = 1
-}
-
-function Bar(a, b) {
-  this.a = a
-  this.b = b
-}
-
-const foo = new Foo()
-const bar = new Bar()
-
-console.log(foo.constructor) // class Foo {}
-console.log(foo.constructor.name) // 'Foo'
-console.log(foo.constructor === Foo) // true
-console.log(foo.constructor.prototype === Foo.prototype) // true
-console.log(foo.constructor.constructor === Foo.constructor) // true
-
-console.log(bar.constructor) // function Bar(a, b)
-console.log(bar.constructor.name) // 'Bar'
-console.log(bar.constructor === Bar) // true
-console.log(bar.constructor.prototype === Bar.prototype) // true
-console.log(bar.constructor.constructor === Bar.constructor) // true
-```
 
 ### `bind`, `apply`, `call`
 
