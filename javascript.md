@@ -1265,6 +1265,24 @@ console.log(sveta.__proto__.name) // Alex
 sveta.sayHello() // Hi!
 ```
 
+```javascript
+const foo = {
+  a: 1,
+  b: 2,
+  f() { return this.a + this.b + this.c },
+}
+
+console.log(foo.a, foo.b, foo.c) // 1 2 undefined
+console.log(foo.f()) // NaN
+
+const bar = Object.create(foo, { c: { value: 3 } })
+
+console.log(bar.a, bar.b, bar.c) // 1 2 3
+console.log(bar.f()) // 6
+
+console.log(bar.__proto__ === foo) // true
+```
+
 Extending functionality of built-in classes:
 
 ```javascript
