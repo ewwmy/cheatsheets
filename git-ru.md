@@ -277,6 +277,7 @@ git rebase feature-1 # перенос ветки feature-1 в текущую в�
 ```
 
 ![[Git — Merge vs Rebase — Cheatsheet.png]]
+![Git — Merge vs Rebase — Cheatsheet.png](./img/git/git-merge-vs-rebase.png)
 
 Часто вызывает конфликты, но позволяет сделать историю линейной.
 
