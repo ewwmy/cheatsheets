@@ -1,4 +1,5 @@
 include .env
 
 deploy:
-	cp javascript.md ${JS_FILE}
+	cp javascript-en.md ${JS_FILE}
+	cp git-ru.md ${GIT_FILE}
