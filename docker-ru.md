@@ -287,7 +287,7 @@ docker run -d -p 80:8080 --name ngx-server user-name/repository-name
 
 Существует несколько типов volumes, в том числе сетевые.
 
-Запустить контейнер на основе образа `postgres:16.2` в detached-режиме с именем `my-postgres`, подключить к нему volume, смонтированный на `./data` в ФС хоста и на `/var/lib/postgresql/data` в ФС контейнера, пробросить порт 5432 хоста на порт 5432 контейнера, передать необходимые переменные окружения:
+Запустить контейнер на основе образа `postgres:16.2` в detached-режиме с именем `my-postgres`, подключить к нему volume, смонтированный на `./data` в ФС хоста и на `/var/lib/postgresql/data` в ФС контейнера, пробросить порт `5432` хоста на порт `5432` контейнера, передать необходимые переменные окружения:
 
 ```bash
 docker run -d -p 5432:5432 --name my-postgres -v ./data:/var/lib/postgresql/data -e POSTGRES_USER='user' -e POSTGRES_PASSWORD='password' -e POSTGRES_DB='main' postgres:16.2
