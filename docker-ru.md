@@ -359,7 +359,7 @@ COPY package-lock.json .
 
 RUN npm ci
 
-# копируем все файлы, а ненужные (node_modules) помещаем в .dockerignore
+# копируем все файлы, а ненужные (например, папка node_modules с хост-компьютера) помещаем в .dockerignore
 COPY . .
 
 EXPOSE 8080
