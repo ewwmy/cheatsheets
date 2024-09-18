@@ -47,9 +47,9 @@ git commit --amend --no-edit # добавить изменения в после
 git branch new-branch # создать ветку new-branch
 git checkout -b new-branch # создать ветку new-branch и переключиться на нее
 git switch -c new-branch # создать ветку new-branch и переключиться на нее (новая команда, работает только с ветками)
+git switch master # переключиться на ветку master (новая команда, работает только с ветками)
 git checkout master # переключиться на ветку master
 git checkout file.txt # отменить все изменения в рабочем каталоге для файла file.txt до состояния индекса — то же, что `git restore file.txt`
-git switch master # переключиться на ветку master (новая команда, работает только с ветками)
 git merge my-branch # смерджить (влить) ветку my-branch в текущую ветку
 git branch -D my-branch # удалить ветку my-branch локально
 git push --delete origin my-branch # удалить ветку my-branch в удаленном репозитории origin
@@ -123,13 +123,72 @@ git merge lost # влить ветку lost в ветку master
 ```bash
 git clone git@github.com:ewwmy/timelapse-tools.git . # клонировать удаленный репозиторий в текущую папку
 git remote add origin git@github.com:user-name/rep-name.git # добавить удаленный репозиторий origin для текущего локального репозитория
-git push --set-upstream origin master # запушить ветку master в удалённый репозиторий origin и установить origin/master как ветку по умолчанию для последующих пушей из ветки master; если удаленная ветка origin/master не существует, она будет создана
+git remote -v # отобразить список всех удаленных репозиториев, связанных с текущим локальным репозиторием
+git push --set-upstream origin master # запушить ветку master в удаленный репозиторий origin и установить origin/master как ветку по умолчанию для последующих пушей из ветки master; если удаленная ветка origin/master не существует, она будет создана
 git push -u origin master # то же, что `git push --set-upstream origin master`
 git push # запушить текущую ветку в удаленный репозиторий по умолчанию (обычно origin), в ветку, установленную как upstream для текущей локальной ветки
 git push -f # запушить текущую ветку в удаленный репозиторий по умолчанию (обычно origin) с перезаписью удаленной истории коммитов (например, если был выполнен git rebase или есть конфликтующие коммиты, которые нужно перезаписать)
 git pull # подтянуть изменения из удаленного репозитория по умолчанию (обычно origin) из удаленной ветки, установленной как upstream, в текущую ветку (по сути это git fetch + git merge)
 git pull origin # подтянуть изменения из удаленного репозитория origin из удаленной ветки, установленной как upstream, в текущую ветку
 git pull origin master # подтянуть изменения из ветки master удаленного репозитория origin в текущую ветку
+```
+
+Создать свой удаленный репозиторий:
+
+```bash
+# на удаленном сервере
+mkdir /path/to/repository.git
+cd /path/to/repository.git
+git init --bare # создать пустой (bare) репозиторий, который будет использоваться как удаленный репозиторий для хранения кода
+
+# на локальном компьютере
+git remote add origin user@my-server:/path/to/repository.git
+git push origin master
+```
+
+Добавить несколько удаленных репозиториев:
+
+```bash
+git remote add origin git@github.com:user-name/rep-name.git # добавить удаленный репозиторий origin
+git remote add backup user@my-server:/path/to/repository.git # добавить удаленный репозиторий backup
+git remote -v # посмотреть список всех связанных удаленных репозиториев
+```
+
+Список всех связанных репозиториев будет выглядеть примерно так:
+
+```
+origin  git@github.com:user-name/rep-name.git (fetch)
+origin  git@github.com:user-name/rep-name.git (push)
+backup  user@my-server:/path/to/repository.git (fetch)
+backup  user@my-server:/path/to/repository.git (push)
+```
+
+Работа с несколькими удаленными репозиториями:
+
+```bash
+# получение изменений из удаленных репозиториев
+git fetch origin # получение изменений из origin
+git fetch backup # получение изменений из backup
+
+# пуш в удаленные репозитории
+git push origin master # пуш в origin
+git push backup master # пуш в backup
+```
+
+### Группы удаленных репозиториев
+
+Добавить в конфиг:
+
+```ini
+[remote "all"]
+    url = git@github.com:user-name/rep-name.git
+    url = user@my-server:/path/to/repository.git
+```
+
+Пуш во все репозитории группы:
+
+```bash
+git push all master
 ```
 
 ## Merge Request / Pull Request
