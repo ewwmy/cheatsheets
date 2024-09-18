@@ -146,26 +146,18 @@ git remote add origin user@my-server:/path/to/repository.git
 git push origin master
 ```
 
-Добавить несколько удаленных репозиториев:
+Несколько удаленных репозиториев:
 
 ```bash
 git remote add origin git@github.com:user-name/rep-name.git # добавить удаленный репозиторий origin
 git remote add backup user@my-server:/path/to/repository.git # добавить удаленный репозиторий backup
 git remote -v # посмотреть список всех связанных удаленных репозиториев
-```
 
-Список всех связанных репозиториев будет выглядеть примерно так:
+# origin  git@github.com:user-name/rep-name.git (fetch)
+# origin  git@github.com:user-name/rep-name.git (push)
+# backup  user@my-server:/path/to/repository.git (fetch)
+# backup  user@my-server:/path/to/repository.git (push)
 
-```
-origin  git@github.com:user-name/rep-name.git (fetch)
-origin  git@github.com:user-name/rep-name.git (push)
-backup  user@my-server:/path/to/repository.git (fetch)
-backup  user@my-server:/path/to/repository.git (push)
-```
-
-Работа с несколькими удаленными репозиториями:
-
-```bash
 # получение изменений из удаленных репозиториев
 git fetch origin # получение изменений из origin
 git fetch backup # получение изменений из backup
