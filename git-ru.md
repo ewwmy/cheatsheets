@@ -124,7 +124,7 @@ git merge lost # влить ветку lost в ветку master
 git clone git@github.com:ewwmy/timelapse-tools.git . # клонировать удаленный репозиторий в текущую папку
 git remote add origin git@github.com:user-name/rep-name.git # добавить удаленный репозиторий origin для текущего локального репозитория
 git remote -v # отобразить список всех удаленных репозиториев, связанных с текущим локальным репозиторием
-git push --set-upstream origin master # запушить ветку master в удаленный репозиторий origin и установить origin/master как ветку по умолчанию для последующих пушей из ветки master; если удаленная ветка origin/master не существует, она будет создана
+git push --set-upstream origin master # запушить ветку master в удаленный репозиторий origin и установить origin/master как upstream (ветку по умолчанию) для последующих пушей из ветки master; если удаленная ветка origin/master не существует, она будет создана
 git push -u origin master # то же, что `git push --set-upstream origin master`
 git push # запушить текущую ветку в удаленный репозиторий по умолчанию (обычно origin), в ветку, установленную как upstream для текущей локальной ветки
 git push -f # запушить текущую ветку в удаленный репозиторий по умолчанию (обычно origin) с перезаписью удаленной истории коммитов (например, если был выполнен git rebase или есть конфликтующие коммиты, которые нужно перезаписать)
