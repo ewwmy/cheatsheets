@@ -820,6 +820,14 @@ const test = {
   // doesn't have its own `this` context
   arrow: () => {
     return this.prop
+  },
+  // getter
+  get someProp() {
+    return this.prop
+  },
+  // setter
+  set someProp(value) {
+    this.prop = value
   }
 }
 
@@ -1011,6 +1019,12 @@ class Rectangle extends Shape {
   
   static foo() {
     return this.info + ' about Rectangle class'
+  }
+
+  // block of static code
+  static {
+    let a = "That's"
+    this.info = a
   }
   
   constructor(width, height) {
