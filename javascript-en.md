@@ -1014,16 +1014,35 @@ class Rectangle extends Shape {
   width = null
   height = null
   modified = false
+
+  // private field, only accessible within the class
+  #privateField = 'Private field'
   
   static info = 'This is a static field'
+
+  // private static field, only accessible within the class
+  static #privateStatic = 'Private static field'
   
   static foo() {
-    return this.info + ' about Rectangle class'
+    return `Static info:
+      [Public static field]: ${this.info}
+      [Public static method]: ${this.bar()}
+      [Private static field]: ${this.#privateStatic}
+      [Private static method]: ${this.#privateFoo()}`
+  }
+
+  static bar() {
+    return 'Static method'
+  }
+
+  // private static method, only accessible within the class
+  static #privateFoo() {
+    return 'Private static method'
   }
 
   // block of static code
   static {
-    let a = "That's"
+    let a = "That's a static field (changed in a static block)"
     this.info = a
   }
   
@@ -1046,11 +1065,19 @@ class Rectangle extends Shape {
     this._title = value
     this.modified = true
   }
+
+  // private method, only accessible within the class
+  #getSecret() {
+    return 'Private method'
+  }
   
   info() {
     return `Full info:
     ${this._title} [${this._name}]:
-    	w=${this.width}, h=${this.height}, area=${this.area}`
+    	w=${this.width}, h=${this.height}, area=${this.area}
+    Some secret info:
+      -- ${this.#getSecret()} called --
+      -- ${this.#privateField} called --`
   }
 }
 
@@ -1069,6 +1096,107 @@ console.log(rect.info())
 // Full info:
 //    Square [rectangle]:
 //    	w=3, h=5, area=15
+//    Some secret info:
+//      -- Private method called --
+//      -- Private field called --
+
+console.log(Rectangle.foo())
+// Static info:
+//   [Public static field]: That's a static field (changed in a static block)
+//   [Public static method]: Static method
+//   [Private static field]: Private static field
+//   [Private static method]: Private static method
+```
+
+#### `prototype` vs `__proto__`
+
+```javascript
+class User {
+  constructor(name, birthdate) {
+    this.name = name
+    this.birthdate = birthdate
+  }
+
+  getInfo() {
+    return `User info:
+      Name: ${this.name || '[We don\'t know yet]'}
+      Birthdate: ${this.birthdate ?
+        Intl.DateTimeFormat('ru-RU').format(this.birthdate) :
+        '[We don\'t know yet]'}`
+  }
+}
+
+const user = new User('Alex', new Date('1989-11-21'))
+
+console.log(user.__proto__)
+// Object { … }
+//   constructor: class User { constructor(name, birthdate) }
+//   getInfo: function getInfo()
+//   <prototype>: Object { … }
+
+console.log(user.__proto__.constructor)
+// class User { constructor(name, birthdate) }
+//   length: 2
+//   name: "User"
+//   prototype: Object { … }
+//   <prototype>: function ()
+
+console.log(User.prototype)
+// Object { … }
+//   constructor: class User { constructor(name, birthdate) }
+//   getInfo: function getInfo()
+//   <prototype>: Object { … }
+
+console.log(user.__proto__ === User.prototype)
+// true
+
+console.log(user.__proto__.constructor === user.constructor)
+// true
+
+const user2 = new user.constructor('Max', null)
+const user3 = new user.constructor('Alena', null)
+
+console.log(user2)
+// Object { name: "Max", birthdate: null }
+//   birthdate: null
+//   name: "Max"
+//   <prototype>: Object { … }
+//     constructor: class User { constructor(name, birthdate) }
+//     getInfo: function getInfo()
+//     <prototype>: Object { … }
+
+console.log(user3)
+// Object { name: "Alena", birthdate: null }
+//   birthdate: null
+//   name: "Alena"
+//   <prototype>: Object { … }
+//     constructor: class User { constructor(name, birthdate) }
+//     getInfo: function getInfo()
+//     <prototype>: Object { … }
+
+console.log(user.constructor === user2.constructor)
+// true
+
+console.log(user2.constructor === user3.constructor)
+// true
+
+const user4 = Object.create(user) // set `user` as "parent" prototype for user4 object
+
+console.log(user4.name) // Alex
+console.log(user4.birthdate.toLocaleDateString()) // 21.11.1989
+console.log(user4.hasOwnProperty('name')) // false
+console.log(user4.hasOwnProperty('birthdate')) // false
+
+user4.name = 'Rita'
+user4.birthdate = new Date('1991-05-25')
+
+console.log(user4.name) // Rita
+console.log(user4.birthdate.toLocaleDateString()) // 25.05.1991
+console.log(user4.hasOwnProperty('name')) // true
+console.log(user4.hasOwnProperty('birthdate')) // true
+
+console.log(user.hasOwnProperty('name')) // true
+console.log(user.hasOwnProperty('birthdate')) // true
 ```
 
 #### Inheritance
