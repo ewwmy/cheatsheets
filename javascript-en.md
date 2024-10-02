@@ -1222,6 +1222,43 @@ const bar = new B()
 console.log(bar.prop) // 2
 ```
 
+##### Old-style inheritance
+
+```javascript
+const Vehicle = function(wheels) {
+  this.wheels = wheels
+}
+
+Vehicle.prototype.foo = function() {
+  console.log('foo')
+}
+
+const Car = function(name, color) {
+  Vehicle.call(this, 4) // 4 — wheels
+  this.name = name
+  this.color = color
+}
+
+Car.prototype = Object.create(Vehicle.prototype)
+
+Car.prototype.info = function() {
+  console.log(`
+    [Car info]:
+      Wheels: ${this.wheels}
+      Name: ${this.name}
+      Color: ${this.color}
+  `)
+}
+
+const car = new Car('Tesla', 'White')
+console.log(car.foo()) // foo
+console.log(car.info())
+// [Car info]:
+//   Wheels: 4
+//   Name: Tesla
+//   Color: White
+```
+
 #### Static examples
 
 ```javascript
