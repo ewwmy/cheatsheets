@@ -1240,6 +1240,7 @@ const Car = function(name, color) {
 }
 
 Car.prototype = Object.create(Vehicle.prototype)
+Car.prototype.constructor = Car
 
 Car.prototype.info = function() {
   console.log(`
