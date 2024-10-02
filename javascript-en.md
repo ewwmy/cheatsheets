@@ -1307,6 +1307,52 @@ console.log(car instanceof Car) // true
 console.log(car instanceof Vehicle) // true
 ```
 
+##### Override
+
+```javascript
+class Vehicle {
+  constructor(wheels) {
+    this.wheels = wheels
+  }
+
+  info() {
+    console.log(`[Vehicle info]:
+      Wheels: ${this.wheels}
+    `)
+  }
+}
+
+class Car extends Vehicle {
+  constructor(name, color) {
+    super(4) // 4 — wheels
+    this.name = name
+    this.color = color
+  }
+
+  info() {
+    console.log(`
+      [Car info]:
+        Wheels: ${this.wheels}
+        Name: ${this.name}
+        Color: ${this.color}
+    `)
+  }
+}
+
+const vehicle = new Vehicle(8)
+const car = new Car('Tesla', 'Purple')
+
+console.log(vehicle.info())
+// [Vehicle info]:
+//   Wheels: 8
+
+console.log(car.info())
+// [Car info]:
+//   Wheels: 4
+//   Name: Tesla
+//   Color: Purple
+```
+
 #### Static examples
 
 ```javascript
