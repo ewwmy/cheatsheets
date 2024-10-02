@@ -23,7 +23,17 @@ try {
 } finally {
   // Cleanup code (always executed)
 }
+```
 
+### `try..catch` without error parameter
+
+```javascript
+try {
+  throw new Error('some error')
+} catch {
+  // Handle the error
+  console.log('An error occured') // An error occured
+}
 ```
 
 ### Throwing Errors
