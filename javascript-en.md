@@ -1251,6 +1251,7 @@ Car.prototype.info = function() {
 }
 
 const car = new Car('Tesla', 'White')
+
 console.log(car.foo()) // foo
 console.log(car.info())
 // [Car info]:
