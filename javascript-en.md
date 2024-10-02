@@ -1222,7 +1222,7 @@ const bar = new B()
 console.log(bar.prop) // 2
 ```
 
-##### Old-style inheritance
+##### Old-style inheritance (ES5)
 
 ```javascript
 const Vehicle = function(wheels) {
@@ -1249,6 +1249,49 @@ Car.prototype.info = function() {
       Name: ${this.name}
       Color: ${this.color}
   `)
+}
+
+const car = new Car('Tesla', 'White')
+
+console.log(car.foo()) // foo
+console.log(car.info())
+// [Car info]:
+//   Wheels: 4
+//   Name: Tesla
+//   Color: White
+
+console.log(car instanceof Car) // true
+console.log(car instanceof Vehicle) // true
+```
+
+##### New-fashion inheritance (ES6+)
+
+```javascript
+class Vehicle {
+  constructor(wheels) {
+    this.wheels = wheels
+  }
+
+  foo() {
+    console.log('foo')
+  }
+}
+
+class Car extends Vehicle {
+  constructor(name, color) {
+    super(4) // 4 — wheels
+    this.name = name
+    this.color = color
+  }
+
+  info() {
+    console.log(`
+      [Car info]:
+        Wheels: ${this.wheels}
+        Name: ${this.name}
+        Color: ${this.color}
+    `)
+  }
 }
 
 const car = new Car('Tesla', 'White')
