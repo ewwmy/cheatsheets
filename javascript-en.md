@@ -1259,6 +1259,9 @@ console.log(car.info())
 //   Wheels: 4
 //   Name: Tesla
 //   Color: White
+
+console.log(car instanceof Car) // true
+console.log(car instanceof Vehicle) // true
 ```
 
 #### Static examples
