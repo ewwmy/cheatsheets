@@ -26,23 +26,31 @@ npm init -y # initialize an npm repository with default settings (will not ask a
 ## Dependencies
 
 ```bash
-npm search <keywords> # look for the packages by the provided keywords
+npm search <keyword> # look for the packages by the provided keyword
+npm search <keyword1> [keyword2] ... # look for the packages by the provided keywords
 
 npm install # install (update) all dependencies listed in `package.json` and lock their versions in `package-lock.json`
 npm i # same
 
+npm ci # restore all the dependencies from the existing `package-lock.json`
+
 npm install <package> # install (update) a specific dependency and lock its version in `package-lock.json`
 npm i <package> # same
 
-npm i -g <package> # install a specific package globally (binaries will be available everywhere if present)
-npm i -D <package> # install a specific package as a "dev" dependency (will add the dependency to the `devDependencies` section in `package.json`)
+npm i <package1> [package2] ... # install multiple packages
 
-npm ci # restore all the dependencies from the existing `package-lock.json`
+npm i -g <package> # install a specific package globally (binaries will be available everywhere if present)
+npm - --global <package> # same
+
+npm i -D <package> # install a specific package as a "dev" dependency (will add the dependency to the `devDependencies` section in `package.json`)
+npm i --save-dev <package> # same
 
 npm uninstall <package> # uninstall the package
 npm remove <package> # same
 npm un <package> # same
 npm uni <package> # same
+
+npm uninstall <package1> [package2] ... # uninstall multiple packages
 
 npm uninstall -g <package> # uninstall the package globally (will delete the package from the global scope but will not affect the local installation)
 ```
