@@ -23,7 +23,17 @@ try {
 } finally {
   // Cleanup code (always executed)
 }
+```
 
+### `try..catch` without error parameter
+
+```javascript
+try {
+  throw new Error('some error')
+} catch {
+  // Handle the error
+  console.log('An error occured') // An error occured
+}
 ```
 
 ### Throwing Errors
@@ -1220,6 +1230,137 @@ console.log(foo.prop) // 1
 
 const bar = new B()
 console.log(bar.prop) // 2
+```
+
+##### Old-style inheritance (ES5)
+
+```javascript
+const Vehicle = function(wheels) {
+  this.wheels = wheels
+}
+
+Vehicle.prototype.foo = function() {
+  console.log('foo')
+}
+
+const Car = function(name, color) {
+  Vehicle.call(this, 4) // 4 — wheels
+  this.name = name
+  this.color = color
+}
+
+Car.prototype = Object.create(Vehicle.prototype)
+Car.prototype.constructor = Car
+
+Car.prototype.info = function() {
+  console.log(`
+    [Car info]:
+      Wheels: ${this.wheels}
+      Name: ${this.name}
+      Color: ${this.color}
+  `)
+}
+
+const car = new Car('Tesla', 'White')
+
+console.log(car.foo()) // foo
+console.log(car.info())
+// [Car info]:
+//   Wheels: 4
+//   Name: Tesla
+//   Color: White
+
+console.log(car instanceof Car) // true
+console.log(car instanceof Vehicle) // true
+```
+
+##### New-fashion inheritance (ES6+)
+
+```javascript
+class Vehicle {
+  constructor(wheels) {
+    this.wheels = wheels
+  }
+
+  foo() {
+    console.log('foo')
+  }
+}
+
+class Car extends Vehicle {
+  constructor(name, color) {
+    super(4) // 4 — wheels
+    this.name = name
+    this.color = color
+  }
+
+  info() {
+    console.log(`
+      [Car info]:
+        Wheels: ${this.wheels}
+        Name: ${this.name}
+        Color: ${this.color}
+    `)
+  }
+}
+
+const car = new Car('Tesla', 'White')
+
+console.log(car.foo()) // foo
+console.log(car.info())
+// [Car info]:
+//   Wheels: 4
+//   Name: Tesla
+//   Color: White
+
+console.log(car instanceof Car) // true
+console.log(car instanceof Vehicle) // true
+```
+
+##### Override
+
+```javascript
+class Vehicle {
+  constructor(wheels) {
+    this.wheels = wheels
+  }
+
+  info() {
+    console.log(`[Vehicle info]:
+      Wheels: ${this.wheels}
+    `)
+  }
+}
+
+class Car extends Vehicle {
+  constructor(name, color) {
+    super(4) // 4 — wheels
+    this.name = name
+    this.color = color
+  }
+
+  info() {
+    console.log(`
+      [Car info]:
+        Wheels: ${this.wheels}
+        Name: ${this.name}
+        Color: ${this.color}
+    `)
+  }
+}
+
+const vehicle = new Vehicle(8)
+const car = new Car('Tesla', 'Purple')
+
+console.log(vehicle.info())
+// [Vehicle info]:
+//   Wheels: 8
+
+console.log(car.info())
+// [Car info]:
+//   Wheels: 4
+//   Name: Tesla
+//   Color: Purple
 ```
 
 #### Static examples
