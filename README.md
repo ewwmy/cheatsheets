@@ -1,8 +1,13 @@
 # Cheatsheets
 
-- [JavaScript (en)](./javascript-en.md)
-- [Git (ru)](./git-ru.md)
-- [Docker (ru)](./docker-ru.md)
+- JavaScript:
+  - [en](./javascript-en.md)
+- Git:
+  - [ru](./git-ru.md)
+- Docker:
+  - [ru](./docker-ru.md)
+- `npm`:
+  - [en](./npm-en.md)
 
 I plan to create my own cheatsheet about **Node.js**, **JavaScript**, **TypeScript** and perhaps some other languages, runtimes, frameworks, and technologies.
 
