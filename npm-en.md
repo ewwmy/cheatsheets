@@ -26,33 +26,28 @@ npm init -y # initialize an npm repository with default settings (will not ask a
 ## Dependencies
 
 ```bash
-npm search <keyword> # look for the packages by the provided keyword
-npm search <keyword1> [keyword2] ... # look for the packages by the provided keywords
+npm search <keywords> # search for packages by the provided keywords
 
-npm install # install (update) all dependencies listed in `package.json` and lock their versions in `package-lock.json`
-npm i # same
+npm install # install (or update) all the packages listed in `package.json` and lock their versions in `package-lock.json`
+npm i # same as above
 
-npm ci # restore all the dependencies from the existing `package-lock.json`
+npm ci # install (restore) all the packages with their exact versions from the existing `package-lock.json`
 
-npm install <package> # install (update) a specific dependency and lock its version in `package-lock.json`
-npm i <package> # same
+npm install <packages> # install (or update) specific packages and lock their versions in `package-lock.json` (will add new dependencies to the `dependencies` section in `package.json`)
+npm i <packages> # same as above
 
-npm i <package1> [package2] ... # install multiple packages
+npm i -D <packages> # install (or update) specific packages as "dev" dependencies and lock their versions in `package-lock.json` (will add new dependencies to the `devDependencies` section in `package.json`)
+npm i --save-dev <packages> # same as above
 
-npm i -g <package> # install a specific package globally (binaries will be available everywhere if present)
-npm i --global <package> # same
+npm i -g <packages> # install (or update) specific packages globally (binaries will be available everywhere if present)
+npm i --global <packages> # same as above
 
-npm i -D <package> # install a specific package as a "dev" dependency (will add the dependency to the `devDependencies` section in `package.json`)
-npm i --save-dev <package> # same
+npm uninstall <packages> # uninstall specific packages and lock the changes in `package-lock.json` (will remove listed dependencies from the `package.json`)
+npm remove <packages> # same as above
+npm un <packages> # same as above
+npm uni <packages> # same as above
 
-npm uninstall <package> # uninstall the package
-npm remove <package> # same
-npm un <package> # same
-npm uni <package> # same
-
-npm uninstall <package1> [package2] ... # uninstall multiple packages
-
-npm uninstall -g <package> # uninstall the package globally (will delete the package from the global scope but will not affect the local installation)
+npm uninstall -g <packages> # uninstall specific packages globally (will delete the packages from the global scope but will not affect the local installation)
 ```
 
 ## Scripts
