@@ -14,40 +14,40 @@
 node_modules/
 ```
 
-> You should **not** ignore `package-lock.json`.
+> **Make sure** you do **not** ignore `package-lock.json`.
 
 ## Initialize
 
 ```bash
-npm init # initialize npm repository with specifying the settings in interactive mode
-npm init -y # initialize npm repository without specifying the settings (all by default)
+npm init # initialize an npm repository with the settings specified in interactive mode
+npm init -y # initialize an npm repository with default settings (will not ask anything)
 ```
 
 ## Dependencies
 
 ```bash
-npm install # install (update) all the dependencies listed in `package.json` and fix the versions in `package-lock.json`
+npm install # install (update) all dependencies listed in `package.json` and lock their versions in `package-lock.json`
 npm i # same
 
-npm install <package> # install (update) a certain dependency and fix the version in `package-lock.json`
+npm install <package> # install (update) a specific dependency and lock its version in `package-lock.json`
 npm i <package> # same
 
-npm i -g <package> # install a certain package globally (binaries will be available everywhere if present)
-npm i -D <package> # install a certain package as "dev" dependency (will add the dependency to `devDependencies` section in `package.json`)
+npm i -g <package> # install a specific package globally (binaries will be available everywhere if present)
+npm i -D <package> # install a specific package as a "dev" dependency (will add the dependency to the `devDependencies` section in `package.json`)
 
-npm ci # restore all the dependencies from existing `package-lock.json`
+npm ci # restore all the dependencies from the existing `package-lock.json`
 
 npm uninstall <package> # uninstall the package
 npm remove <package> # same
 npm un <package> # same
 npm uni <package> # same
 
-npm uninstall -g <package> # uninstall the package globally (will delete the package from global scope but will not affect if locally installed)
+npm uninstall -g <package> # uninstall the package globally (will delete the package from the global scope but will not affect the local installation)
 ```
 
 ## Scripts
 
-> Scripts are aliases in `package.json` which can be used to build, test, lint project or do any other operations by performing a command-line described under the alias.
+> Scripts are aliases in `package.json` that can be used to build, test, lint the project, or perform any other operations by running the command-line instructions described under the alias.
 
 ```json
 {
@@ -60,32 +60,32 @@ npm uninstall -g <package> # uninstall the package globally (will delete the pac
 ```
 
 ```bash
-npm run start # will perform `node app.js`
+npm run start # will execute `node app.js`
 ```
 
 ## Cache
 
-> Cache is stored in `~/.npm` directory.
+> Cache is stored in the `~/.npm` directory.
 
-When a dependency is required to install it will be looked in cache first and will be copied from there if found.
+When a dependency needs to be installed, it will be looked up in the cache first and will be copied from there if found.
 
 ```bash
-npm cache verify # check for possible problems with cache
-npm cache clean # clean cache totally (might be unavailable without --force option)
-npm cache clean --force # clean cache totally
+npm cache verify # check for possible problems with the cache
+npm cache clean # clean the cache completely (might be unavailable without the `--force` option)
+npm cache clean --force # clean the cache completely
 ```
 
 ## Security
 
 ```bash
-npm audit # check for possible security problems
-npm audit fix # try to fix security problems without updating major versions of the dependencies
-npm audit fix --force # fix security problems by updating the dependencies even if they have breaking changes
+npm audit # check for possible security issues
+npm audit fix # try to fix security issues without updating major versions of the dependencies
+npm audit fix --force # fix security issues by updating the dependencies even if they have breaking changes
 ```
 
 ## `node_modules`
 
-> Directory tree where the local dependencides are stored. The structure is flat even if the packages are actually nested:
+> Directory tree where local dependencides are stored. The structure is flat even if the packages are actually nested:
 
 ```
 node_modules/
@@ -97,7 +97,7 @@ node_modules/
 
 ### `node_modules/.bin`
 
-> Directory where the binaries for the local dependencies are stored. They can be used in `scripts` section of `package.json`:
+> Directory where the binaries for local dependencies are stored. They can be used in the `scripts` section of `package.json`:
 
 ```json
 {
