@@ -26,6 +26,8 @@ npm init -y # initialize an npm repository with default settings (will not ask a
 ## Dependencies
 
 ```bash
+npm search <keywords> # look for the packages by the provided keywords
+
 npm install # install (update) all dependencies listed in `package.json` and lock their versions in `package-lock.json`
 npm i # same
 
@@ -65,7 +67,7 @@ npm run start # will execute `node app.js`
 
 ## Cache
 
-> Cache is stored in the `~/.npm` directory.
+> Cache is stored in the `~/.npm` directory, namely in `~/.npm/_cacache`.
 
 When a dependency needs to be installed, it will be looked up in the cache first and will be copied from there if found.
 
