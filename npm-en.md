@@ -40,7 +40,7 @@ npm i <package> # same
 npm i <package1> [package2] ... # install multiple packages
 
 npm i -g <package> # install a specific package globally (binaries will be available everywhere if present)
-npm - --global <package> # same
+npm i --global <package> # same
 
 npm i -D <package> # install a specific package as a "dev" dependency (will add the dependency to the `devDependencies` section in `package.json`)
 npm i --save-dev <package> # same
