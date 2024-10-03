@@ -47,7 +47,7 @@ npm uninstall -g <package> # uninstall the package globally (will delete the pac
 
 ## Scripts
 
-> Scripts are aliases in `package.json` which can be used to build, test, lint project or do any other operations by performing a command-line under the alias.
+> Scripts are aliases in `package.json` which can be used to build, test, lint project or do any other operations by performing a command-line described under the alias.
 
 ```json
 {
