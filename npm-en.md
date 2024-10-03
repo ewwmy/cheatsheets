@@ -28,19 +28,27 @@ npm init -y # initialize an npm repository with default settings (will not ask a
 ```bash
 npm search <keywords> # search for packages by the provided keywords
 
-npm install # install (or update) all the packages listed in `package.json` and lock their versions in `package-lock.json`
+npm install # install (or update) all the packages listed in `package.json` according to the version rules described in `package.json` and lock their updated versions in `package-lock.json`
 npm i # same as above
 
 npm ci # install (restore) all the packages with their exact versions from the existing `package-lock.json`
 
-npm install <packages> # install (or update) specific packages and lock their versions in `package-lock.json` (will add new dependencies to the `dependencies` section in `package.json`)
+npm install <packages> # install (or update) specific packages even if they're not listed in `package.json` and lock their updated versions in `package-lock.json` (will add new dependencies to the `dependencies` section in `package.json`)
 npm i <packages> # same as above
+
+npm i <package@version> # install (or upgrade/downgrade to) specific version of the package and lock its updated version in `package-lock.json` (will also add or update the dependency in `package.json` according to the exact updated version)
 
 npm i -D <packages> # install (or update) specific packages as "dev" dependencies and lock their versions in `package-lock.json` (will add new dependencies to the `devDependencies` section in `package.json`)
 npm i --save-dev <packages> # same as above
 
 npm i -g <packages> # install (or update) specific packages globally (binaries will be available everywhere if present)
 npm i --global <packages> # same as above
+
+npm update # update (or install) all the packages listed in `package.json` up to their newest versions according to the version rules described in `package.json` and lock their updated versions in `package-lock.json`
+npm upgrade # same as above
+npm up # same as above
+
+npm update <packages> # update (or install) specific packages if they're listed in `package.json` up to their newest versions according to the version rules described in `package.json` and lock their updated versions in `package-lock.json` 
 
 npm uninstall <packages> # uninstall specific packages and lock the changes in `package-lock.json` (will remove listed dependencies from the `package.json`)
 npm remove <packages> # same as above
