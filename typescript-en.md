@@ -335,9 +335,11 @@ type ReadonlyRecord = readonly [number, string]
 
 const skills: ReadonlySkills = ['html', 'css', 'javascript']
 skills[0] = 'abc' // ❌
+skills.push('typescript') // ❌
 
 const data: ReadonlyRecord = [1, 'user']
 data[0] = 5 // ❌
+data.push('something else') // ❌
 ```
 
 ## Classes
