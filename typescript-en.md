@@ -463,11 +463,80 @@ let method: 'get' | 'post' = 'get'
 method = 'patch' // ❌
 ```
 
-### Intersection Types
+#### Type Assertion
+
+```typescript
+let method: 'get' | 'post' = 'get'
+let myMethod = 'post'
+
+method = myMethod // ❌
+
+// type assertion can help here
+method = myMethod as 'post' // ✅
+```
+
+> Be careful with type assertions. It should **not** be used to avoid type-checking.
 
 ### Type Aliases
 
+```typescript
+type HttpMethod = 'get' | 'post'
+type HttpExtendedMethod = HttpMethod | 'put' | 'patch' | 'delete'
+// 'get' | 'post' | 'put' | 'patch' | 'delete'
+
+type MyString = string
+type MyNumber = number
+
+type MyObjectOne = {
+  a: number
+}
+
+type MyObjectTwo = {
+  b: number
+}
+
+type MyAnyObject = MyObjectOne | MyObjectTwo
+// { a: number } | { b: number }
+
+let method: HttpExtendedMethod = 'post'
+method = 'patch' // ✅
+
+let obj: MyAnyObject = {
+  b: 5,
+} // ✅
+```
+
+#### Intersection Types
+
+```typescript
+type User = {
+  name: string
+  age: number
+}
+
+type Role = {
+  role: string
+}
+
+type UserExtended = User & Role
+// {
+//   name: string
+//   age: number
+//   role: string
+// }
+
+const user: UserExtended = {
+  name: 'Alex',
+  age: 33,
+  role: 'admin',
+}
+```
+
+> You should avoid intersection of two object types which have the same fields.
+
 ### Interfaces
+
+
 
 ### `void`
 
