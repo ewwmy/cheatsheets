@@ -211,6 +211,16 @@ let user: User = { id: 1, name: "Alice" };
 
 > Don't use `any` type! If you use `any` type you don't need TypeScript.
 
+Typescript | JavaScript
+---|---
+`number` | `number`
+`string` | `string`
+`boolean` | `boolean`
+`object` | `object`
+Array | Array
+Tuple | Array
+Enum | ?
+
 ### Object types
 
 ```typescript
@@ -340,6 +350,28 @@ skills.push('typescript') // ❌
 const data: ReadonlyRecord = [1, 'user']
 data[0] = 5 // ❌
 data.push('something else') // ❌
+```
+
+### Enums
+
+```typescript
+enum StatusCode {
+  SUCCESS, // 0
+  IN_PROCESS, // 1
+  FAILED, // 2
+}
+
+enum Roles {
+  User = 3,
+  Manager, // 4
+  Admin, // 5
+}
+
+enum TextStatusCode {
+  Success = 'success', // 'success'
+  InProcess = 'process', // 'process'
+  Failed = 'error', // 'error'
+}
 ```
 
 ## Classes
