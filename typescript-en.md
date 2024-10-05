@@ -307,7 +307,11 @@ Unlimited tuples:
 
 ```typescript
 type Tuple = [number, string, ...boolean[]]
+
 const tuple: Tuple = [1, 'fixed', true, false, false]
+const anotherTuple: Tuple = [2, 'fixed'] // ✅
+
+// destructuring
 const [id, itemStatus, flag1, ...otherFlags] = tuple
 
 console.log(id) // 1
@@ -316,7 +320,25 @@ console.log(flag1) // true
 console.log(otherFlags) // [false, false]
 ```
 
+### Readonly
 
+```typescript
+const numConst = 5 // type: 5
+const strConst = 'abc' // type: 'abc'
+let numVar = 5 // type: number
+let strVar = 'abc' // type: string
+```
+
+```typescript
+type ReadonlySkills = readonly string[]
+type ReadonlyRecord = readonly [number, string]
+
+const skills: ReadonlySkills = ['html', 'css', 'javascript']
+skills[0] = 'abc' // ❌
+
+const data: ReadonlyRecord = [1, 'user']
+data[0] = 5 // ❌
+```
 
 ## Classes
 
