@@ -219,7 +219,7 @@ Typescript | JavaScript
 `object` | `object`
 Array | Array
 Tuple | Array
-Enum | ?
+Enum | `function` \| `const` value
 
 ### Object types
 
@@ -376,6 +376,24 @@ enum TaskStatus {
 
 const taskStatus: TaskStatus = TaskStatus.Done // 'completed'
 ```
+
+Constant Enums:
+
+```typescript
+enum StatusCode {
+  Success,
+  InProcess,
+  Failed,
+} // will be compiled into `function` in javascript
+
+const enum ConstStatusCode {
+  Success,
+  InProcess,
+  Failed,
+} // will be compiled into `const` value in javascript
+```
+
+> Heterogeneous enums are not recommended.
 
 ## Classes
 
