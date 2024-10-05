@@ -209,6 +209,82 @@ let user: User = { id: 1, name: "Alice" };
 
 ## Types
 
+> Don't use `any` type! If you use `any` type you don't need TypeScript.
+
+### Object types
+
+```typescript
+type User = {
+  firstname: string
+  age: number
+}
+
+const getAge = (user: User): number => {
+    return user.age
+}
+
+const user = {
+  firstname: 'Alex',
+  surname: 'Surname',
+  age: 33,
+  skills: ['html', 'css'],
+}
+
+console.log(
+  getAge(user)
+) // 33
+```
+
+### Arrays
+
+```typescript
+const skills: string[] = ['html', 'css', 'javascript']
+const ids: number[] = [1, 2, 3]
+
+type User = {
+  name: string
+}
+
+const user1: User = {
+  name: 'Alex',
+}
+
+const user2: User = {
+  name: 'Elena'
+}
+
+const users: User[] = [user1, user2]
+```
+
+### Tuples (Кортежи)
+
+> Be sure you don't mess up `type[]` (which is `Array` of `type` elements) and `[type]` (which is `Array` of the only one element of `type`):
+
+```typescript
+type User = {
+  name: string
+}
+
+type Users = User[] // array of objects of the `User` type
+type OnlyUser = [User] // array of the only one object of the `User` type (even though you can add new elements by calling `push`, for example)
+```
+
+Tuple examples:
+
+```typescript
+type User = {
+  name: string
+}
+
+type Tuple1 = [number]
+type Tuple2 = [number, string]
+type Tuple3 = [number, string, User]
+
+const tuple1: Tuple1 = [1]
+const tuple2: Tuple2 = [3, 'three']
+const tuple3: Tuple3 = [35, 'user', { name: 'Alex' }]
+```
+
 
 
 ## Classes
