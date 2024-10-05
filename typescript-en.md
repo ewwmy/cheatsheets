@@ -362,16 +362,19 @@ enum StatusCode {
 }
 
 enum Roles {
-  User = 3,
+  User = 3, // 3
   Manager, // 4
   Admin, // 5
 }
 
-enum TextStatusCode {
-  Success = 'success', // 'success'
+enum TaskStatus {
+  Planned = 'planned', // 'planned'
   InProcess = 'process', // 'process'
-  Failed = 'error', // 'error'
+  Done = 'completed', // 'completed'
+  Cancelled = 'cancel' // 'cancel'
 }
+
+const taskStatus: TaskStatus = TaskStatus.Done // 'completed'
 ```
 
 ## Classes
