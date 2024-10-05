@@ -283,6 +283,37 @@ type Tuple3 = [number, string, User]
 const tuple1: Tuple1 = [1]
 const tuple2: Tuple2 = [3, 'three']
 const tuple3: Tuple3 = [35, 'user', { name: 'Alex' }]
+
+// destructuring
+const [id, role, user] = tuple3
+console.log(id) // 35
+console.log(role) // 'user'
+console.log(user) // { name: 'Alex' }
+```
+
+Adding and accessing elements:
+
+```typescript
+type Tuple = [string]
+
+const tuple: Tuple = ['one']
+
+tuple[0] // ✅
+tuple.push('something else') // ✅
+tuple[1] // ❌
+```
+
+Unlimited tuples:
+
+```typescript
+type Tuple = [number, string, ...boolean[]]
+const tuple: Tuple = [1, 'fixed', true, false, false]
+const [id, itemStatus, flag1, ...otherFlags] = tuple
+
+console.log(id) // 1
+console.log(itemStatus) // 'fixed'
+console.log(flag1) // true
+console.log(otherFlags) // [false, false]
 ```
 
 
