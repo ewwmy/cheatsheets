@@ -395,6 +395,30 @@ const enum ConstStatusCode {
 
 > Heterogeneous enums are not recommended.
 
+## Advanced Types
+
+### Union Types
+
+### Literal Types
+
+### Intersection Types
+
+### Type Aliases
+
+### Interfaces
+
+### `void`
+
+### `unknown`
+
+#### `unknown` vs `any`
+
+### `never`
+
+### `null`
+
+### `undefined`
+
 ## Classes
 
 ### Overload
