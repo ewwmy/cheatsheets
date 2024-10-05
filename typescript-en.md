@@ -371,7 +371,7 @@ enum TaskStatus {
   Planned = 'planned', // 'planned'
   InProcess = 'process', // 'process'
   Done = 'completed', // 'completed'
-  Cancelled = 'cancel' // 'cancel'
+  Canceled = 'canceled' // 'canceled'
 }
 
 const taskStatus: TaskStatus = TaskStatus.Done // 'completed'
