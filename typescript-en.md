@@ -333,13 +333,6 @@ console.log(otherFlags) // [false, false]
 ### Readonly
 
 ```typescript
-const numConst = 5 // type: 5
-const strConst = 'abc' // type: 'abc'
-let numVar = 5 // type: number
-let strVar = 'abc' // type: string
-```
-
-```typescript
 type ReadonlySkills = readonly string[]
 type ReadonlyRecord = readonly [number, string]
 
@@ -399,7 +392,76 @@ const enum ConstStatusCode {
 
 ### Union Types
 
+```typescript
+let id: number | string = '123'
+id = 123
+
+const arr: (number | string)[] = [1, 'user'] // (number | string)[]
+
+const multitype: number | string | boolean = true
+```
+
+#### Type Narrowing
+
+```typescript
+const logData = (data: boolean | number | string) => {
+  if (typeof data === 'string') {
+    console.log(
+      data.trim() // `data` has only `string` type here (narrowed to `string`)
+    )
+  }
+  else if (typeof data === 'number') {
+    console.log(
+      data.toFixed(2) // `data` has only `number` type here (narrowed to `number`)
+    )
+  } else {
+    console.log(data) // `data` has only `boolean` type here (narrowed to `boolean`)
+  }
+}
+
+const logError = (error: string | string[]) => {
+  if (Array.isArray(error)) { // narrow `error` to array of `string` (`string[]`)
+    console.log(
+      error.join(' ') // `error` is narrowed to array of `string` (`string[]`)
+    )
+  } else { // `error` can be only `string` here
+    console.log(
+      error.trim() // `error` is narrowed to `string`
+    )
+  }
+}
+
+const logObject = (obj: { a: number } | { b: number }) => {
+  if ('a' in obj) {
+    console.log(obj.a)
+  } else {
+    console.log(obj.b)
+  }
+}
+```
+
 ### Literal Types
+
+```typescript
+// consts are always inferred to literal types
+const numConst = 5 // type: 5
+const strConst = 'abc' // type: 'abc'
+
+let numVar = 5 // type: number
+let strVar = 'abc' // type: string
+
+// manually defined literal type for a variable
+let numFive: 5 = 5 // type: 5
+numFive = 10 // ❌
+
+// manually defined literal type for a variable
+let strAbc: 'abc' = 'abc' // type: 'abc'
+strAbc = 'def' // ❌
+
+// literal type with union
+let method: 'get' | 'post' = 'get'
+method = 'patch' // ❌
+```
 
 ### Intersection Types
 
