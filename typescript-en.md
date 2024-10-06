@@ -984,6 +984,13 @@ try {
 }
 ```
 
+#### Intersection and union with `unknown`
+
+```typescript
+type UnknownOrNumber = unknown | number // unknown
+type UnknownAndNumber = unknown & number // number
+```
+
 ### `never`
 
 ### `null`
