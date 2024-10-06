@@ -779,6 +779,69 @@ type User = {
 } // ❌
 ```
 
+### Optional
+
+Optional object properties:
+
+```typescript
+interface User {
+  name: string
+  age?: number // ≠ age: number | undefined ❗
+}
+
+const user: User = {
+  name: 'Alex',
+} // ✅
+```
+
+Optional function or method arguments:
+
+```typescript
+const multiply = (a: number, b?: number): number => { // equivalent to (a: number, b: number | undefined) ✅
+  if (!b) {
+    return a * a
+  }
+  return a * b
+}
+
+console.log(multiply(5, 2)) // 10
+console.log(multiply(5)) // 25
+```
+
+Default function or method arguments:
+
+```typescript
+const multiply = (a: number, b: number = 10): number => a * b
+
+console.log(multiply(3, 3)) // 9
+console.log(multiply(5)) // 50
+```
+
+Optional chaining:
+
+```typescript
+type User = {
+  name?: string
+}
+
+const user: User = {}
+
+// safely access the `name` property of `user` if `user` is `null` or `undefined`, returning `undefined` instead of throwing an error
+console.log(user?.name) // undefined
+
+// forcefully access the `name` property of `user`, assuming we know `user` is neither `null` nor `undefined`
+console.log(user!.name) // undefined
+```
+
+Nullish coalescing:
+
+```typescript
+const str: string | null = null
+
+// returns `str` if it's neither `null` nor `undefined` otherwise returns 'something else'
+console.log(str ?? 'something else') // 'something else'
+```
+
 ### `void`
 
 ### `unknown`
