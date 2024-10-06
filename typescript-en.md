@@ -506,6 +506,63 @@ let obj: MyAnyObject = {
 } // ✅
 ```
 
+#### Object types
+
+✅ Either with nothing after each field definition:
+
+```typescript
+type User = {
+  name: string
+  age: number
+  skills: string[]
+}
+```
+
+✅ or with comma:
+
+```typescript
+type User = {
+  name: string,
+  age: number,
+  skills: string[],
+}
+```
+
+✅ or with semicolon:
+
+```typescript
+type User = {
+  name: string;
+  age: number;
+  skills: string[];
+}
+```
+
+are valid.
+
+Object types with methods:
+
+```typescript
+type User = {
+  name: string
+  age: number
+  role: string
+
+  log: () => string
+}
+
+const user: User = {
+  name: 'Alex',
+  age: 33,
+  role: 'admin',
+  log() {
+    return `${this.name}: ${this.age}`
+  },
+}
+
+console.log(user.log()) // 'Alex: 33'
+```
+
 #### Intersection Types
 
 ```typescript
@@ -536,7 +593,107 @@ const user: UserExtended = {
 
 ### Interfaces
 
+✅ Either with nothing after each field definition:
 
+```typescript
+interface User {
+  name: string
+  age: number
+  skills: string[]
+}
+```
+
+✅ or with comma:
+
+```typescript
+interface User {
+  name: string,
+  age: number,
+  skills: string[],
+}
+```
+
+✅ or with semicolon:
+
+```typescript
+interface User {
+  name: string;
+  age: number;
+  skills: string[];
+}
+```
+
+are valid.
+
+Interface extension:
+
+```typescript
+interface User {
+  name: string
+  age: number
+  skills: string[]
+}
+
+interface UserExtended extends User {
+  role: string
+}
+
+const user: UserExtended = {
+  name: 'Alex',
+  age: 33,
+  skills: ['javascript', 'typescript'],
+  role: 'admin',
+}
+```
+
+Multiple interface extension:
+
+```typescript
+interface User {
+  name: string
+  age: number
+  skills: string[]
+}
+
+interface Role {
+  role: string
+}
+
+interface UserExtended extends User, Role {
+  createdAt: Date
+}
+
+const user: UserExtended = {
+  name: 'Alex',
+  age: 33,
+  skills: ['javascript', 'typescript'],
+  role: 'admin',
+  createdAt: new Date(),
+}
+```
+
+Interfaces with methods:
+
+```typescript
+interface User {
+  name: string
+  age: number
+  role: string
+
+  log: () => string
+}
+
+const user: User = {
+  name: 'Alex',
+  age: 33,
+  role: 'admin',
+  log() {
+    return `${this.name}: ${this.age}`
+  },
+}
+
+console.log(user.log()) // 'Alex: 33'
+```
 
 ### `void`
 
