@@ -741,7 +741,12 @@ const obj: MyDict = {
 
 > Main difference between interfaces and types is that **types can be intersected and unioned** with any other type or interface but **interfaces can't**.
 
+Only types can be used to describe primitives:
 
+```typescript
+type MyNumber = number
+type MyNumberOrString = number | string
+```
 
 Interfaces with the same name will be merged:
 
