@@ -932,7 +932,45 @@ console.log(user)
 
 ### `unknown`
 
-#### `unknown` vs `any`
+`unknown` is used when we don't know what's in there but still want to have strict type-checking. **It should be narrowed later.**
+
+> `unknown` must be used instead of `any`!
+
+```typescript
+let outer: unknown
+
+outer = true // ✅
+outer = 1 // ✅
+outer = 'something' // ✅
+
+let inner: string = outer // ❌
+```
+
+vs
+
+```typescript
+let outer: any
+
+outer = true // ✅
+outer = 1 // ✅
+outer = 'something' // ✅
+
+let inner: string = outer // ✅❗
+```
+
+#### Narrowing `unknown`
+
+```typescript
+const processOuter = (value: unknown): void => {
+  if (typeof value === 'number') {
+    console.log(value.toFixed(2)) // `value` is narrowed to `number`
+  } else if (typeof value === 'string') {
+    console.log(value.trim()) // `value` is narrowed to `string`
+  } else {
+    console.log(value) // `value` remains `unknown` here
+  }
+}
+```
 
 ### `never`
 
