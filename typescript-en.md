@@ -885,6 +885,51 @@ const valNothingUndef = funcNothingUndef() // undefined
 const valNothing = funcNothing() // void
 ```
 
+Can be used in function types:
+
+```typescript
+type VoidFunc = () => void
+
+const funcVoidTyped: VoidFunc = () => {
+    return 'something' // ✅
+}
+
+const valVoidTyped = funcVoidTyped() // void
+
+const funcVoidUntyped = (): void => {
+    return 'something' // ❌
+}
+```
+
+> In case a function is defined by type alias which returns `void` type it can actually return any value.
+
+```typescript
+const skills = ['javascript', 'typescript', 'devops']
+
+type User = {
+    name: string
+    skills: string[]
+}
+
+const user: User = {
+    name: 'Alex',
+    skills: [],
+}
+
+// returning `void` type in the signature of the callback in `forEach` provides compatibility with every type of value can be returned there
+skills.forEach(skill => user.skills.push(skill)) // callback implicitly returns `void`
+
+console.log(user)
+// {
+//   "name": "Alex",
+//   "skills": [
+//     "javascript",
+//     "typescript",
+//     "devops"
+//   ]
+// }
+```
+
 ### `unknown`
 
 #### `unknown` vs `any`
