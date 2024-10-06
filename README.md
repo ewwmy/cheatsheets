@@ -1,6 +1,7 @@
 # Cheatsheets
 
 - JavaScript [en](./javascript-en.md)
+- TypeScript [en](./typescript-en.md)
 - `npm` [en](./npm-en.md)
 - Git [ru](./git-ru.md)
 - Docker [ru](./docker-ru.md)
