@@ -972,6 +972,18 @@ const processOuter = (value: unknown): void => {
 }
 ```
 
+#### Usage in Error Handling
+
+```typescript
+try {
+  throw new Error('Something went wrong')
+} catch (err) { // `err` is `unknown` and should be narrowed
+  if (err instanceof Error) {
+    console.log(`Error: ${err.message}`) // 'Error: Something went wrong'
+  }
+}
+```
+
 ### `never`
 
 ### `null`
