@@ -695,6 +695,85 @@ const user: User = {
 console.log(user.log()) // 'Alex: 33'
 ```
 
+### Index properties
+
+```typescript
+type TWithIndex = {
+  name: string
+  [key: number]: string
+}
+
+interface IWithIndex {
+  name: string
+  [key: number]: string
+}
+
+const obj1: TWithIndex = {
+  name: 'something',
+  1: 'one',
+  2: 'two',
+  3: 'three',
+}
+
+const obj2: IWithIndex = {
+  name: 'something',
+  1: 'one',
+  2: 'two',
+  3: 'three',
+}
+```
+
+Strings as keys are also allowed:
+
+```typescript
+type MyDict = {
+  [key: string]: string
+}
+
+const obj: MyDict = {
+  '1': 'one',
+  '2': 'two',
+  '3': 'three',
+}
+```
+
+### Interfaces vs Types
+
+> Main difference between interfaces and types is that **types can be intersected and unioned** with any other type or interface but **interfaces can't**.
+
+
+
+Interfaces with the same name will be merged:
+
+```typescript
+interface User {
+  name: string
+}
+
+interface User {
+  age: number
+}
+
+const user: User = {
+  name: 'Alex',
+  age: 33,
+}
+```
+
+> It's a good way to expand external functionality but should be avoided among your own code.
+
+Types can't be merged that way:
+
+```typescript
+type User = {
+  name: string
+}
+
+type User = {
+  age: number
+} // ❌
+```
+
 ### `void`
 
 ### `unknown`
