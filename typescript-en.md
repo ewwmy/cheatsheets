@@ -993,6 +993,52 @@ type UnknownAndNumber = unknown & number // number
 
 ### `never`
 
+Used when we never reach any value, for example, when a function only throws an error and never returns anything:
+
+```typescript
+const throwError = (): never => {
+  throw new Error('An error occured')
+}
+```
+
+It's also useful to mark a block of the code that is never reached but can be potentially reached after extending functionality:
+
+```typescript
+type PaymentAction = 'checkout' | 'refund'
+
+const processAction = (action: PaymentAction): void => {
+  switch (action) {
+    case 'checkout':
+      // `action` is narrowed to 'checkout'
+      break
+    case 'refund':
+      // `action` is narrowed to 'refund'
+      break
+    default:
+      // `action` is narrowed to `never`
+      const _: never = action // ✅ will be never reached
+      throw new Error('Not yet available')
+  }
+}
+
+type PaymentActionExtended = 'checkout' | 'refund' | 'reject'
+
+const processActionExtended = (action: PaymentActionExtended): void => {
+  switch (action) {
+    case 'checkout':
+      // `action` is narrowed to 'checkout'
+      break
+    case 'refund':
+      // `action` is narrowed to 'refund'
+      break
+    default:
+      // `action` is narrowed to 'reject' here
+      const _: never = action // ❌ will cauase compiler error so we need to implement 'reject' case
+      throw new Error('Not yet available')
+  }
+}
+```
+
 ### `null`
 
 ### `undefined`
