@@ -876,11 +876,13 @@ const funcUndefined = (): undefined => {
   return undefined // can only return `undefined` or nothing
 }
 
-const funcNone = (): undefined => {} // ✅
+const funcNothingUndef = (): undefined => {} // ✅
+const funcNothing = () => {} // ✅ returns `void` type implicitly
 
 const valVoid = funcVoid() // void
 const valUndefined = funcUndefined() // undefined
-const valNone = funcNone() // undefined
+const valNothingUndef = funcNothingUndef() // undefined
+const valNothing = funcNothing() // void
 ```
 
 ### `unknown`
