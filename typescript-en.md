@@ -506,6 +506,29 @@ let obj: MyAnyObject = {
 } // ✅
 ```
 
+#### Function Types
+
+```typescript
+type User = {
+  name: string
+  age: number
+}
+
+// function type definition
+type MyFunc = (name: string, age: number) => User
+
+// function type usage
+const createUser: MyFunc = (name, age) => {
+  return {
+    name,
+    age,
+  }
+}
+
+const user = createUser('Alex', 33)
+console.log(user) // { name: 'Alex', age: 33 }
+```
+
 #### Object types
 
 ✅ Either with nothing after each field definition:
@@ -843,6 +866,22 @@ console.log(str ?? 'something else') // 'something else'
 ```
 
 ### `void`
+
+```typescript
+const funcVoid = (): void => {
+  console.log('something') // must not return anything
+}
+
+const funcUndefined = (): undefined => {
+  return undefined // can only return `undefined` or nothing
+}
+
+const funcNone = (): undefined => {} // ✅
+
+const valVoid = funcVoid() // void
+const valUndefined = funcUndefined() // undefined
+const valNone = funcNone() // undefined
+```
 
 ### `unknown`
 
