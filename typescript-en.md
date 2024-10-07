@@ -1260,3 +1260,36 @@ const user2 = new User('Alex') // User { name: 'Alex', age: undefined }
 const user3 = new User('Elena', 33) // User { name: 'Elena', age: 33 }
 ```
 
+Extended example:
+
+```typescript
+class User {
+  skills: string[]
+
+  addSkill(skill: string): void
+  addSkill(skills: string[]): void
+  addSkill(skillOrSkills: string | string[]): void {
+    if (typeof skillOrSkills === 'string')
+      this.skills.push(skillOrSkills)
+    else
+      this.skills.concat(skillOrSkills)
+  }
+}
+```
+
+> Functions can be overloaded as well.
+
+```typescript
+function decorateLog(message: string): string
+function decorateLog(message: number): number
+function decorateLog(message: number | string): number | string {
+  if (typeof message === 'string')
+    return `[LOG]: ${message.trim()}`
+  else
+    return `[LOG]: ${message.toFixed(2)}`
+}
+
+console.log(decorateLog('  abc ')) // "[LOG]: abc" 
+console.log(decorateLog(123.456789)) // "[LOG]: 123.46"
+```
+
