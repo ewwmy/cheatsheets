@@ -1311,3 +1311,42 @@ class User {
   }
 }
 ```
+
+### `implements`
+
+```typescript
+interface ISwitchable {
+  isOn: boolean
+  turnOn(): void
+  turnOff(): void
+}
+
+interface IDimmable {
+  brightness: number
+  setBrightness(level: number): void
+}
+
+class SmartLight implements ISwitchable, IDimmable {
+  isOn: boolean = false
+  brightness: number = 0
+
+  turnOn(): void {
+    this.isOn = true
+    this.brightness = 100
+  }
+
+  turnOff(): void {
+    this.isOn = false
+    this.brightness = 0
+  }
+
+  setBrightness(level: string | number): void {
+    if (typeof level === 'string') {
+      this.brightness = parseInt(level)
+    } else {
+      this.brightness = level
+    }
+  }
+}
+```
+
