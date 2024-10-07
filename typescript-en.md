@@ -1168,31 +1168,51 @@ obj.name = 'Alex' // now we are sure that `obj` is `User` and has the property `
 
 ## Classes
 
+### Classes Overview
+
+```typescript
+class User {
+  name: string // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+
+  constructor(name: string) {
+    this.name = name
+  }
+}
+
+const user = new User('Alex')
+```
+
 ### Overload
 
 ```typescript
 class User {
-  name: string // need to set `"strictPropertyInitialization": false` in `tsconfig.json`
-  age: number // need to set `"strictPropertyInitialization": false` in `tsconfig.json`
+  // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+  name: string
+  age: number
 
-  constructor()
-  constructor(name: string)
-  constructor(age: number)
-  constructor(ageOrName?: string | number) {
-    if (typeof ageOrName === 'string')
-      this.name = ageOrName
-    else if (typeof ageOrName === 'number')
-      this.age = ageOrName
+  // overload signature 1
+  constructor(name?: string, age?: number)
+  // overload signature 2
+  constructor(name: string, age?: number)
+
+  // implementation signature
+  constructor(name: string, age: number) {
+    this.name = name
+    this.age = age
+  }
+
+  // overload is also available for other methods
+
+  // overload signature
+  logName(greet?: string): void
+  // implementation signature
+  logName(greet: string): void {
+    console.log(`[${greet}]: ${this.name}`)
   }
 }
 
-const user1 = new User()
-const user2 = new User('Alex')
-const user3 = new User(33)
-
-console.log(user1, user2, user3)
-// User: {}
-// User: { "name": "Alex" }
-// User: { "age": 33 }
+const user1 = new User() // User { name: undefined, age: undefined }
+const user2 = new User('Alex') // User { name: 'Alex', age: undefined }
+const user3 = new User('Elena', 33) // User { name: 'Elena', age: 33 }
 ```
 
