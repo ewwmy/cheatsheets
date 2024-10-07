@@ -1143,6 +1143,29 @@ const isUserWithRoleAlt =
   }
 ```
 
+#### `asserts`
+
+> `asserts` keyword marks a type guard which should throw an error if the result expression is not true.
+> `asserts` [can't be used in arrow functions](https://github.com/microsoft/TypeScript/issues/34523).
+
+```typescript
+interface User {
+  name: string
+}
+
+// type guard which throws an error if the assertion is not true
+function assertUser(obj: unknown): asserts obj is User {
+  if (typeof obj === 'object' && !!obj && 'name' in obj) {
+    return
+  }
+  throw new Error('This is not a valid `User`')
+}
+
+const obj = {} // unknown object from the external api
+assertUser(obj) // will throw an error if `obj` is not `User`
+obj.name = 'Alex' // we are sure here that `obj` is `User` and has the property `name`
+```
+
 ## Classes
 
 ### Overload
