@@ -161,13 +161,13 @@ enum Direction {
 let dir: Direction = Direction.Up;
 ```
 
-### Type Assertion (Утверждение типа)
+### Type Assertion (Type Casting) (Утверждение типа)
 
 Tell TypeScript to treat a value as a specific type.
 
 ```typescript
-let value: any = "Hello World";
-let strLength: number = (value as string).length;
+let someValue: unknown = "Hello";
+let strLength: number = (someValue as string).length;
 ```
 
 ### Never Type (Тип Never)
@@ -473,6 +473,17 @@ method = myMethod // ❌
 
 // type assertion can help here
 method = myMethod as 'post' // ✅
+```
+
+Two ways of writing type assertions:
+
+```typescript
+interface User {
+  name: string
+}
+
+const user1 = { name: 'Sveta' } as User // ✅
+const user2 = <User>{ name: 'Alex' } // ❌ not recommended, will not work in React
 ```
 
 > Be careful with type assertions. It should **not** be used to avoid type-checking.
@@ -1041,7 +1052,59 @@ const processActionExtended = (action: PaymentActionExtended): void => {
 
 ### `null`
 
-### `undefined`
+> `strictNullChecks` in `tsconfig.json` is responsible for allowing or disallowing `null` value in `boolean`, `number`, `string`, `undefined` types.
+
+With `strictNullChecks` set to `true` it's only allowed to set the `null` value to `null`, `unknown` or `any` type. **You should never disable that option**.
+
+#### `null` vs `undefined`
+
+- `null` means the value that is undefined **explicitly**
+- `undefined` means the value that is undefined **implicitly**.
+
+### Type Coercion
+
+```typescript
+let str: string = 'abc'
+let num: number = 123
+str = num // ❌
+str = num.toString() // ✅
+```
+
+#### Custom Type Coercion
+
+```typescript
+interface Box {
+  size: number
+  color: string
+}
+
+interface Sphere {
+  size: number
+}
+
+// mapping function
+const boxToSphere = (box: Box): Sphere => {
+  return {
+    size: box.size,
+  }
+}
+
+const box: Box = {
+  size: 123,
+  color: 'green',
+}
+
+// ✅ type coercion using the mapping function
+const sphere1: Sphere = boxToSphere(box) // Sphere { size: 123 }
+
+// ❌ bad way of type coercion: the result object may actually have unwanted properties though they are unreachable in typescript but will be present in javascript which may cause side effects
+const sphere2: Sphere = {
+  ...box,
+}
+
+// ❌ worst way of type coercion: the result object will also be just a link to another object
+const sphere3: Sphere = box
+```
 
 ## Classes
 
