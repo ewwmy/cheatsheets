@@ -1350,3 +1350,60 @@ class SmartLight implements ISwitchable, IDimmable {
 }
 ```
 
+### `extends`
+
+```typescript
+type PaymentStatus = 'new' | 'paid'
+
+class Payment {
+	id: number
+	status: PaymentStatus = 'new'
+
+	constructor(id: number) {
+		this.id = id
+	}
+
+	pay(): void {
+		this.status = 'paid'
+	}
+
+  getPrettyStatus(): string {
+    return `[Status]: ${this.status}`
+  }
+}
+
+class PersistedPayment extends Payment {
+	databaseId: number
+	paidAt: Date
+
+	constructor() {
+		const id = Math.ceil(Math.random() * 100)
+		super(id)
+	}
+
+	save() {
+		console.log('Saved to the database')
+	}
+
+  // `override` keyword indicates the method is an override and will cause a compilation error if the method doesn't exist in the parent class
+	override pay(date?: Date): void {
+		super.pay() // call the parent method `pay()`
+		if (date) {
+			this.paidAt = date
+		}
+	}
+
+  // still a valid override but it will not check whether the parent method exists and may cause side effects if the parent method is deleted
+  getPrettyStatus(): string {
+    const status = super.getPrettyStatus()
+    return `[LOG]: ${status}`
+  }
+}
+
+const payment = new PersistedPayment()
+
+console.log(payment.getPrettyStatus()) // '[LOG]: [Status]: new'
+payment.pay()
+console.log(payment.getPrettyStatus()) // '[LOG]: [Status]: paid'
+```
+
