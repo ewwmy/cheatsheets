@@ -1293,3 +1293,21 @@ console.log(decorateLog('  abc ')) // "[LOG]: abc"
 console.log(decorateLog(123.456789)) // "[LOG]: 123.46"
 ```
 
+### Getters and Setters
+
+> Setters and getters can **not** be `async`. Thus, to use `await` we can only use methods.
+
+```typescript
+class User {
+  _login: string
+  _age: number
+
+  get login(): string {
+    return this._login
+  }
+
+  set login(login: string) {
+    this._login = `user-${login}`
+  }
+}
+```
