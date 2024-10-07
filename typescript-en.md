@@ -1205,6 +1205,7 @@ class User {
 
   // overload signature
   logName(greet?: string): void
+  
   // implementation signature
   logName(greet: string): void {
     console.log(`[${greet}]: ${this.name}`)
