@@ -1106,6 +1106,24 @@ const sphere2: Sphere = {
 const sphere3: Sphere = box
 ```
 
+### Type Guards
+
+```typescript
+// type guard function
+const isString = (value: string | number): value is string => {
+  return typeof value === 'string'
+}
+
+const logSomething = (value: string | number) => {
+  // type guard function can be used to narrow types
+  if (isString(value)) {
+    console.log(value.trim())
+  } else {
+    console.log(value.toFixed(2))
+  }
+}
+```
+
 ## Classes
 
 ### Overload
