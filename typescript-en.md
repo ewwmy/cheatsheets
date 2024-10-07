@@ -1153,7 +1153,7 @@ interface User {
   name: string
 }
 
-// type guard which throws an error if the assertion is not true
+// type guard which should throw an error if the assertion is not true
 function assertUser(obj: unknown): asserts obj is User {
   if (typeof obj === 'object' && !!obj && 'name' in obj) {
     return
@@ -1163,7 +1163,7 @@ function assertUser(obj: unknown): asserts obj is User {
 
 const obj = {} // unknown object from the external api
 assertUser(obj) // will throw an error if `obj` is not `User`
-obj.name = 'Alex' // we are sure here that `obj` is `User` and has the property `name`
+obj.name = 'Alex' // now we are sure that `obj` is `User` and has the property `name`
 ```
 
 ## Classes
