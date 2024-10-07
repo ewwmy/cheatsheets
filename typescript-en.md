@@ -1124,6 +1124,25 @@ const logSomething = (value: string | number) => {
 }
 ```
 
+Type guards for objects:
+
+```typescript
+interface User { name: string }
+interface UserWithRole { name: string; role: string }
+
+// preferred type guard
+const isUserWithRole =
+  (user: User | UserWithRole): user is UserWithRole => {
+    return 'role' in user
+  }
+
+// not recommended
+const isUserWithRoleAlt =
+  (user: User | UserWithRole): user is UserWithRole => {
+    return (user as UserWithRole).role !== undefined
+  }
+```
+
 ## Classes
 
 ### Overload
