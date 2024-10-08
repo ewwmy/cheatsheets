@@ -1604,3 +1604,39 @@ class PaymentPersisted extends Payment {
   }
 }
 ```
+
+#### Typing `this`
+
+```typescript
+class UserBuilder {
+  name: string
+
+  // `this` is special type that dynamically refers to the type of the current class name (will refer to a child class if the method is called in the child class context)
+  setName(name: string): this {
+    this.name = name
+    return this
+  }
+
+  // type guard to check whether `this` is `AdminBuilder`
+  isAdmin(): this is AdminBuilder {
+    return this instanceof AdminBuilder
+  }
+}
+
+class AdminBuilder extends UserBuilder {
+  // child class should have unique properties (methods) otherwise type narrowing may not work as expected
+  roles: string[]
+}
+
+const user = new UserBuilder().setName('Alex') // user: UserBuilder
+const admin = new AdminBuilder().setName('Oxana') // admin: AdminBuilder
+
+const userOrAdmin: UserBuilder | AdminBuilder = new UserBuilder()
+
+if (userOrAdmin.isAdmin()) {
+  userOrAdmin // userOrAdmin: AdminBuilder
+} else {
+  userOrAdmin // userOrAdmin: UserBuilder
+}
+```
+
