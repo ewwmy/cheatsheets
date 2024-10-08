@@ -1640,3 +1640,33 @@ if (userOrAdmin.isAdmin()) {
 }
 ```
 
+### Abstract classes and methods
+
+> Comparing to interfaces, abstract classes and methods can contain implementation.
+
+- abstract classes cannot be instantiated directly
+- abstract methods should not have an implementation
+- abstract methods must be implemented in child classes.
+
+```typescript
+abstract class A { // cannot be instantiated
+  public a() {
+    console.log('a')
+  }
+
+  public abstract b(): boolean // should not have an implementation
+}
+
+class B extends A { // must implement all abstract methods that are defined in the parent classes
+  public b(): boolean {
+    console.log('b')
+    return true
+  }
+}
+
+// const a = new A() // ❌
+const b = new B()
+b.a() // a
+b.b() // b
+```
+
