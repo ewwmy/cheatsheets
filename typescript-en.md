@@ -1356,39 +1356,39 @@ class SmartLight implements ISwitchable, IDimmable {
 type PaymentStatus = 'new' | 'paid'
 
 class Payment {
-	id: number
-	status: PaymentStatus = 'new'
+  id: number
+  status: PaymentStatus = 'new'
 
-	constructor(id: number) {
-		this.id = id
-	}
+  constructor(id: number) {
+    this.id = id
+  }
 
-	pay(): void {
-		this.status = 'paid'
-	}
+  pay(): void {
+    this.status = 'paid'
+  }
 }
 
 class PersistedPayment extends Payment {
-	databaseId: number
-	paidAt: Date
+  databaseId: number
+  paidAt: Date
 
-	constructor() {
-		const id = Math.ceil(Math.random() * 100)
-		super(id)
-	}
+  constructor() {
+    const id = Math.ceil(Math.random() * 100)
+    super(id)
+  }
 
-	save() {
-		console.log('Saved to the database')
-	}
+  save() {
+    console.log('Saved to the database')
+  }
 
   // `override` keyword indicates that the method is an override and will cause a compilation error if the method doesn't exist in the parent class
   // without `override` it's still a valid override but the compiler will not check whether the method exists in the parent class, which can lead to potential issues if the method in the parent class is removed
-	override pay(date?: Date): void {
-		super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in an override method)
+  override pay(date?: Date): void {
+    super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in an override method)
     if (date) {
       this.paidAt = date
     }
-	}
+  }
 }
 
 const payment = new PersistedPayment()
@@ -1422,5 +1422,84 @@ try {
   if (error instanceof HttpError)
     console.log(`[ERROR]: [${error.code}] ${error.message}`) // [ERROR]: [404] Not found
 }
+```
+
+### Inheritance vs Composition
+
+```typescript
+class User {
+  name: string
+}
+
+class Users extends Array<User> {
+  // ❌ bad way, will have all the array methods which should be overridden otherwise they may not make sense
+}
+
+// ✅ composition
+class Users2 {
+  users: User[]
+
+  // we only have methods we really need to implement
+  add(user: User) {
+    this.users.push(user)
+  }
+}
+```
+
+```typescript
+class User {
+  name: string
+}
+
+class Payment {
+  date: Date
+}
+
+class UserWithPayment extends Payment {
+  // ❌ bad way, because we have an intersection of two independent domains
+}
+
+// ✅ composition
+class UserWithPayment2 {
+  user: User
+  payment: Payment
+
+  constructor(user: User, payment: Payment) {
+    this.user = user
+    this.payment = payment
+  }
+}
+```
+
+```typescript
+// ✅ inheritance is a good choice here because we don't intersect domains and we really need to extend the original Error class
+class CustomError extends Error {}
+```
+
+### Property Access Modifiers
+
+```typescript
+type UnitSystem = 'metric' | 'imperial'
+
+class Shape {
+  public color: string // accessible from everywhere, including direct access from an instance of the class
+  protected measurement: UnitSystem = 'metric' // only accessible within the class and within all its children
+  private metaData: string[] // only accessible within the class
+  #createdAt: Date // javascript private property, only accessible within the class, will stay private in javascript runtime as well
+}
+
+class Box extends Shape {
+  public setMeasurement(measurement: UnitSystem) {
+    this.measurement = measurement // ✅
+  }
+}
+
+const box = new Box()
+box.color // ✅
+box.setMeasurement('imperial') // ✅
+
+box.measurement // ❌
+box.metaData // ❌
+box.#createdAt // ❌
 ```
 
