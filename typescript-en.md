@@ -33,7 +33,7 @@ Default settings are:
 
 ```bash
 tsc # compile typescript files of the project into javascript (as described in tsconfig.json)
-tsc ./app.ts # compile ./app.ts into ./app.js
+tsc ./app.ts # compile ./app.ts into ./app.js (using default settings, ignoring tsconfig.json)
 ```
 
 ## Basics
@@ -1366,10 +1366,6 @@ class Payment {
 	pay(): void {
 		this.status = 'paid'
 	}
-
-  getPrettyStatus(): string {
-    return `[Status]: ${this.status}`
-  }
 }
 
 class PersistedPayment extends Payment {
@@ -1386,24 +1382,19 @@ class PersistedPayment extends Payment {
 	}
 
   // `override` keyword indicates the method is an override and will cause a compilation error if the method doesn't exist in the parent class
+  // without `override` it's still a valid override but it will not check whether the method exists in the parent class and may cause side effects if the method in the parent class is deleted
 	override pay(date?: Date): void {
-		super.pay() // call the parent method `pay()`
-		if (date) {
-			this.paidAt = date
-		}
+		super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in `override` method)
+    if (date) {
+      this.paidAt = date
+    }
 	}
-
-  // still a valid override but it will not check whether the parent method exists and may cause side effects if the parent method is deleted
-  getPrettyStatus(): string {
-    const status = super.getPrettyStatus()
-    return `[LOG]: ${status}`
-  }
 }
 
 const payment = new PersistedPayment()
 
-console.log(payment.getPrettyStatus()) // '[LOG]: [Status]: new'
+console.log(payment.status) // new
 payment.pay()
-console.log(payment.getPrettyStatus()) // '[LOG]: [Status]: paid'
+console.log(payment.status) // paid
 ```
 
