@@ -1424,3 +1424,55 @@ try {
 }
 ```
 
+### Inheritance vs Composition
+
+```typescript
+class User {
+  name: string
+}
+
+class Users extends Array<User> {
+  // ❌ bad way, will have all the array methods which should be overridden otherwise they may not make sense
+}
+
+// ✅ composition
+class Users2 {
+  users: User[]
+
+  // we only have methods we really need to implement
+  add(user: User) {
+    this.users.push(user)
+  }
+}
+```
+
+```typescript
+class User {
+  name: string
+}
+
+class Payment {
+  date: Date
+}
+
+class UserWithPayment extends Payment {
+  // ❌ bad way, because we have an intersection of two independent domains
+}
+
+// ✅ composition
+class UserWithPayment2 {
+  user: User
+  payment: Payment
+
+  constructor(user: User, payment: Payment) {
+    this.user = user
+    this.payment = payment
+  }
+}
+```
+
+```typescript
+// ✅ inheritance is a good choice here because we don't intersect domains and we really need to extend the original Error class
+class CustomError extends Error {}
+```
+
