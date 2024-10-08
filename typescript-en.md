@@ -1642,7 +1642,7 @@ if (userOrAdmin.isAdmin()) {
 
 ### Abstract classes and methods
 
-> Comparing to interfaces, abstract classes and methods can contain implementation.
+> Comparing to interfaces, abstract classes can contain implementation.
 
 - abstract classes cannot be instantiated directly
 - abstract methods should not have an implementation
