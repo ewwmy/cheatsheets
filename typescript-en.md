@@ -33,7 +33,7 @@ Default settings are:
 
 ```bash
 tsc # compile typescript files of the project into javascript (as described in tsconfig.json)
-tsc ./app.ts # compile ./app.ts into ./app.js
+tsc ./app.ts # compile ./app.ts into ./app.js (using default settings, ignoring tsconfig.json)
 ```
 
 ## Basics
@@ -161,13 +161,13 @@ enum Direction {
 let dir: Direction = Direction.Up;
 ```
 
-### Type Assertion (Утверждение типа)
+### Type Assertion (Type Casting) (Утверждение типа)
 
 Tell TypeScript to treat a value as a specific type.
 
 ```typescript
-let value: any = "Hello World";
-let strLength: number = (value as string).length;
+let someValue: unknown = "Hello";
+let strLength: number = (someValue as string).length;
 ```
 
 ### Never Type (Тип Never)
@@ -473,6 +473,17 @@ method = myMethod // ❌
 
 // type assertion can help here
 method = myMethod as 'post' // ✅
+```
+
+Two ways of writing type assertions:
+
+```typescript
+interface User {
+  name: string
+}
+
+const user1 = { name: 'Sveta' } as User // ✅
+const user2 = <User>{ name: 'Alex' } // ❌ not recommended, will not work in React
 ```
 
 > Be careful with type assertions. It should **not** be used to avoid type-checking.
@@ -876,50 +887,540 @@ const funcUndefined = (): undefined => {
   return undefined // can only return `undefined` or nothing
 }
 
-const funcNone = (): undefined => {} // ✅
+const funcNothingUndef = (): undefined => {} // ✅
+const funcNothing = () => {} // ✅ returns `void` type implicitly
 
 const valVoid = funcVoid() // void
 const valUndefined = funcUndefined() // undefined
-const valNone = funcNone() // undefined
+const valNothingUndef = funcNothingUndef() // undefined
+const valNothing = funcNothing() // void
+```
+
+Can be used in function types:
+
+```typescript
+type VoidFunc = () => void
+
+const funcVoidTyped: VoidFunc = () => {
+    return 'something' // ✅
+}
+
+const valVoidTyped = funcVoidTyped() // void
+
+const funcVoidUntyped = (): void => {
+    return 'something' // ❌
+}
+```
+
+> In case a function is defined by type alias which returns `void` type it can actually return any value.
+
+```typescript
+const skills = ['javascript', 'typescript', 'devops']
+
+type User = {
+    name: string
+    skills: string[]
+}
+
+const user: User = {
+    name: 'Alex',
+    skills: [],
+}
+
+// returning `void` type in the signature of the callback in `forEach` provides compatibility with every type of value can be returned there
+skills.forEach(skill => user.skills.push(skill)) // callback implicitly returns `void`
+
+console.log(user)
+// {
+//   "name": "Alex",
+//   "skills": [
+//     "javascript",
+//     "typescript",
+//     "devops"
+//   ]
+// }
 ```
 
 ### `unknown`
 
-#### `unknown` vs `any`
+`unknown` is used when we don't know what's in there but still want to have strict type-checking. **It should be narrowed later.**
+
+> `unknown` must be used instead of `any`!
+
+```typescript
+let outer: unknown
+
+outer = true // ✅
+outer = 1 // ✅
+outer = 'something' // ✅
+
+let inner: string = outer // ❌
+```
+
+vs
+
+```typescript
+let outer: any
+
+outer = true // ✅
+outer = 1 // ✅
+outer = 'something' // ✅
+
+let inner: string = outer // ✅❗
+```
+
+#### Narrowing `unknown`
+
+```typescript
+const processOuter = (value: unknown): void => {
+  if (typeof value === 'number') {
+    console.log(value.toFixed(2)) // `value` is narrowed to `number`
+  } else if (typeof value === 'string') {
+    console.log(value.trim()) // `value` is narrowed to `string`
+  } else {
+    console.log(value) // `value` remains `unknown` here
+  }
+}
+```
+
+#### Usage in Error Handling
+
+```typescript
+try {
+  throw new Error('Something went wrong')
+} catch (err) { // `err` is `unknown` and should be narrowed
+  if (err instanceof Error) {
+    console.log(`Error: ${err.message}`) // 'Error: Something went wrong'
+  }
+}
+```
+
+#### Intersection and union with `unknown`
+
+```typescript
+type UnknownOrNumber = unknown | number // unknown
+type UnknownAndNumber = unknown & number // number
+```
 
 ### `never`
 
-### `null`
-
-### `undefined`
-
-## Classes
-
-### Overload
+Used when we never reach any value, for example, when a function only throws an error and never returns anything:
 
 ```typescript
-class User {
-  name: string // need to set `"strictPropertyInitialization": false` in `tsconfig.json`
-  age: number // need to set `"strictPropertyInitialization": false` in `tsconfig.json`
+const throwError = (): never => {
+  throw new Error('An error occured')
+}
+```
 
-  constructor()
-  constructor(name: string)
-  constructor(age: number)
-  constructor(ageOrName?: string | number) {
-    if (typeof ageOrName === 'string')
-      this.name = ageOrName
-    else if (typeof ageOrName === 'number')
-      this.age = ageOrName
+It's also useful to mark a block of the code that is never reached but can be potentially reached after extending functionality:
+
+```typescript
+type PaymentAction = 'checkout' | 'refund'
+
+const processAction = (action: PaymentAction): void => {
+  switch (action) {
+    case 'checkout':
+      // `action` is narrowed to 'checkout'
+      break
+    case 'refund':
+      // `action` is narrowed to 'refund'
+      break
+    default:
+      // `action` is narrowed to `never`
+      const _: never = action // ✅ will be never reached
+      throw new Error('Not yet available')
   }
 }
 
-const user1 = new User()
-const user2 = new User('Alex')
-const user3 = new User(33)
+type PaymentActionExtended = 'checkout' | 'refund' | 'reject'
 
-console.log(user1, user2, user3)
-// User: {}
-// User: { "name": "Alex" }
-// User: { "age": 33 }
+const processActionExtended = (action: PaymentActionExtended): void => {
+  switch (action) {
+    case 'checkout':
+      // `action` is narrowed to 'checkout'
+      break
+    case 'refund':
+      // `action` is narrowed to 'refund'
+      break
+    default:
+      // `action` is narrowed to 'reject' here
+      const _: never = action // ❌ will cauase compiler error so we need to implement 'reject' case
+      throw new Error('Not yet available')
+  }
+}
+```
+
+### `null`
+
+> `strictNullChecks` in `tsconfig.json` is responsible for allowing or disallowing `null` value in `boolean`, `number`, `string`, `undefined` types.
+
+With `strictNullChecks` set to `true` it's only allowed to set the `null` value to `null`, `unknown` or `any` type. **You should never disable that option**.
+
+#### `null` vs `undefined`
+
+- `null` means the value that is undefined **explicitly**
+- `undefined` means the value that is undefined **implicitly**.
+
+### Type Coercion
+
+```typescript
+let str: string = 'abc'
+let num: number = 123
+str = num // ❌
+str = num.toString() // ✅
+```
+
+#### Custom Type Coercion
+
+```typescript
+interface Box {
+  size: number
+  color: string
+}
+
+interface Sphere {
+  size: number
+}
+
+// mapping function
+const boxToSphere = (box: Box): Sphere => {
+  return {
+    size: box.size,
+  }
+}
+
+const box: Box = {
+  size: 123,
+  color: 'green',
+}
+
+// ✅ type coercion using the mapping function
+const sphere1: Sphere = boxToSphere(box) // Sphere { size: 123 }
+
+// ❌ bad way of type coercion: the result object may actually have unwanted properties though they are unreachable in typescript but will be present in javascript which may cause side effects
+const sphere2: Sphere = {
+  ...box,
+}
+
+// ❌ worst way of type coercion: the result object will also be just a link to another object
+const sphere3: Sphere = box
+```
+
+### Type Guards
+
+```typescript
+// type guard function
+const isString = (value: string | number): value is string => {
+  return typeof value === 'string'
+}
+
+const logSomething = (value: string | number) => {
+  // type guard function can be used to narrow types
+  if (isString(value)) {
+    console.log(value.trim())
+  } else {
+    console.log(value.toFixed(2))
+  }
+}
+```
+
+Type guards for objects:
+
+```typescript
+interface User { name: string }
+interface UserWithRole { name: string; role: string }
+
+// preferred type guard
+const isUserWithRole =
+  (user: User | UserWithRole): user is UserWithRole => {
+    return 'role' in user
+  }
+
+// not recommended
+const isUserWithRoleAlt =
+  (user: User | UserWithRole): user is UserWithRole => {
+    return (user as UserWithRole).role !== undefined
+  }
+```
+
+#### `asserts`
+
+> `asserts` keyword marks a type guard which should throw an error if the result expression is not true.
+> `asserts` [can't be used in arrow functions](https://github.com/microsoft/TypeScript/issues/34523).
+
+```typescript
+interface User {
+  name: string
+}
+
+// type guard which should throw an error if the assertion is not true
+function assertUser(obj: unknown): asserts obj is User {
+  if (typeof obj === 'object' && !!obj && 'name' in obj) {
+    return
+  }
+  throw new Error('This is not a valid `User`')
+}
+
+const obj = {} // unknown object from the external api
+assertUser(obj) // will throw an error if `obj` is not `User`
+obj.name = 'Alex' // now we are sure that `obj` is `User` and has the property `name`
+```
+
+## Classes
+
+### Classes Overview
+
+```typescript
+class User {
+  name: string // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+
+  constructor(name: string) {
+    this.name = name
+  }
+}
+
+const user = new User('Alex')
+```
+
+Extended example:
+
+```typescript
+enum PaymentStatus {
+  Holded,
+  Processed,
+  Reversed,
+}
+
+class Payment {
+  id: number
+  status: PaymentStatus = PaymentStatus.Holded
+  createdAt: Date = new Date()
+  updatedAt: Date
+
+  constructor(id: number) {
+    this.id = id
+  }
+
+  getLifeTime(): number {
+    return new Date().getTime() - this.createdAt.getTime()
+  }
+
+  unhold(): void {
+    if (this.status === PaymentStatus.Processed) {
+      throw new Error(`The payment can't be undone`)
+    }
+    this.status = PaymentStatus.Reversed
+    this.updatedAt = new Date()
+  }
+}
+
+const payment = new Payment(1)
+payment.unhold()
+console.log(payment)
+// Payment: {
+//   "status": 2,
+//   "createdAt": "2024-10-07T15:46:53.682Z",
+//   "id": 1,
+//   "updatedAt": "2024-10-07T15:46:53.682Z"
+// }
+```
+
+### Methods Overload
+
+```typescript
+class User {
+  // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+  name: string
+  age: number
+
+  // overload signature 1
+  constructor(name?: string, age?: number)
+  // overload signature 2
+  constructor(name: string, age?: number)
+
+  // implementation signature
+  constructor(name: string, age: number) {
+    this.name = name
+    this.age = age
+  }
+
+  // overload is also available for other methods
+
+  // overload signature
+  logName(greet?: string): void
+
+  // implementation signature
+  logName(greet: string): void {
+    console.log(`[${greet}]: ${this.name}`)
+  }
+}
+
+const user1 = new User() // User { name: undefined, age: undefined }
+const user2 = new User('Alex') // User { name: 'Alex', age: undefined }
+const user3 = new User('Elena', 33) // User { name: 'Elena', age: 33 }
+```
+
+Extended example:
+
+```typescript
+class User {
+  skills: string[]
+
+  addSkill(skill: string): void
+  addSkill(skills: string[]): void
+  addSkill(skillOrSkills: string | string[]): void {
+    if (typeof skillOrSkills === 'string')
+      this.skills.push(skillOrSkills)
+    else
+      this.skills.concat(skillOrSkills)
+  }
+}
+```
+
+> Functions can be overloaded as well.
+
+```typescript
+function decorateLog(message: string): string
+function decorateLog(message: number): number
+function decorateLog(message: number | string): number | string {
+  if (typeof message === 'string')
+    return `[LOG]: ${message.trim()}`
+  else
+    return `[LOG]: ${message.toFixed(2)}`
+}
+
+console.log(decorateLog('  abc ')) // "[LOG]: abc" 
+console.log(decorateLog(123.456789)) // "[LOG]: 123.46"
+```
+
+### Getters and Setters
+
+> Setters and getters can **not** be `async`. Thus, to use `await` we can only use methods.
+
+```typescript
+class User {
+  _login: string
+  _age: number
+
+  get login(): string {
+    return this._login
+  }
+
+  set login(login: string) {
+    this._login = `user-${login}`
+  }
+}
+```
+
+### `implements`
+
+```typescript
+interface ISwitchable {
+  isOn: boolean
+  turnOn(): void
+  turnOff(): void
+}
+
+interface IDimmable {
+  brightness: number
+  setBrightness(level: number): void
+}
+
+class SmartLight implements ISwitchable, IDimmable {
+  isOn: boolean = false
+  brightness: number = 0
+
+  turnOn(): void {
+    this.isOn = true
+    this.brightness = 100
+  }
+
+  turnOff(): void {
+    this.isOn = false
+    this.brightness = 0
+  }
+
+  setBrightness(level: string | number): void {
+    if (typeof level === 'string') {
+      this.brightness = parseInt(level)
+    } else {
+      this.brightness = level
+    }
+  }
+}
+```
+
+### `extends`
+
+```typescript
+type PaymentStatus = 'new' | 'paid'
+
+class Payment {
+	id: number
+	status: PaymentStatus = 'new'
+
+	constructor(id: number) {
+		this.id = id
+	}
+
+	pay(): void {
+		this.status = 'paid'
+	}
+}
+
+class PersistedPayment extends Payment {
+	databaseId: number
+	paidAt: Date
+
+	constructor() {
+		const id = Math.ceil(Math.random() * 100)
+		super(id)
+	}
+
+	save() {
+		console.log('Saved to the database')
+	}
+
+  // `override` keyword indicates that the method is an override and will cause a compilation error if the method doesn't exist in the parent class
+  // without `override` it's still a valid override but the compiler will not check whether the method exists in the parent class, which can lead to potential issues if the method in the parent class is removed
+	override pay(date?: Date): void {
+		super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in an override method)
+    if (date) {
+      this.paidAt = date
+    }
+	}
+}
+
+const payment = new PersistedPayment()
+
+console.log(payment.status) // new
+payment.pay()
+console.log(payment.status) // paid
+```
+
+#### Usage `super` in `constructor`s
+
+A `super` call in a child `constructor`:
+- must be called before accessing `this` in the constructor of the child class
+- must be the first statement in the constructor when the child class contains initialized properties.
+
+#### Extending `Error` class
+
+```typescript
+class HttpError extends Error {
+  code: number
+
+  constructor(message: string, code: number = 500) {
+    super(message)
+    this.code = code
+  }
+}
+
+try {
+  throw new HttpError('Not found', 404)
+} catch (error) {
+  if (error instanceof HttpError)
+    console.log(`[ERROR]: [${error.code}] ${error.message}`) // [ERROR]: [404] Not found
+}
 ```
 
