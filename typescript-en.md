@@ -1503,3 +1503,57 @@ box.metaData // ❌
 box.#createdAt // ❌
 ```
 
+### `static`
+
+```typescript
+class Service {
+  private static properties: string[] = [] // should be initialized, otherwise it may cause side effects in runtime
+
+  // static properties and methods are `public` by default
+  static addProperty(value: string) {
+    // `this` in static methods refers to the class itself
+    this.properties.push(value)
+  }
+
+  static findProperty(value: string): boolean {
+    return !!this.properties.find(item => item.includes(value))
+  }
+
+  // block of the static code is like a constructor but for the class itself
+  static {
+    this.addProperty('initial')
+  }
+
+  constructor(private name: string) {
+    // static properties and methods can be called within the object context (even in counstructors) through the class name
+    Service.addProperty(name)
+  }
+
+  getName() {
+    return this.name
+  }
+
+  setName(name: string): boolean {
+    if (Service.findProperty(name)) {
+      this.name = name
+      return true
+    }
+    return false
+  }
+
+
+}
+
+console.log(Service.findProperty('initial')) // true
+
+const service = new Service('initial')
+console.log(service.getName()) // 'initial'
+
+// static (class context)
+Service.addProperty('foo')
+
+// object context
+service.setName('foo')
+console.log(service.getName()) // 'foo'
+```
+
