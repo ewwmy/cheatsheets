@@ -1381,10 +1381,10 @@ class PersistedPayment extends Payment {
 		console.log('Saved to the database')
 	}
 
-  // `override` keyword indicates the method is an override and will cause a compilation error if the method doesn't exist in the parent class
-  // without `override` it's still a valid override but it will not check whether the method exists in the parent class and may cause side effects if the method in the parent class is deleted
+  // `override` keyword indicates that the method is an override and will cause a compilation error if the method doesn't exist in the parent class
+  // without `override` it's still a valid override but the compiler will not check whether the method exists in the parent class, which can lead to potential issues if the method in the parent class is removed
 	override pay(date?: Date): void {
-		super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in `override` method)
+		super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in an override method)
     if (date) {
       this.paidAt = date
     }
@@ -1396,5 +1396,31 @@ const payment = new PersistedPayment()
 console.log(payment.status) // new
 payment.pay()
 console.log(payment.status) // paid
+```
+
+#### Usage `super` in `constructor`s
+
+A `super` call in a child `constructor`:
+- must be called before accessing `this` in the constructor of the child class
+- must be the first statement in the constructor when the child class contains initialized properties.
+
+#### Extending `Error` class
+
+```typescript
+class HttpError extends Error {
+  code: number
+
+  constructor(message: string, code: number = 500) {
+    super(message)
+    this.code = code
+  }
+}
+
+try {
+  throw new HttpError('Not found', 404)
+} catch (error) {
+  if (error instanceof HttpError)
+    console.log(`[ERROR]: [${error.code}] ${error.message}`) // [ERROR]: [404] Not found
+}
 ```
 
