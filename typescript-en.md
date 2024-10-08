@@ -1476,3 +1476,30 @@ class UserWithPayment2 {
 class CustomError extends Error {}
 ```
 
+### Property Access Modifiers
+
+```typescript
+type UnitSystem = 'metric' | 'imperial'
+
+class Shape {
+  public color: string // accessible from everywhere, including direct access from an instance of the class
+  protected measurement: UnitSystem = 'metric' // only accessible within the class and within all its children
+  private metaData: string[] // only accessible within the class
+  #createdAt: Date // javascript private property, only accessible within the class, will stay private in javascript runtime as well
+}
+
+class Box extends Shape {
+  public setMeasurement(measurement: UnitSystem) {
+    this.measurement = measurement // ✅
+  }
+}
+
+const box = new Box()
+box.color // ✅
+box.setMeasurement('imperial') // ✅
+
+box.measurement // ❌
+box.metaData // ❌
+box.#createdAt // ❌
+```
+
