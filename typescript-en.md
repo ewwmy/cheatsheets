@@ -1557,3 +1557,50 @@ service.setName('foo')
 console.log(service.getName()) // 'foo'
 ```
 
+### `this`
+
+```typescript
+class Payment {
+  private date: Date = new Date()
+
+  // ✅ typing `this` ensures typescript warns about context loss
+  getDateSafe(this: Payment) {
+    return this.date
+  }
+
+  // ❗ without typing `this`, context may be lost
+  getDateUnsafe() {
+    return this.date
+  }
+
+  // ✅ arrow function preserves `this` context
+  getDateArrow = () => {
+    return this.date
+  }
+}
+
+const payment = new Payment()
+
+const user = {
+  id: 1,
+  paymentDate: payment.getDateUnsafe.bind(payment), // ✅ explicitly bind `this` to prevent context loss
+  paymentDateArrow: payment.getDateArrow, // ✅ arrow function keeps `this` bound to `payment`
+  paymentDateWrongSafe: payment.getDateSafe, // ❌ typescript error due to `this` type mismatch
+  paymentDateWrongUnsafe: payment.getDateUnsafe, // ❗ no typescript error, but `this` is lost, which may cause side effects in runtime
+}
+
+console.log(user.paymentDate()) // ✅ 2024-10-08T21:25:52.793Z
+console.log(user.paymentDateArrow()) // ✅ 2024-10-08T21:25:52.793Z
+console.log(user.paymentDateWrongSafe()) // ❌ typescript error
+console.log(user.paymentDateWrongUnsafe()) // ❗ undefined
+
+class PaymentPersisted extends Payment {
+  save() {
+    return this.getDateArrow() // ✅
+  }
+
+  saveWrong() {
+    return super.getDateArrow() // ❌ can't call the method that is defined by arrow function in the parent class
+  }
+}
+```
