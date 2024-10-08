@@ -1356,39 +1356,39 @@ class SmartLight implements ISwitchable, IDimmable {
 type PaymentStatus = 'new' | 'paid'
 
 class Payment {
-	id: number
-	status: PaymentStatus = 'new'
+  id: number
+  status: PaymentStatus = 'new'
 
-	constructor(id: number) {
-		this.id = id
-	}
+  constructor(id: number) {
+    this.id = id
+  }
 
-	pay(): void {
-		this.status = 'paid'
-	}
+  pay(): void {
+    this.status = 'paid'
+  }
 }
 
 class PersistedPayment extends Payment {
-	databaseId: number
-	paidAt: Date
+  databaseId: number
+  paidAt: Date
 
-	constructor() {
-		const id = Math.ceil(Math.random() * 100)
-		super(id)
-	}
+  constructor() {
+    const id = Math.ceil(Math.random() * 100)
+    super(id)
+  }
 
-	save() {
-		console.log('Saved to the database')
-	}
+  save() {
+    console.log('Saved to the database')
+  }
 
   // `override` keyword indicates that the method is an override and will cause a compilation error if the method doesn't exist in the parent class
   // without `override` it's still a valid override but the compiler will not check whether the method exists in the parent class, which can lead to potential issues if the method in the parent class is removed
-	override pay(date?: Date): void {
-		super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in an override method)
+  override pay(date?: Date): void {
+    super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in an override method)
     if (date) {
       this.paidAt = date
     }
-	}
+  }
 }
 
 const payment = new PersistedPayment()
