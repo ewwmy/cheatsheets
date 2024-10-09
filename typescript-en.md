@@ -1772,6 +1772,10 @@ b.c() // a
     ...,
     "noUnusedLocals": false, // warn when local variables aren't read
     "noUnusedParameters": false, // warn when a function parameter isn't read
+    "noFallthroughCasesInSwitch": true, // warn cases in `switch` statements without `break`
+    "allowUnreachableCode": false, // disable warnings for unreachable code
+    "noImplicitOverride": true, // ensure overriding members in derived classes are marked as `override`
+    "noPropertyAccessFromIndexSignature": true, // error if we call a property defined as `[key: KT]: VT`
     ...
   },
 }
