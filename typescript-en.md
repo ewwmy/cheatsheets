@@ -1715,15 +1715,52 @@ b.c() // a
 ```javascript
 {
   "compilerOptions": {
-    ...,
+    "target": "es2016", // target javascript standard
+    "lib": [ // libs to use in the environment
+      "DOM",
+      "ES2016"
+    ],
+    "module": "commonjs", // what module system to use
+    "rootDir": "./src", // where the source typescript files are stored (to avoid possible conflicts)
+    "baseUrl": "./src", // base directory to resolve module paths like `import { helperFunction } from 'utils/helpers'`
+    "paths": { // set of entries that re-map imports to additional lookup locations
+      "@utils/*": ["utils/*"], // `import { helperFunction } from '@utils/helpers'`
+      "@components/*": ["components/*"] // `import { Button } from '@components/Button'`
+    },
+    "resolveJsonModule": true, // enable importing .json files
     "allowJs": true, // allow js files in the typescript project
     "checkJs": true, // check js files in they are allowed
-    ...
+    "outDir": "./build", // where to compile (the original structure will be preserved)
+    "removeComments": true, // remove comments
+    "noEmitOnError": true, // don't build files if any error occured
+    "sourceMap": true, // if any runtime error occured it will be possible to know the source typescript file and line
+    "declaration": true, // generate *.d.ts files from typescript and javascript files
+    "declarationDir": "./types" // output directory for *.d.ts files
   },
   "files": ["app.ts"], // concrete files that should be compiled
   "include": ["**/app*.ts"], // patterns to include
   "exclude": ["**/something.ts"], // patterns to exclude
-  "extends": "./parent-tsconfig.json", // merge the top-level tsconfig with the current
+  "extends": "./parent-tsconfig.json" // merge the top-level tsconfig with the current
+}
+```
+
+#### Strict type-checking
+
+```javascript
+{
+  "compilerOptions": {
+    ...,
+    "strict": true, // enable all strict type-checking options
+    "noImplicitAny": true, // error if `any` type appears implicitly
+    "strictNullChecks": true, // possible `null` or `undefined` values will be considered
+    "strictFunctionTypes": true, // strict function type checking
+    "strictBindCallApply": true, // check that the arguments for 'bind', 'call', 'apply' match the original function
+    "strictPropertyInitialization": false, // check for class properties that are declared but not set in the constructor
+    "noImplicitThis": true, // enable error reporting when `this` is given the type `any`
+    "useUnknownInCatchVariables": true, // catch clause variables are `unknown` instead of `any`
+    "alwaysStrict": true, // ensure 'use strict' is always enabled in javascript files
+    ...
+  },
 }
 ```
 
