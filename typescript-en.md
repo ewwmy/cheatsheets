@@ -1770,8 +1770,8 @@ b.c() // a
 {
   "compilerOptions": {
     ...,
-    "noUnusedLocals": true, // warn when local variables aren't read
-    "noUnusedParameters": true, // warn when a function parameter isn't read
+    "noUnusedLocals": false, // warn when local variables aren't read
+    "noUnusedParameters": false, // warn when a function parameter isn't read
     ...
   },
 }
