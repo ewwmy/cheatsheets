@@ -627,6 +627,16 @@ const user: UserExtended = {
 
 ### Interfaces
 
+- all methods defined in an interface must be implemented in a class that implements the interface
+- all properties in an interface must be implemented as public in the class
+- methods in the class must have signatures compatible with those in the interface:
+  - a method cannot take more arguments than defined in the interface
+  - a method can take fewer arguments than defined in the interface
+  - the return type of a method must be the same or more specific than the return type specified in the interface
+- methods in an interface cannot be marked as `async`
+- a method in a class can be `async` and return a `Promise<T>`, where `T` matches the return type defined in the interface.
+
+
 ✅ Either with nothing after each field definition:
 
 ```typescript
