@@ -1804,8 +1804,8 @@ async function test() {
 
 const access: Record<string, boolean> = {
   readable: true,
-	writable: false,
-	executable: false,
+  writable: false,
+  executable: false,
 }
 ```
 
