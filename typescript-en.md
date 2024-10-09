@@ -1764,3 +1764,16 @@ b.c() // a
 }
 ```
 
+#### Additional options
+
+```javascript
+{
+  "compilerOptions": {
+    ...,
+    "noUnusedLocals": true, // warn when local variables aren't read
+    "noUnusedParameters": true, // warn when a function parameter isn't read
+    ...
+  },
+}
+```
+
