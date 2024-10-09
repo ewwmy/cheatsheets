@@ -1817,11 +1817,11 @@ function logMiddleware<T>(data: T): T {
   return data
 }
 
-const res1 = logMiddleware(10)            // res1: 10
-const res2 = logMiddleware<number>(10)    // res2: number
-const res3 = logMiddleware('abc')         // res3: 'abc'
-const res4 = logMiddleware<string>('abc') // res4: string
-let res5 = logMiddleware('abc')           // res5: string
+const res1 = logMiddleware(10)            // res1: 10 = 10
+const res2 = logMiddleware<number>(10)    // res2: number = 10
+const res3 = logMiddleware('abc')         // res3: 'abc' = 'abc'
+const res4 = logMiddleware<string>('abc') // res4: string = 'abc'
+let res5 = logMiddleware('abc')           // res5: string = 'abc'
 
 function getHalf<T>(data: Array<T>): Array<T> {
   const resultLength = data.length / 2
