@@ -1809,7 +1809,7 @@ const access: Record<string, boolean> = { // { [key: string]: boolean }
 }
 ```
 
-### Functions with Generics
+### Generics in Functions
 
 ```typescript
 function logMiddleware<T>(data: T): T {
@@ -1818,17 +1818,52 @@ function logMiddleware<T>(data: T): T {
 }
 
 const res1 = logMiddleware(10)            // res1: 10 = 10
-const res2 = logMiddleware<number>(10)    // res2: number = 10
-const res3 = logMiddleware('abc')         // res3: 'abc' = 'abc'
-const res4 = logMiddleware<string>('abc') // res4: string = 'abc'
-let res5 = logMiddleware('abc')           // res5: string = 'abc'
+const res2 = logMiddleware('abc')         // res2: 'abc' = 'abc'
+let res3 = logMiddleware('abc')           // res3: string = 'abc'
+
+// we can specify the generic type explicitly when call
+const res4 = logMiddleware<number>(10)    // res4: number = 10
+const res5 = logMiddleware<string>('abc') // res5: string = 'abc'
 
 function getHalf<T>(data: Array<T>): Array<T> {
   const resultLength = data.length / 2
   return data.splice(0, resultLength)
 }
 
-getHalf<number>([1, 3, 4]) // function getHalf<number>(data: Array<number>): Array<number>
-getHalf([1, 3, 4])         // function getHalf<number>(data: Array<number>): Array<number>
+getHalf([1, 3, 4])         // function getHalf<number>(data: number[]): Array<number>
+getHalf<number>([1, 3, 4]) // function getHalf<number>(data: number[]): Array<number>
+
+// function signature with generics
+const getHalfCopy: <T>(data: Array<T>) => Array<T> = getHalf
+
+getHalfCopy([1, 3, 4])     // getHalfCopy: <number>(data: number[]) => Array<number>
+```
+
+### Generics in Types and Interfaces
+
+```typescript
+interface ILogLine<T> {
+  timeStamp: Date
+  data: T
+}
+
+type LogLineType<T> = {
+  timeStamp: Date
+  data: T
+}
+
+const logLine: ILogLine<{ a: number }> = {
+  timeStamp: new Date(),
+  data: {
+    a: 1
+  }
+}
+
+const logLineType: LogLineType<{ b: string }> = {
+  timeStamp: new Date(),
+  data: {
+    b: 'abc',
+  }
+}
 ```
 
