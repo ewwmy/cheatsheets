@@ -1867,3 +1867,42 @@ const logLineType: LogLineType<{ b: string }> = {
 }
 ```
 
+### Generic `extends`
+
+```typescript
+class Vehicle { // it can be an interface or a type as well
+  constructor(public run: number) {}
+}
+
+class Car extends Vehicle { // it can be an interface as well
+  capacity: number
+}
+
+function kmToMiles<T extends Vehicle>(vehicle: T): T {
+  vehicle.run = vehicle.run * 0.62
+  return vehicle
+}
+
+const vehicle = kmToMiles(new Vehicle(15))
+console.log(vehicle.run) // 9.3
+
+const car = kmToMiles(new Car(5))
+console.log(car.run) // 3.1
+
+const other = kmToMiles({ run: 1 }) // this literal object also corresponds to `Vehicle` even though it's not literally an instance of `Vehicle`
+console.log(other.run) // 0.62
+
+// we can extend primitive types as well
+function logId<T extends string | number, Y>(
+  // function arguments
+  id: T,
+  additionalData: Y
+): { // return type
+  id: T,
+  data: Y
+} {
+  // function body
+  return { id, data: additionalData }
+}
+```
+
