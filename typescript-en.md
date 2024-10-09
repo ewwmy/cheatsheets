@@ -18,7 +18,7 @@ tsc --init # initialize typescript project in the current directory (will create
 
 Default settings are:
 
-```json
+```javascript
 {
   "compilerOptions": {
     "target": "es2016", // compile typescript files to javascript es2016 syntax
@@ -1684,5 +1684,46 @@ const b = new B()
 b.a() // a
 b.b() // b
 b.c() // a
+```
+
+## TypeScript Compiler
+
+### Architecture
+
+```
++-------------------+
+|        IDE        |
++-------------------+
+          |
+          |
++--------------------+
+|      ts.server     |
++--------------------+
+          |
+          |
++--------------------+        +---------------------------------+
+|  Language Service  |        |   `tsc` (Standalone compiler)   |
++--------------------+        +---------------------------------+
++---------------------------------------------------------------+
+|                     Core TypeScript Compiler                  |
++---------------------------------------------------------------+
+
+```
+
+### `tsconfig` options
+
+```javascript
+{
+  "compilerOptions": {
+    ...,
+    "allowJs": true, // allow js files in the typescript project
+    "checkJs": true, // check js files in they are allowed
+    ...
+  },
+  "files": ["app.ts"], // concrete files that should be compiled
+  "include": ["**/app*.ts"], // patterns to include
+  "exclude": ["**/something.ts"], // patterns to exclude
+  "extends": "./parent-tsconfig.json", // merge the top-level tsconfig with the current
+}
 ```
 
