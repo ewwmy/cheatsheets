@@ -1781,3 +1781,13 @@ b.c() // a
 }
 ```
 
+## Generics
+
+> Generic is a special placeholder for a type, used as a template in functions, classes, or interfaces to represent any valid type.
+
+```typescript
+function identity<T>(data: T): T {
+  return data
+}
+```
+
