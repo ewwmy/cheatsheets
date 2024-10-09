@@ -1802,7 +1802,7 @@ async function test() {
   })
 }
 
-const access: Record<string, boolean> = {
+const access: Record<string, boolean> = { // { [key: string]: boolean }
   readable: true,
   writable: false,
   executable: false,
