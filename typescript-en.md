@@ -1783,7 +1783,7 @@ b.c() // a
 
 ## Generics
 
-> Generic is a special placeholder for a type, used as a template in functions, classes, or interfaces to represent any valid type.
+> Generic is a placeholder for a type, used as a template in functions, classes, or interfaces to represent any valid type. The type remains consistent throughout the function, class or interface (where this generic is defined for), meaning it cannot change once replaced with a specific type.
 
 ```typescript
 function identity<T>(data: T): T {
