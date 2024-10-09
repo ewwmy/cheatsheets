@@ -18,7 +18,7 @@ tsc --init # initialize typescript project in the current directory (will create
 
 Default settings are:
 
-```json
+```javascript
 {
   "compilerOptions": {
     "target": "es2016", // compile typescript files to javascript es2016 syntax
@@ -626,6 +626,16 @@ const user: UserExtended = {
 > You should avoid intersection of two object types which have the same fields.
 
 ### Interfaces
+
+- all methods defined in an interface must be implemented in a class that implements the interface
+- all properties in an interface must be implemented as public in the class
+- methods in the class must have signatures compatible with those in the interface:
+  - a method cannot take more arguments than defined in the interface
+  - a method can take fewer arguments than defined in the interface
+  - the return type of a method must be the same or more specific than the return type specified in the interface
+- methods in an interface cannot be marked as `async`
+- a method in a class can be `async` and return a `Promise<T>`, where `T` matches the return type defined in the interface.
+
 
 ✅ Either with nothing after each field definition:
 
@@ -1501,5 +1511,398 @@ box.setMeasurement('imperial') // ✅
 box.measurement // ❌
 box.metaData // ❌
 box.#createdAt // ❌
+```
+
+### `static`
+
+```typescript
+class Service {
+  private static properties: string[] = [] // should be initialized, otherwise it may cause side effects in runtime
+
+  // static properties and methods are `public` by default
+  static addProperty(value: string) {
+    // `this` in static methods refers to the class itself
+    this.properties.push(value)
+  }
+
+  static findProperty(value: string): boolean {
+    return !!this.properties.find(item => item.includes(value))
+  }
+
+  // block of the static code is like a constructor but for the class itself
+  static {
+    this.addProperty('initial')
+  }
+
+  constructor(private name: string) {
+    // static properties and methods can be called within the object context (even in counstructors) through the class name
+    Service.addProperty(name)
+  }
+
+  getName() {
+    return this.name
+  }
+
+  setName(name: string): boolean {
+    if (Service.findProperty(name)) {
+      this.name = name
+      return true
+    }
+    return false
+  }
+
+
+}
+
+console.log(Service.findProperty('initial')) // true
+
+const service = new Service('initial')
+console.log(service.getName()) // 'initial'
+
+// static (class context)
+Service.addProperty('foo')
+
+// object context
+service.setName('foo')
+console.log(service.getName()) // 'foo'
+```
+
+### `this`
+
+```typescript
+class Payment {
+  private date: Date = new Date()
+
+  // ✅ typing `this` ensures typescript warns about context loss
+  getDateSafe(this: Payment) {
+    return this.date
+  }
+
+  // ❗ without typing `this`, context may be lost
+  getDateUnsafe() {
+    return this.date
+  }
+
+  // ✅ arrow function preserves `this` context
+  getDateArrow = () => {
+    return this.date
+  }
+}
+
+const payment = new Payment()
+
+const user = {
+  id: 1,
+  paymentDate: payment.getDateUnsafe.bind(payment), // ✅ explicitly bind `this` to prevent context loss
+  paymentDateArrow: payment.getDateArrow, // ✅ arrow function keeps `this` bound to `payment`
+  paymentDateWrongSafe: payment.getDateSafe, // ❌ typescript error due to `this` type mismatch
+  paymentDateWrongUnsafe: payment.getDateUnsafe, // ❗ no typescript error, but `this` is lost, which may cause side effects in runtime
+}
+
+console.log(user.paymentDate()) // ✅ 2024-10-08T21:25:52.793Z
+console.log(user.paymentDateArrow()) // ✅ 2024-10-08T21:25:52.793Z
+console.log(user.paymentDateWrongSafe()) // ❌ typescript error
+console.log(user.paymentDateWrongUnsafe()) // ❗ undefined
+
+class PaymentPersisted extends Payment {
+  save() {
+    return this.getDateArrow() // ✅
+  }
+
+  saveWrong() {
+    return super.getDateArrow() // ❌ can't call the method that is defined by arrow function in the parent class
+  }
+}
+```
+
+#### Typing `this`
+
+```typescript
+class UserBuilder {
+  name: string
+
+  // `this` is special type that dynamically refers to the type of the current class name (will refer to a child class if the method is called in the child class context)
+  setName(name: string): this {
+    this.name = name
+    return this
+  }
+
+  // type guard to check whether `this` is `AdminBuilder`
+  isAdmin(): this is AdminBuilder {
+    return this instanceof AdminBuilder
+  }
+}
+
+class AdminBuilder extends UserBuilder {
+  // child class should have unique properties (methods) otherwise type narrowing may not work as expected
+  roles: string[]
+}
+
+const user = new UserBuilder().setName('Alex') // user: UserBuilder
+const admin = new AdminBuilder().setName('Oxana') // admin: AdminBuilder
+
+const userOrAdmin: UserBuilder | AdminBuilder = new UserBuilder()
+
+if (userOrAdmin.isAdmin()) {
+  userOrAdmin // userOrAdmin: AdminBuilder
+} else {
+  userOrAdmin // userOrAdmin: UserBuilder
+}
+```
+
+### Abstract classes and methods
+
+> Comparing to interfaces, abstract classes can contain implementation.
+
+- abstract classes cannot be instantiated directly
+- abstract methods can only appear within an abstract class
+- abstract methods should not have an implementation
+- abstract methods must be implemented in child classes.
+
+```typescript
+abstract class A { // cannot be instantiated
+  public abstract a(): void // should not have an implementation, can be only defined in an abstract class
+
+  public b() {
+    console.log('b')
+  }
+
+  public c() {
+    this.a() // abstract method can be called within a non-abstract method
+  }
+
+}
+
+class B extends A { // must implement all abstract methods that are defined in the parent classes
+  public a(): void {
+    console.log('a')
+  }
+}
+
+// const a = new A() // ❌
+const b = new B()
+b.a() // a
+b.b() // b
+b.c() // a
+```
+
+## TypeScript Compiler
+
+### Architecture
+
+```
++-------------------+
+|        IDE        |
++-------------------+
+          |
+          |
++--------------------+
+|      ts.server     |
++--------------------+
+          |
+          |
++--------------------+        +---------------------------------+
+|  Language Service  |        |   `tsc` (Standalone compiler)   |
++--------------------+        +---------------------------------+
++---------------------------------------------------------------+
+|                     Core TypeScript Compiler                  |
++---------------------------------------------------------------+
+
+```
+
+### `tsconfig` options
+
+```javascript
+{
+  "compilerOptions": {
+    "target": "es2016", // target javascript standard
+    "lib": [ // libs to use in the environment
+      "DOM",
+      "ES2016"
+    ],
+    "module": "commonjs", // what module system to use
+    "rootDir": "./src", // where the source typescript files are stored (to avoid possible conflicts)
+    "baseUrl": "./src", // base directory to resolve module paths like `import { helperFunction } from 'utils/helpers'`
+    "paths": { // set of entries that re-map imports to additional lookup locations
+      "@utils/*": ["utils/*"], // `import { helperFunction } from '@utils/helpers'`
+      "@components/*": ["components/*"] // `import { Button } from '@components/Button'`
+    },
+    "resolveJsonModule": true, // enable importing .json files
+    "allowJs": true, // allow js files in the typescript project
+    "checkJs": true, // check js files in they are allowed
+    "outDir": "./build", // where to compile (the original structure will be preserved)
+    "removeComments": true, // remove comments
+    "noEmitOnError": true, // don't build files if any error occured
+    "sourceMap": true, // if any runtime error occured it will be possible to know the source typescript file and line
+    "declaration": true, // generate *.d.ts files from typescript and javascript files
+    "declarationDir": "./types" // output directory for *.d.ts files
+  },
+  "files": ["app.ts"], // concrete files that should be compiled
+  "include": ["**/app*.ts"], // patterns to include
+  "exclude": ["**/something.ts"], // patterns to exclude
+  "extends": "./parent-tsconfig.json" // merge the top-level tsconfig with the current
+}
+```
+
+#### Strict type-checking
+
+```javascript
+{
+  "compilerOptions": {
+    ...,
+    "strict": true, // enable all strict type-checking options
+    "noImplicitAny": true, // error if `any` type appears implicitly
+    "strictNullChecks": true, // possible `null` or `undefined` values will be considered
+    "strictFunctionTypes": true, // strict function type checking
+    "strictBindCallApply": true, // check that the arguments for 'bind', 'call', 'apply' match the original function
+    "strictPropertyInitialization": false, // check for class properties that are declared but not set in the constructor
+    "noImplicitThis": true, // enable error reporting when `this` is given the type `any`
+    "useUnknownInCatchVariables": true, // catch clause variables are `unknown` instead of `any`
+    "alwaysStrict": true, // ensure 'use strict' is always enabled in javascript files
+    ...
+  },
+}
+```
+
+#### Additional options
+
+```javascript
+{
+  "compilerOptions": {
+    ...,
+    "noUnusedLocals": false, // warn when local variables aren't read
+    "noUnusedParameters": false, // warn when a function parameter isn't read
+    "noFallthroughCasesInSwitch": true, // warn cases in `switch` statements without `break`
+    "allowUnreachableCode": false, // disable warnings for unreachable code
+    "noImplicitOverride": true, // ensure overriding members in derived classes are marked as `override`
+    "noPropertyAccessFromIndexSignature": true, // error if we call a property defined as `[key: KT]: VT`
+    ...
+  },
+}
+```
+
+## Generics
+
+> Generic is a placeholder for a type, used as a template in functions, classes, or interfaces to represent any valid type. The type remains consistent throughout the function, class or interface (where this generic is defined for), meaning it cannot change once replaced with a specific type.
+
+```typescript
+function identity<T>(data: T): T {
+  return data
+}
+```
+
+### Built-in Generics
+
+```typescript
+const num: Array<number> = [1, 2, 3]
+
+async function test() {
+  const a = await new Promise<number>((resolve, reject) => {
+    resolve(1)
+  })
+}
+
+const access: Record<string, boolean> = { // { [key: string]: boolean }
+  readable: true,
+  writable: false,
+  executable: false,
+}
+```
+
+### Generics in Functions
+
+```typescript
+function logMiddleware<T>(data: T): T {
+  console.log(data)
+  return data
+}
+
+const res1 = logMiddleware(10)            // res1: 10 = 10
+const res2 = logMiddleware('abc')         // res2: 'abc' = 'abc'
+let res3 = logMiddleware('abc')           // res3: string = 'abc'
+
+// we can specify the generic type explicitly when call
+const res4 = logMiddleware<number>(10)    // res4: number = 10
+const res5 = logMiddleware<string>('abc') // res5: string = 'abc'
+
+function getHalf<T>(data: Array<T>): Array<T> {
+  const resultLength = data.length / 2
+  return data.splice(0, resultLength)
+}
+
+getHalf([1, 3, 4])         // function getHalf<number>(data: number[]): Array<number>
+getHalf<number>([1, 3, 4]) // function getHalf<number>(data: number[]): Array<number>
+
+// function signature with generics
+const getHalfCopy: <T>(data: Array<T>) => Array<T> = getHalf
+
+getHalfCopy([1, 3, 4])     // getHalfCopy: <number>(data: number[]) => Array<number>
+```
+
+### Generics in Types and Interfaces
+
+```typescript
+interface ILogLine<T> {
+  timeStamp: Date
+  data: T
+}
+
+type LogLineType<T> = {
+  timeStamp: Date
+  data: T
+}
+
+const logLine: ILogLine<{ a: number }> = {
+  timeStamp: new Date(),
+  data: {
+    a: 1
+  }
+}
+
+const logLineType: LogLineType<{ b: string }> = {
+  timeStamp: new Date(),
+  data: {
+    b: 'abc',
+  }
+}
+```
+
+### Generic `extends`
+
+```typescript
+class Vehicle { // it can be an interface or a type as well
+  constructor(public run: number) {}
+}
+
+class Car extends Vehicle { // it can be an interface as well
+  capacity: number
+}
+
+function kmToMiles<T extends Vehicle>(vehicle: T): T {
+  vehicle.run = vehicle.run * 0.62
+  return vehicle
+}
+
+const vehicle = kmToMiles(new Vehicle(15))
+console.log(vehicle.run) // 9.3
+
+const car = kmToMiles(new Car(5))
+console.log(car.run) // 3.1
+
+const other = kmToMiles({ run: 1 }) // this literal object also corresponds to `Vehicle` even though it's not literally an instance of `Vehicle`
+console.log(other.run) // 0.62
+
+// we can extend primitive types as well
+function logId<T extends string | number, Y>(
+  // function arguments
+  id: T,
+  additionalData: Y
+): { // return type
+  id: T,
+  data: Y
+} {
+  // function body
+  return { id, data: additionalData }
+}
 ```
 
