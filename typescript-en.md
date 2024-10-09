@@ -1791,7 +1791,7 @@ function identity<T>(data: T): T {
 }
 ```
 
-### Built-in generics
+### Built-in Generics
 
 ```typescript
 const num: Array<number> = [1, 2, 3]
@@ -1808,3 +1808,27 @@ const access: Record<string, boolean> = {
 	executable: false,
 }
 ```
+
+### Functions with Generics
+
+```typescript
+function logMiddleware<T>(data: T): T {
+  console.log(data)
+  return data
+}
+
+const res1 = logMiddleware(10)            // res1: 10
+const res2 = logMiddleware<number>(10)    // res2: number
+const res3 = logMiddleware('abc')         // res3: 'abc'
+const res4 = logMiddleware<string>('abc') // res4: string
+let res5 = logMiddleware('abc')           // res5: string
+
+function getHalf<T>(data: Array<T>): Array<T> {
+  const resultLength = data.length / 2
+  return data.splice(0, resultLength)
+}
+
+getHalf<number>([1, 3, 4]) // function getHalf<number>(data: Array<number>): Array<number>
+getHalf([1, 3, 4])         // function getHalf<number>(data: Array<number>): Array<number>
+```
+
