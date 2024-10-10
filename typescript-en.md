@@ -2054,3 +2054,31 @@ console.log(res.isOpened) // true
 console.log(res.items[0]) // first
 ```
 
+## Advanced Types
+
+### `keyof`
+
+```typescript
+interface IUser {
+  name: string
+  age: number
+}
+
+type KeysOfUser = keyof IUser
+
+const key: KeysOfUser = 'age' // can be only either 'name' or 'age'
+
+function getValue<T, K extends keyof T>(obj: T, key: K) {
+  return obj[key] // ✅ we can safely call `obj[key]` because we are limited with only existing keys of `obj`
+}
+
+const user: IUser = {
+  name: 'Alex',
+  age: 33,
+}
+
+const userName = getValue(user, 'name') // ✅
+const userAge = getValue(user, 'age') // ✅
+const userSomething = getValue(user, 'something') // ❌
+```
+
