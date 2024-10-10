@@ -1906,3 +1906,151 @@ function logId<T extends string | number, Y>(
 }
 ```
 
+### Generics in Classes
+
+```typescript
+class Resp<D, E> {
+  constructor(public data?: D, public error?: E) {}
+}
+
+const resp = new Resp<string, number>('data')
+
+class HTTPResp<F> extends Resp<string, number>  {
+  code: F
+
+  setCode(code: F) {
+    this.code = code
+  }
+}
+
+const resp2 = new HTTPResp()
+```
+
+### Mixins
+
+#### Mixin vs Composition
+
+##### Mixin
+
+```typescript
+class Animal {
+  name: string
+
+  constructor(name: string) {
+    this.name = name
+  }
+
+  move() {
+    console.log(`${this.name} is moving`)
+  }
+}
+
+function Swimmer<T extends { new (...args: any[]): {} }>(Base: T) {
+  return class extends Base {
+    swim() {
+      console.log(`${(this as any).name} is swimming`)
+    }
+  }
+}
+
+const SwimmableAnimal = Swimmer(Animal)
+
+const duck = new SwimmableAnimal('Duck')
+duck.move() // Duck is moving
+duck.swim() // Duck is swimming
+```
+
+##### Composition
+
+```typescript
+class Swimmer {
+  constructor(public name: string) {}
+  swim() {
+    console.log(`${this.name} is swimming`)
+  }
+}
+
+class Animal {
+  constructor(public name: string) {}
+  move() {
+      console.log(`${this.name} is moving`)
+  }
+}
+
+class Duck {
+  private animal: Animal
+  private swimmer: Swimmer
+
+  constructor(name: string) {
+      this.animal = new Animal(name)
+      this.swimmer = new Swimmer(name)
+  }
+
+  move() {
+      this.animal.move()
+  }
+
+  swim() {
+      this.swimmer.swim()
+  }
+}
+
+const duck = new Duck('Duck')
+duck.move() // Duck is moving
+duck.swim() // Duck is swimming
+```
+
+#### Advanced Mixin with type-checking
+
+```typescript
+// type definition for a class constructor
+type Constructor = new (...args: any[]) => {}
+
+// `<T = {}>` means default value for the generic if it's not passed explicitly
+type GConstructor<T = {}> = new (...args: any[]) => T
+
+class ListClass {
+  constructor(public items: string[]) {}
+}
+
+class AccordionClass {
+  isOpened: boolean
+}
+
+type ListType = GConstructor<ListClass>
+type AccordionType = GConstructor<AccordionClass>
+
+class ExtendedListClass extends ListClass {
+  first() {
+    return this.items[0]
+  }
+}
+
+function ExtendedList<TBase extends ListType & AccordionType>(Base: TBase) {
+  return class ExtendedList extends Base {
+    // `first` is available here
+    // `isOpened` is available here
+    // `items` is available here
+    first() {
+      return this.items[0]
+    }
+  }
+}
+
+// for this class type-checking will force us to define `isOpened: boolean` and `items: string[]`
+class AccordionListClass {
+  isOpened: boolean = true
+  items: string[] = []
+  constructor(items: string[]) {
+    this.items = items
+  }
+}
+
+const list = ExtendedList(AccordionListClass)
+const res = new list(['first', 'second'])
+
+console.log(res.first()) // first
+console.log(res.isOpened) // true
+console.log(res.items[0]) // first
+```
+
