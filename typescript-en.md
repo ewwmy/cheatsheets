@@ -2223,3 +2223,25 @@ const res = getUser(1) // User
 const res2 = getUser('abc') // UserPersisted
 ```
 
+### `infer`
+
+> `infer` operator allows to get a type of a specific structure within a type definition.
+
+```typescript
+// bad-typed function from an external module
+function runTransaction(transaction: {
+	fromTo: [string, string]
+}) {
+	console.log(transaction)
+}
+
+// a type which captures the first argument of a compatible function type
+type GetFirstArg<T> = T extends (first: infer First, ...args: any[]) => any ? First : never
+
+const transaction: GetFirstArg<typeof runTransaction> = {
+	fromTo: ['1', '2']
+}
+
+runTransaction(transaction) // { fromTo: [ '1', '2' ] }
+```
+
