@@ -2245,3 +2245,62 @@ const transaction: GetFirstArg<typeof runTransaction> = {
 runTransaction(transaction) // { fromTo: [ '1', '2' ] }
 ```
 
+### Mapped Types
+
+> Mapped types are a special type in TypeScript that allow the creation of new types by transforming the properties of an existing type.
+
+Basic usage:
+
+```typescript
+type User = {
+  name: string
+  age: number
+  email?: string
+}
+
+// mapped type
+type ReadonlyUser = {
+  readonly [K in keyof User]: User[K]
+}
+// {
+//   readonly name: string;
+//   readonly age: number;
+//   readonly email?: string;
+// }
+```
+
+Advanced usage:
+
+```typescript
+type AccessType = 'read' | 'update' | 'create'
+
+type UserRoles = {
+	customers?: AccessType,
+	projects?: AccessType,
+	adminPanel?: AccessType,
+}
+
+// ❌ a type made from another type by hands (we can lose the connection between these two types if one of them is changed)
+type UserAltRoles = {
+	customers?: boolean,
+	projects?: boolean,
+	adminPanel?: boolean,
+}
+
+// type mapper
+type MapToBoolean<Type> = {
+	+readonly [Property in keyof Type]-?: boolean // set every property of <Type> readonly and mandatory
+}
+// +readonly ... // set the property readonly
+// -readonly ... // unset the property readonly
+// ...+? // set the property optional
+// ...-? // set the property mandatory
+
+// ✅ mapping the type
+type UserMappedRoles = MapToBoolean<UserRoles>
+// {
+//   readonly customers: boolean;
+//   readonly projects: boolean;
+//   readonly adminPanel: boolean;
+// }
+```
