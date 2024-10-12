@@ -2225,7 +2225,7 @@ const res2 = getUser('abc') // UserPersisted
 
 ### `infer`
 
-> `infer` operator allows to get a type of a specific structure within a type definition.
+> `infer` operator allows to get a type of a specific structure within the conditional expression of a conditional type.
 
 ```typescript
 // bad-typed function from an external module
