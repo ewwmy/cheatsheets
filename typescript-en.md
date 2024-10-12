@@ -2304,3 +2304,18 @@ type UserMappedRoles = MapToBoolean<UserRoles>
 //   readonly adminPanel: boolean;
 // }
 ```
+
+### Template Literal Types
+
+```typescript
+type ReadOrWrite = 'read' | 'write';
+type Bulk = 'bulk' | ''
+
+// string literal type
+type Access = `can${Capitalize<ReadOrWrite>}${Capitalize<Bulk>}` // 'canRead' | 'canReadBulk' | 'canWrite' | 'canWriteBulk'
+
+// getting parts of a string literal type
+type ReadOrWriteBulk<T> = T extends `can${infer R}` ? R : never
+type T = ReadOrWriteBulk<Access> // 'Read' | 'Write' | 'ReadBulk' | 'WriteBulk'
+```
+
