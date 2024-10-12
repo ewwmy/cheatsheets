@@ -2133,3 +2133,32 @@ const direction: DirectionType = 'Up'
 console.log(Direction[direction]) // 0
 ```
 
+### Indexed Access Types
+
+```typescript
+interface MyUser {
+  name: string
+  phones: string[]
+}
+
+const myUser: MyUser = {
+  name: 'Alex',
+  phones: ['123', '456', '789']
+}
+
+// getting type of a type/interface field by accessing its index
+type MyUserNameType = MyUser['name'] // string
+
+const FieldName = 'name'
+type MyUserNameTypeInvalid = MyUser[FieldName] // ❌
+
+type MyUserNameTypeValid = MyUser[typeof FieldName] // ✅
+
+type UserPhones = MyUser['phones'] // string[]
+type UserPhone = MyUser['phones'][number] // string
+
+// convert array of strings to a type of unioned string literals
+const roles = ['user', 'manager', 'admin'] as const
+type Role = typeof roles[number] // 'user' | 'manager' | 'admin'
+```
+
