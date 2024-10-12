@@ -2082,3 +2082,54 @@ const userAge = getValue(user, 'age') // ✅
 const userSomething = getValue(user, 'something') // ❌
 ```
 
+### `typeof`
+
+#### Type narrowing / JavaScript runtime
+
+```typescript
+let foo: string | number =
+  Math.random() > 0.5 ?
+    'abc' : 123
+
+if (typeof foo === 'string') {
+  // foo: string
+} else {
+  // foo: number
+}
+// foo: string | number
+```
+
+#### Getting type of the value / TypeScript feature
+
+```typescript
+let foo: string | number =
+  Math.random() > 0.5 ?
+    'abc' : 123
+
+let bar: typeof foo
+// bar: string | number
+// foo: string | number
+
+const user = {
+  name: 'Alex',
+}
+
+type UserType = typeof user
+// {
+//   name: string
+// }
+
+type KeyOfUser = keyof typeof user // 'name'
+
+enum Direction {
+  Up, // 0
+  Down, // 1
+}
+
+type DirectionType = keyof typeof Direction // 'Up' | 'Down'
+
+const direction: DirectionType = 'Up'
+
+console.log(Direction[direction]) // 0
+```
+
