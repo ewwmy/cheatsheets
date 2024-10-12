@@ -2152,7 +2152,7 @@ type MyUserNameType = MyUser['name'] // string
 const FieldName = 'name'
 type MyUserNameTypeInvalid = MyUser[FieldName] // ❌
 
-type MyUserNameTypeValid = MyUser[typeof FieldName] // ✅
+type MyUserNameTypeValid = MyUser[typeof FieldName] // ✅ typeof FieldName === 'name' → MyUser['name']
 
 type UserPhones = MyUser['phones'] // string[]
 type UserPhone = MyUser['phones'][number] // string
@@ -2160,5 +2160,66 @@ type UserPhone = MyUser['phones'][number] // string
 // convert array of strings to a type of unioned string literals
 const roles = ['user', 'manager', 'admin'] as const
 type Role = typeof roles[number] // 'user' | 'manager' | 'admin'
+```
+
+### Conditional Types
+
+Different interfaces depending on a value:
+
+```typescript
+interface HTTPResponse<T extends 'success' | 'failed'> {
+	code: number
+	data: T extends 'success' ? string : Error
+  errorInfo: T extends 'success' ? null : string
+}
+
+const suc: HTTPResponse<'success'> = {
+	code: 200,
+	data: 'done',
+  errorInfo: null,
+}
+
+const err: HTTPResponse<'failed'> = {
+	code: 500,
+	data: new Error(),
+  errorInfo: 'Something went wrong',
+}
+```
+
+Better (in some cases) way to overload functions:
+
+```typescript
+class User {
+	id: number
+	name: string
+}
+
+class UserPersisted extends User {
+	dbId: string
+}
+
+function getUserOverloaded(id: number): User
+function getUserOverloaded(dbId: string): UserPersisted
+function getUserOverloaded(dbIdOrId: string | number): User | UserPersisted {
+	if (typeof dbIdOrId === 'number') {
+		return new User()
+	} else {
+		return new UserPersisted()
+	}
+}
+
+type UserOrUserPersisted<T extends string | number> = T extends number ? User : UserPersisted
+
+function getUser<T extends string | number>(id: T): UserOrUserPersisted<T> {
+	if (typeof id === 'number') {
+    // need to explicitly cast to `UserOrUserPersisted<T>` because `typeof id === 'number'` is an only JavaScript runtime check and is not related to type-checking in TypeScript
+		return new User() as UserOrUserPersisted<T>
+	} else {
+		return new UserPersisted() as UserOrUserPersisted<T>
+	}
+}
+
+const res = getUser(1) // User
+const res2 = getUser('abc') // UserPersisted
 ```
 
