@@ -2532,7 +2532,7 @@ class Product implements IProduct {
 
 // will only affect the prototype
 function ResetPricePrototype(target: Function) {
-  target.prototype.price = 0 // will set `price` to `0` if only it's not initialized
+  target.prototype.price = 0 // will set `price` to `0` if only it's not initialized in the target class
 }
 
 function ResetPrice<T extends { new(...args: any[]): {} }>(target: T) {
