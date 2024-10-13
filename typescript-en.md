@@ -2514,3 +2514,33 @@ LogPrice(ResetPrice( new Product() )).getPrice() // Price: 0
 ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
 ```
 
+### Class Decorators
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+@ResetPrice
+class Product implements IProduct {
+  price: number = 1000
+  getPrice(): number {
+    return this.price
+  }
+}
+
+// will only affect the prototype
+function ResetPricePrototype(target: Function) {
+  target.prototype.price = 0 // will set `price` to `0` if only it's not initialized
+}
+
+function ResetPrice<T extends { new(...args: any[]): {} }>(target: T) {
+  return class extends target {
+    price = 0 // will set `price` to `0` even after the class initialization
+  }
+}
+
+console.log(new Product().getPrice()) // 0
+```
+
