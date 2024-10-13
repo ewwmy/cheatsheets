@@ -2468,3 +2468,48 @@ export class A {
   }
 }
 ```
+
+Under-the-hood decorator is a function:
+
+```typescript
+@Logger
+@Component
+export class A {
+  constructor(public name: string) {}
+}
+
+function Logger() {} // decorator `Logger` definition
+```
+
+### Decorator Pattern
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+class Product implements IProduct {
+  price: number = 1000
+  getPrice(): number {
+    return this.price
+  }
+}
+
+function ResetPrice(obj: IProduct) {
+  obj.price = 0
+  return obj
+}
+
+function LogPrice(obj: IProduct) {
+  console.log(`Price: ${obj.price}`)
+  return obj
+}
+
+console.log( new Product().getPrice() ) // 1000
+console.log( ResetPrice( new Product() ).getPrice() ) // 0
+
+LogPrice(ResetPrice( new Product() )).getPrice() // Price: 0
+ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
+```
+
