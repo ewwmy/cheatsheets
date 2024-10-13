@@ -2341,3 +2341,57 @@ type ReadOrWriteBulk<T> = T extends `can${infer R}` ? R : never
 type T = ReadOrWriteBulk<Access> // 'Read' | 'Write' | 'ReadBulk' | 'WriteBulk'
 ```
 
+## Utility Types
+
+### `Partial`, `Required`, `Readonly`
+
+```typescript
+type User = {
+  name: string
+  email: string
+  age?: number
+}
+
+type UserAllRequired = Required<User> // make all properties in `User` mandatory
+type UserAllOptional = Partial<User> // make all properties in `User` optional
+type UserAllReadonly = Readonly<User> // make all properties in `User` read-only
+```
+
+### `Pick` / `Omit` and `Extract` / `Exclude`
+
+```typescript
+type PaymentPersisted = {
+  id: number
+  sum: number
+  from: string
+  to: string
+}
+
+// exclude `id` from `PaymentPersistent`
+type Payment = Omit<PaymentPersisted, 'id'>
+// {
+//   sum: number;
+//   from: string;
+//   to: string;
+// }
+
+// pick `from`, `to` from `PaymentPersistent`
+type PaymentRequisits = Pick<PaymentPersisted, 'from' | 'to'>
+// {
+//   from: string;
+//   to: string;
+// }
+
+// remove all types from the union `'from' | 'to' | Payment` which are NOT `string`
+type ExtractedStringTypes = Extract<'from' | 'to' | Payment, string>
+// 'from' | 'to'
+
+// remove all types from the union `'from' | 'to' | Payment` which are `string`
+type ExcludeedStringTypes = Exclude<'from' | 'to' | Payment, string>
+// {
+//   sum: number;
+//   from: string;
+//   to: string;
+// }
+```
+
