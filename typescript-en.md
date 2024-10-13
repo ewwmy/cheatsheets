@@ -2313,9 +2313,9 @@ type UserAltRoles = {
 type MapToBoolean<Type> = {
 	+readonly [Property in keyof Type]-?: boolean // set every property of <Type> readonly and mandatory
 }
-// +readonly ... // set the property readonly
+// +readonly ... // set the property readonly (same as `readonly ...`)
 // -readonly ... // unset the property readonly
-// ...+? // set the property optional
+// ...+? // set the property optional (same as `...?`)
 // ...-? // set the property mandatory
 
 // ✅ mapping the type
