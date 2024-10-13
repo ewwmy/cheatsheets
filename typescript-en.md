@@ -2432,3 +2432,23 @@ type UserConstructorArgs = ConstructorParameters<typeof User> // [id: number, na
 type UserInstanceType = InstanceType<typeof User> // User
 ```
 
+### `Awaited`
+
+> Get the resulting type of any promise type.
+
+```typescript
+type PromiseType = Awaited<Promise<string>> // string
+type NestedPromiseType = Awaited<Promise<Promise<string>>> // string
+
+interface IMenuItem {
+  name: string
+  url: string
+}
+
+async function getMenuItems(): Promise<IMenuItem[]> {
+  return [{ name: 'Аналитика', url: 'analytics' }]
+}
+
+type GetMenuType = Awaited<ReturnType<typeof getMenuItems>> // IMenuItem[]
+```
+
