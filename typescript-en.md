@@ -2452,3 +2452,19 @@ async function getMenuItems(): Promise<IMenuItem[]> {
 type GetMenuType = Awaited<ReturnType<typeof getMenuItems>> // IMenuItem[]
 ```
 
+## Decorators
+
+> A decorator in TypeScript is a special type of declaration that can be attached to classes, methods, properties, or parameters to modify their behavior or add metadata.
+
+```typescript
+@Component // class decorator
+export class A {
+  @Prop // property decorator
+  myName: string
+
+  @Method // method decorator
+  setName(@Param name: string) { // parameter decorator
+    this.myName = name
+  }
+}
+```
