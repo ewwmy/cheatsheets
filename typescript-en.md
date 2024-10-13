@@ -2405,3 +2405,30 @@ type ExcludeedStringTypes = Exclude<'from' | 'to' | Payment, string>
 // }
 ```
 
+### `Parameters`, `ReturnType`, `ConstructorParameters`
+
+```typescript
+class User {
+	constructor(
+    public id: number,
+    public name: string,
+  ) {}
+}
+
+function getUser(id: number): User {
+	return new User(id, 'Alex')
+}
+
+type GetUserType = ReturnType<typeof getUser> // User
+type AnonType = ReturnType<() => void> // void
+type AnonGenType = ReturnType<<T>() => T> // unknown
+type AnonGenExtType = ReturnType<<T extends string>() => T> // string
+
+type GetUserArgs = Parameters<typeof getUser> // [id: number]
+type GetUserFirstArg = Parameters<typeof getUser>[0] // number
+type GetUserFirstArgAlt = GetUserArgs[0] // number
+
+type UserConstructorArgs = ConstructorParameters<typeof User> // [id: number, name: string]
+type UserInstanceType = InstanceType<typeof User> // User
+```
+
