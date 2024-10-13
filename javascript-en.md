@@ -801,6 +801,26 @@ const func33 = (a, b) => ({ // return object
 const func4 = new Function('a', 'b', 'return a + b') // function constructor
 ```
 
+### Function can return an anonymous class
+
+```javascript
+const f = () => class {
+  constructor(name) {
+    this.name = name
+  }
+}
+
+const c1 = f()
+const c2 = f()
+const c3 = f()
+
+const obj1 = new c1('abc')
+const obj2 = new c1('def')
+const obj3 = new c1('ghi')
+
+console.log(obj1, obj2, obj3) // { name: 'abc' } { name: 'def' } { name: 'ghi' }
+```
+
 ### Function as constructor
 
 ```javascript

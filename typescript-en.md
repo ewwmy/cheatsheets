@@ -34,6 +34,7 @@ Default settings are:
 ```bash
 tsc # compile typescript files of the project into javascript (as described in tsconfig.json)
 tsc ./app.ts # compile ./app.ts into ./app.js (using default settings, ignoring tsconfig.json)
+tsc --watch # compile typescript files of the project in watch mode (automatically recompile on file changes)
 ```
 
 ## Basics
@@ -328,6 +329,16 @@ console.log(id) // 1
 console.log(itemStatus) // 'fixed'
 console.log(flag1) // true
 console.log(otherFlags) // [false, false]
+```
+
+Destructuring tuple types:
+
+```typescript
+type Tuple = [number, string]
+
+// we can access to any element of array by calling its index
+type FirstOfTuple = Tuple[0] // number
+type SecondOfTuple = Tuple[1] // string
 ```
 
 ### Readonly
@@ -1904,5 +1915,602 @@ function logId<T extends string | number, Y>(
   // function body
   return { id, data: additionalData }
 }
+```
+
+### Generics in Classes
+
+```typescript
+class Resp<D, E> {
+  constructor(public data?: D, public error?: E) {}
+}
+
+const resp = new Resp<string, number>('data')
+
+class HTTPResp<F> extends Resp<string, number>  {
+  code: F
+
+  setCode(code: F) {
+    this.code = code
+  }
+}
+
+const resp2 = new HTTPResp()
+```
+
+### Mixins
+
+#### Mixin vs Composition
+
+##### Mixin
+
+```typescript
+class Animal {
+  name: string
+
+  constructor(name: string) {
+    this.name = name
+  }
+
+  move() {
+    console.log(`${this.name} is moving`)
+  }
+}
+
+function Swimmer<T extends { new (...args: any[]): {} }>(Base: T) {
+  return class extends Base {
+    swim() {
+      console.log(`${(this as any).name} is swimming`)
+    }
+  }
+}
+
+const SwimmableAnimal = Swimmer(Animal)
+
+const duck = new SwimmableAnimal('Duck')
+duck.move() // Duck is moving
+duck.swim() // Duck is swimming
+```
+
+##### Composition
+
+```typescript
+class Swimmer {
+  constructor(public name: string) {}
+  swim() {
+    console.log(`${this.name} is swimming`)
+  }
+}
+
+class Animal {
+  constructor(public name: string) {}
+  move() {
+      console.log(`${this.name} is moving`)
+  }
+}
+
+class Duck {
+  private animal: Animal
+  private swimmer: Swimmer
+
+  constructor(name: string) {
+      this.animal = new Animal(name)
+      this.swimmer = new Swimmer(name)
+  }
+
+  move() {
+      this.animal.move()
+  }
+
+  swim() {
+      this.swimmer.swim()
+  }
+}
+
+const duck = new Duck('Duck')
+duck.move() // Duck is moving
+duck.swim() // Duck is swimming
+```
+
+#### Advanced Mixin with type-checking
+
+```typescript
+// type definition for a class constructor
+type Constructor = new (...args: any[]) => {}
+
+// `<T = {}>` means default value for the generic if it's not passed explicitly
+type GConstructor<T = {}> = new (...args: any[]) => T
+
+class ListClass {
+  constructor(public items: string[]) {}
+}
+
+class AccordionClass {
+  isOpened: boolean
+}
+
+type ListType = GConstructor<ListClass>
+type AccordionType = GConstructor<AccordionClass>
+
+class ExtendedListClass extends ListClass {
+  first() {
+    return this.items[0]
+  }
+}
+
+function ExtendedList<TBase extends ListType & AccordionType>(Base: TBase) {
+  return class ExtendedList extends Base {
+    // `first` is available here
+    // `isOpened` is available here
+    // `items` is available here
+    first() {
+      return this.items[0]
+    }
+  }
+}
+
+// for this class type-checking will force us to define `isOpened: boolean` and `items: string[]`
+class AccordionListClass {
+  isOpened: boolean = true
+  items: string[] = []
+  constructor(items: string[]) {
+    this.items = items
+  }
+}
+
+const list = ExtendedList(AccordionListClass)
+const res = new list(['first', 'second'])
+
+console.log(res.first()) // first
+console.log(res.isOpened) // true
+console.log(res.items[0]) // first
+```
+
+## Advanced Types
+
+### `keyof`
+
+```typescript
+interface IUser {
+  name: string
+  age: number
+}
+
+type KeysOfUser = keyof IUser
+
+const key: KeysOfUser = 'age' // can be only either 'name' or 'age'
+
+function getValue<T, K extends keyof T>(obj: T, key: K) {
+  return obj[key] // ✅ we can safely call `obj[key]` because we are limited with only existing keys of `obj`
+}
+
+const user: IUser = {
+  name: 'Alex',
+  age: 33,
+}
+
+const userName = getValue(user, 'name') // ✅
+const userAge = getValue(user, 'age') // ✅
+const userSomething = getValue(user, 'something') // ❌
+```
+
+### `typeof`
+
+#### Type narrowing / JavaScript runtime
+
+```typescript
+let foo: string | number =
+  Math.random() > 0.5 ?
+    'abc' : 123
+
+if (typeof foo === 'string') {
+  // foo: string
+} else {
+  // foo: number
+}
+// foo: string | number
+```
+
+#### Getting type of the value / TypeScript feature
+
+```typescript
+let foo: string | number =
+  Math.random() > 0.5 ?
+    'abc' : 123
+
+let bar: typeof foo
+// bar: string | number
+// foo: string | number
+
+const user = {
+  name: 'Alex',
+}
+
+type UserType = typeof user
+// {
+//   name: string
+// }
+
+type KeyOfUser = keyof typeof user // 'name'
+
+enum Direction {
+  Up, // 0
+  Down, // 1
+}
+
+type DirectionType = keyof typeof Direction // 'Up' | 'Down'
+
+const direction: DirectionType = 'Up'
+
+console.log(Direction[direction]) // 0
+```
+
+### Indexed Access Types
+
+```typescript
+interface MyUser {
+  name: string
+  phones: string[]
+}
+
+const myUser: MyUser = {
+  name: 'Alex',
+  phones: ['123', '456', '789']
+}
+
+// getting type of a type/interface field by accessing its index
+type MyUserNameType = MyUser['name'] // string
+
+const FieldName = 'name'
+type MyUserNameTypeInvalid = MyUser[FieldName] // ❌
+
+type MyUserNameTypeValid = MyUser[typeof FieldName] // ✅ typeof FieldName === 'name' → MyUser['name']
+
+type UserPhones = MyUser['phones'] // string[]
+type UserPhone = MyUser['phones'][number] // string
+
+// convert array of strings to a type of unioned string literals
+const roles = ['user', 'manager', 'admin'] as const
+type Role = typeof roles[number] // 'user' | 'manager' | 'admin'
+```
+
+### Conditional Types
+
+Different interfaces depending on a value:
+
+```typescript
+interface HTTPResponse<T extends 'success' | 'failed'> {
+	code: number
+	data: T extends 'success' ? string : Error
+  errorInfo: T extends 'success' ? null : string
+}
+
+const suc: HTTPResponse<'success'> = {
+	code: 200,
+	data: 'done',
+  errorInfo: null,
+}
+
+const err: HTTPResponse<'failed'> = {
+	code: 500,
+	data: new Error(),
+  errorInfo: 'Something went wrong',
+}
+```
+
+Better (in some cases) way to overload functions:
+
+```typescript
+class User {
+	id: number
+	name: string
+}
+
+class UserPersisted extends User {
+	dbId: string
+}
+
+function getUserOverloaded(id: number): User
+function getUserOverloaded(dbId: string): UserPersisted
+function getUserOverloaded(dbIdOrId: string | number): User | UserPersisted {
+	if (typeof dbIdOrId === 'number') {
+		return new User()
+	} else {
+		return new UserPersisted()
+	}
+}
+
+type UserOrUserPersisted<T extends string | number> = T extends number ? User : UserPersisted
+
+function getUser<T extends string | number>(id: T): UserOrUserPersisted<T> {
+	if (typeof id === 'number') {
+    // need to explicitly cast to `UserOrUserPersisted<T>` because `typeof id === 'number'` is an only JavaScript runtime check and is not related to type-checking in TypeScript
+		return new User() as UserOrUserPersisted<T>
+	} else {
+		return new UserPersisted() as UserOrUserPersisted<T>
+	}
+}
+
+const res = getUser(1) // User
+const res2 = getUser('abc') // UserPersisted
+```
+
+### `infer`
+
+> `infer` operator allows to get a type of a specific structure within the conditional expression of a conditional type.
+
+```typescript
+// bad-typed function from an external module
+function runTransaction(transaction: {
+	fromTo: [string, string]
+}) {
+	console.log(transaction)
+}
+
+// a type which captures the first argument of a compatible function type
+type GetFirstArg<T> = T extends (first: infer First, ...args: any[]) => any ? First : never
+
+const transaction: GetFirstArg<typeof runTransaction> = {
+	fromTo: ['1', '2']
+}
+
+runTransaction(transaction) // { fromTo: [ '1', '2' ] }
+```
+
+### Mapped Types
+
+> Mapped types are a special type in TypeScript that allow the creation of new types by transforming the properties of an existing type.
+
+Basic usage:
+
+```typescript
+type User = {
+  name: string
+  age: number
+  email?: string
+}
+
+// mapped type
+type ReadonlyUser = {
+  readonly [K in keyof User]: User[K]
+}
+// {
+//   readonly name: string;
+//   readonly age: number;
+//   readonly email?: string;
+// }
+```
+
+Type mapper with generic:
+
+```typescript
+// make all properties in T optional
+type PartialMapper<T> = {
+  [K in keyof T]?: T[K]
+}
+
+type User = {
+  name: string
+  email: string
+  age?: number
+}
+
+type PartialUser = PartialMapper<User>
+// {
+//   name?: string | undefined;
+//   email?: string | undefined;
+//   age?: number;
+// }
+```
+
+Advanced usage:
+
+```typescript
+type AccessType = 'read' | 'update' | 'create'
+
+type UserRoles = {
+	customers?: AccessType,
+	projects?: AccessType,
+	adminPanel?: AccessType,
+}
+
+// ❌ a type made from another type by hands (we can lose the connection between these two types if one of them is changed)
+type UserAltRoles = {
+	customers?: boolean,
+	projects?: boolean,
+	adminPanel?: boolean,
+}
+
+// type mapper
+type MapToBoolean<Type> = {
+	+readonly [Property in keyof Type]-?: boolean // set every property of <Type> readonly and mandatory
+}
+// +readonly ... // set the property readonly (same as `readonly ...`)
+// -readonly ... // unset the property readonly
+// ...+? // set the property optional (same as `...?`)
+// ...-? // set the property mandatory
+
+// ✅ mapping the type
+type UserMappedRoles = MapToBoolean<UserRoles>
+// {
+//   readonly customers: boolean;
+//   readonly projects: boolean;
+//   readonly adminPanel: boolean;
+// }
+```
+
+### Template Literal Types
+
+```typescript
+type ReadOrWrite = 'read' | 'write';
+type Bulk = 'bulk' | ''
+
+// string literal type
+type Access = `can${Capitalize<ReadOrWrite>}${Capitalize<Bulk>}` // 'canRead' | 'canReadBulk' | 'canWrite' | 'canWriteBulk'
+
+// getting parts of a string literal type
+type ReadOrWriteBulk<T> = T extends `can${infer R}` ? R : never
+type T = ReadOrWriteBulk<Access> // 'Read' | 'Write' | 'ReadBulk' | 'WriteBulk'
+```
+
+## Utility Types
+
+### `Partial`, `Required`, `Readonly`
+
+```typescript
+type User = {
+  name: string
+  email: string
+  age?: number
+}
+
+type UserAllRequired = Required<User> // make all properties in `User` mandatory
+type UserAllOptional = Partial<User> // make all properties in `User` optional
+type UserAllReadonly = Readonly<User> // make all properties in `User` read-only
+```
+
+### `Pick` / `Omit` and `Extract` / `Exclude`
+
+```typescript
+type PaymentPersisted = {
+  id: number
+  sum: number
+  from: string
+  to: string
+}
+
+// exclude `id` from `PaymentPersistent`
+type Payment = Omit<PaymentPersisted, 'id'>
+// {
+//   sum: number;
+//   from: string;
+//   to: string;
+// }
+
+// pick `from`, `to` from `PaymentPersistent`
+type PaymentRequisits = Pick<PaymentPersisted, 'from' | 'to'>
+// {
+//   from: string;
+//   to: string;
+// }
+
+// remove all types from the union `'from' | 'to' | Payment` which are NOT `string`
+type ExtractedStringTypes = Extract<'from' | 'to' | Payment, string>
+// 'from' | 'to'
+
+// remove all types from the union `'from' | 'to' | Payment` which are `string`
+type ExcludeedStringTypes = Exclude<'from' | 'to' | Payment, string>
+// {
+//   sum: number;
+//   from: string;
+//   to: string;
+// }
+```
+
+### `Parameters`, `ReturnType`, `ConstructorParameters`
+
+```typescript
+class User {
+	constructor(
+    public id: number,
+    public name: string,
+  ) {}
+}
+
+function getUser(id: number): User {
+	return new User(id, 'Alex')
+}
+
+type GetUserType = ReturnType<typeof getUser> // User
+type AnonType = ReturnType<() => void> // void
+type AnonGenType = ReturnType<<T>() => T> // unknown
+type AnonGenExtType = ReturnType<<T extends string>() => T> // string
+
+type GetUserArgs = Parameters<typeof getUser> // [id: number]
+type GetUserFirstArg = Parameters<typeof getUser>[0] // number
+type GetUserFirstArgAlt = GetUserArgs[0] // number
+
+type UserConstructorArgs = ConstructorParameters<typeof User> // [id: number, name: string]
+type UserInstanceType = InstanceType<typeof User> // User
+```
+
+### `Awaited`
+
+> Get the resulting type of any promise type.
+
+```typescript
+type PromiseType = Awaited<Promise<string>> // string
+type NestedPromiseType = Awaited<Promise<Promise<string>>> // string
+
+interface IMenuItem {
+  name: string
+  url: string
+}
+
+async function getMenuItems(): Promise<IMenuItem[]> {
+  return [{ name: 'Аналитика', url: 'analytics' }]
+}
+
+type GetMenuType = Awaited<ReturnType<typeof getMenuItems>> // IMenuItem[]
+```
+
+## Decorators
+
+> A decorator in TypeScript is a special type of declaration that can be attached to classes, methods, properties, or parameters to modify their behavior or add metadata.
+
+```typescript
+@Component // class decorator
+export class A {
+  @Prop // property decorator
+  myName: string
+
+  @Method // method decorator
+  setName(@Param name: string) { // parameter decorator
+    this.myName = name
+  }
+}
+```
+
+Under-the-hood decorator is a function:
+
+```typescript
+@Logger
+@Component
+export class A {
+  constructor(public name: string) {}
+}
+
+function Logger() {} // decorator `Logger` definition
+```
+
+### Decorator Pattern
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+class Product implements IProduct {
+  price: number = 1000
+  getPrice(): number {
+    return this.price
+  }
+}
+
+function ResetPrice(obj: IProduct) {
+  obj.price = 0
+  return obj
+}
+
+function LogPrice(obj: IProduct) {
+  console.log(`Price: ${obj.price}`)
+  return obj
+}
+
+console.log( new Product().getPrice() ) // 1000
+console.log( ResetPrice( new Product() ).getPrice() ) // 0
+
+LogPrice(ResetPrice( new Product() )).getPrice() // Price: 0
+ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
 ```
 
