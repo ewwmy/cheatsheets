@@ -34,6 +34,7 @@ Default settings are:
 ```bash
 tsc # compile typescript files of the project into javascript (as described in tsconfig.json)
 tsc ./app.ts # compile ./app.ts into ./app.js (using default settings, ignoring tsconfig.json)
+tsc --watch # compile typescript files of the project in watch mode (automatically recompile on file changes)
 ```
 
 ## Basics
