@@ -2269,6 +2269,28 @@ type ReadonlyUser = {
 // }
 ```
 
+Type mapper with generic:
+
+```typescript
+// make all properties in T optional
+type PartialMapper<T> = {
+  [K in keyof T]?: T[K]
+}
+
+type User = {
+  name: string
+  email: string
+  age?: number
+}
+
+type PartialUser = PartialMapper<User>
+// {
+//   name?: string | undefined;
+//   email?: string | undefined;
+//   age?: number;
+// }
+```
+
 Advanced usage:
 
 ```typescript
