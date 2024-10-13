@@ -330,6 +330,16 @@ console.log(flag1) // true
 console.log(otherFlags) // [false, false]
 ```
 
+Destructuring tuple types:
+
+```typescript
+type Tuple = [number, string]
+
+// we can access to any element of array by calling its index
+type FirstOfTuple = Tuple[0] // number
+type SecondOfTuple = Tuple[1] // string
+```
+
 ### Readonly
 
 ```typescript
