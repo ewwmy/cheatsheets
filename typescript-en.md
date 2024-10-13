@@ -2179,20 +2179,20 @@ Different interfaces depending on a value:
 
 ```typescript
 interface HTTPResponse<T extends 'success' | 'failed'> {
-	code: number
-	data: T extends 'success' ? string : Error
+  code: number
+  data: T extends 'success' ? string : Error
   errorInfo: T extends 'success' ? null : string
 }
 
 const suc: HTTPResponse<'success'> = {
-	code: 200,
-	data: 'done',
+  code: 200,
+  data: 'done',
   errorInfo: null,
 }
 
 const err: HTTPResponse<'failed'> = {
-	code: 500,
-	data: new Error(),
+  code: 500,
+  data: new Error(),
   errorInfo: 'Something went wrong',
 }
 ```
@@ -2201,33 +2201,33 @@ Better (in some cases) way to overload functions:
 
 ```typescript
 class User {
-	id: number
-	name: string
+  id: number
+  name: string
 }
 
 class UserPersisted extends User {
-	dbId: string
+  dbId: string
 }
 
 function getUserOverloaded(id: number): User
 function getUserOverloaded(dbId: string): UserPersisted
 function getUserOverloaded(dbIdOrId: string | number): User | UserPersisted {
-	if (typeof dbIdOrId === 'number') {
-		return new User()
-	} else {
-		return new UserPersisted()
-	}
+  if (typeof dbIdOrId === 'number') {
+    return new User()
+  } else {
+    return new UserPersisted()
+  }
 }
 
 type UserOrUserPersisted<T extends string | number> = T extends number ? User : UserPersisted
 
 function getUser<T extends string | number>(id: T): UserOrUserPersisted<T> {
-	if (typeof id === 'number') {
+  if (typeof id === 'number') {
     // need to explicitly cast to `UserOrUserPersisted<T>` because `typeof id === 'number'` is an only JavaScript runtime check and is not related to type-checking in TypeScript
-		return new User() as UserOrUserPersisted<T>
-	} else {
-		return new UserPersisted() as UserOrUserPersisted<T>
-	}
+    return new User() as UserOrUserPersisted<T>
+  } else {
+    return new UserPersisted() as UserOrUserPersisted<T>
+  }
 }
 
 const res = getUser(1) // User
@@ -2241,16 +2241,16 @@ const res2 = getUser('abc') // UserPersisted
 ```typescript
 // bad-typed function from an external module
 function runTransaction(transaction: {
-	fromTo: [string, string]
+  fromTo: [string, string]
 }) {
-	console.log(transaction)
+  console.log(transaction)
 }
 
 // a type which captures the first argument of a compatible function type
 type GetFirstArg<T> = T extends (first: infer First, ...args: any[]) => any ? First : never
 
 const transaction: GetFirstArg<typeof runTransaction> = {
-	fromTo: ['1', '2']
+  fromTo: ['1', '2']
 }
 
 runTransaction(transaction) // { fromTo: [ '1', '2' ] }
@@ -2308,21 +2308,21 @@ Advanced usage:
 type AccessType = 'read' | 'update' | 'create'
 
 type UserRoles = {
-	customers?: AccessType,
-	projects?: AccessType,
-	adminPanel?: AccessType,
+  customers?: AccessType,
+  projects?: AccessType,
+  adminPanel?: AccessType,
 }
 
 // ❌ a type made from another type by hands (we can lose the connection between these two types if one of them is changed)
 type UserAltRoles = {
-	customers?: boolean,
-	projects?: boolean,
-	adminPanel?: boolean,
+  customers?: boolean,
+  projects?: boolean,
+  adminPanel?: boolean,
 }
 
 // type mapper
 type MapToBoolean<Type> = {
-	+readonly [Property in keyof Type]-?: boolean // set every property of <Type> readonly and mandatory
+  +readonly [Property in keyof Type]-?: boolean // set every property of <Type> readonly and mandatory
 }
 // +readonly ... // set the property readonly (same as `readonly ...`)
 // -readonly ... // unset the property readonly
@@ -2410,14 +2410,14 @@ type ExcludeedStringTypes = Exclude<'from' | 'to' | Payment, string>
 
 ```typescript
 class User {
-	constructor(
+  constructor(
     public id: number,
     public name: string,
   ) {}
 }
 
 function getUser(id: number): User {
-	return new User(id, 'Alex')
+  return new User(id, 'Alex')
 }
 
 type GetUserType = ReturnType<typeof getUser> // User
