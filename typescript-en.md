@@ -2516,6 +2516,8 @@ ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
 
 ### Class Decorators
 
+> Class decorators initialize in direct order but run in back order.
+
 ```typescript
 interface IProduct {
   price: number
@@ -2542,5 +2544,40 @@ function ResetPrice<T extends { new(...args: any[]): {} }>(target: T) {
 }
 
 console.log(new Product().getPrice()) // 0
+```
+
+#### Decorators Fabric
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+@SetPrice(300)
+@SetPrice(50)
+@SetPrice(110)
+class Product implements IProduct {
+  price: number = 1000
+  getPrice(): number {
+    return this.price
+  }
+}
+
+function SetPricePrototype(price: number) {
+  return (target: Function) => {
+    target.prototype.price = price
+  }
+}
+
+function SetPrice(price: number) {
+  return <T extends { new(...args: any[]): {} }>(target: T) => {
+    return class extends target {
+      price = price
+    }
+  }
+}
+
+console.log(new Product().getPrice()) // 300
 ```
 
