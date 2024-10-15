@@ -2825,3 +2825,51 @@ function Param() {
   }
 }
 ```
+
+### Metadata
+
+> Metadata is a JavaScript feature that allows setting and retrieving metadata about program structures like classes, methods or properties. It can be used to attach additional information to objects, which can be accessed and manipulated at runtime. In TypeScript, metadata is often utilized to store and access type-related information during JavaScript runtime, especially with decorators in combination with the `reflect-metadata` library.
+
+```javascript
+{
+  "compilerOptions": {
+    ...
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true, // Emit design-type metadata for decorated declarations in source files
+    ...
+  }
+}
+```
+
+To use this feature we need to install `reflect-metadata`:
+
+```bash
+npm install reflect-metadata
+```
+
+How to use:
+
+```typescript
+import 'reflect-metadata'
+
+class Product {
+  private price: number
+
+  getMultiplePrice(@Param() multiplier: number = 2): number {
+    return this.price * multiplier
+  }
+}
+
+function Param() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) => {
+    console.log(Reflect.getOwnMetadata('design:type', target, propertyKey)) // [Function: Function]
+    console.log(Reflect.getOwnMetadata('design:paramtypes', target, propertyKey)) // [ [Function: Number] ]
+    console.log(Reflect.getOwnMetadata('design:returntype', target, propertyKey)) // [Function: Number]
+  }
+}
+```
+
