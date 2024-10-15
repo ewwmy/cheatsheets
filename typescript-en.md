@@ -2898,20 +2898,25 @@ class Product {
   }
 }
 
+// parameter decorator
 function Positive() {
   return (
     target: Object,
     propertyKey: string | symbol,
     parameterIndex: number,
   ) => {
-    let params: number[] =
-      Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
-        || []
+    // array for indexes of the method parameters (trying to get existent or set as an empty array) 
+    let params: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey) || []
+
+    // add the index of the current parameter
     params.push(parameterIndex)
+
+    // register the indexes of the method parameters in metadata
     Reflect.defineMetadata(PositiveMetadataKey, params, target, propertyKey)
   }
 }
 
+// method decorator
 function Validate() {
   return (
     target: Object,
@@ -2922,10 +2927,11 @@ function Validate() {
     const methodName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
 
     descriptor.value = function(...args: any[]) {
-      const positiveParams: number[] =
-        Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
+      // get metadata with the indexes of the argumanes for this method (when the method is called)
+      const positiveParams: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
       if (positiveParams) {
-        for (const index in positiveParams) {
+        for (const index of positiveParams) {
+          // check whether the value of the parameter registered with `@Positive` not less than 0
           if (args[index] < 0) {
             throw new Error(`The value of the argument \`${index}\` in \`${methodName}\` must be positive, but ${args[index]} was passed`)
           }
