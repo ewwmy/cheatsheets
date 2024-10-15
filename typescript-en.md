@@ -2581,3 +2581,82 @@ function SetPrice(price: number) {
 console.log(new Product().getPrice()) // 300
 ```
 
+Make decorators to add new field to a class with a date:
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+@CreatedAt()
+@CreatedAtFixed()
+class Product implements IProduct {
+  price: number = 0
+  getPrice(): number {
+    return this.price
+  }
+}
+
+// by default: date will stay the same for any new instance of the class
+function CreatedAtFixed(date: Date = new Date()) {
+  return <T extends { new(...args: any[]): {} }>(target: T) => {
+    return class extends target {
+      createdAtFixed = date
+    }
+  }
+}
+
+// we need to define a type to call the property `createdAtFixed` later
+type CreatedAtFixed = {
+  createdAtFixed: Date
+}
+
+// by default: date will be different for any new instance of the class
+function CreatedAt(date?: Date) {
+  return <T extends { new (...args: any[]): {} }>(target: T) => {
+    return class extends target {
+      createdAt = date ?? new Date()
+    }
+  }
+}
+
+// we need to define a type to call the property `createdAt` later
+type CreatedAt = {
+  createdAt: Date
+}
+
+// a type definition that combines all the properties we add by decorators
+type ProductWithCreatedAt = Product & CreatedAt & CreatedAtFixed
+
+const pause = (ms: number) => new Promise(resolve => {
+  setTimeout(() => resolve(true), ms)
+})
+
+;(async () => {
+  // there is no other option to use properties added by decorators except type casting the instance with the custom type
+  const product1 = new Product() as ProductWithCreatedAt
+  console.log(product1)
+  // Product {
+  //   price: 0,
+  //   createdAtFixed: 2024-10-15T01:28:57.530Z,
+  //   createdAt: 2024-10-15T01:28:57.530Z
+  // }
+  console.log(product1.createdAtFixed) // 2024-10-15T01:28:57.530Z
+  console.log(product1.createdAt)      // 2024-10-15T01:28:57.530Z
+
+  await pause(5000)
+  
+  // there is no other option to use properties added by decorators except type casting the instance with the custom type
+  const product2 = new Product() as ProductWithCreatedAt
+  console.log(product2)
+  // Product {
+  //   price: 0,
+  //   createdAtFixed: 2024-10-15T01:28:57.530Z,
+  //   createdAt: 2024-10-15T01:29:02.547Z
+  // }
+  console.log(product2.createdAtFixed) // 2024-10-15T01:28:57.530Z
+  console.log(product2.createdAt)      // 2024-10-15T01:29:02.547Z
+})()
+```
+
