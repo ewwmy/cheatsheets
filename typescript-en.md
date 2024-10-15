@@ -2715,3 +2715,45 @@ new Product(150).getPrice()
 // Product price: 150
 ```
 
+### Property Decorators
+
+```typescript
+class Product {
+  @Max(100)
+  price: number = 50
+}
+
+function Max(max: number) {
+  return (
+    target: Object,
+    propertyKey: string | symbol
+  ) => {
+    let value: number
+    const setter = function(newValue: number) {
+      if (newValue > max) {
+        console.warn(`Нельзя установить значение больше ${max}`)
+      } else {
+        value = newValue
+      }
+    }
+
+    const getter = function() {
+      return value
+    }
+
+    Object.defineProperty(target, propertyKey, {
+      set: setter,
+      get: getter
+    })
+  }
+}
+
+const product = new Product()
+console.log(product.price) // 50
+
+product.price = 100
+console.log(product.price) // 100
+
+product.price = 150 // Нельзя установить значение больше 100
+```
+
