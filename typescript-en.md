@@ -2516,6 +2516,21 @@ ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
 
 ### Class Decorators
 
+#### Implementation Order
+
+> Class decorators initialize in direct order but run in back order.
+
+```typescript
+@SetPrice(300) // |        ^
+@SetPrice(50)  // | init   | run
+@SetPrice(110) // V        |
+class Product {
+  price: number = 0
+}
+```
+
+#### Basic Structure
+
 ```typescript
 interface IProduct {
   price: number
@@ -2530,11 +2545,6 @@ class Product implements IProduct {
   }
 }
 
-// will only affect the prototype
-function ResetPricePrototype(target: Function) {
-  target.prototype.price = 0 // will set `price` to `0` if only it's not initialized in the target class
-}
-
 function ResetPrice<T extends { new(...args: any[]): {} }>(target: T) {
   return class extends target {
     price = 0 // will set `price` to `0` even after the class initialization
@@ -2546,27 +2556,19 @@ console.log(new Product().getPrice()) // 0
 
 #### Decorators Fabric
 
-> Class decorators initialize in direct order but run in back order.
-
 ```typescript
 interface IProduct {
   price: number
   getPrice(): number
 }
 
-@SetPrice(300) // |        ^
-@SetPrice(50)  // | init   | run
-@SetPrice(110) // V        |
+@SetPrice(300)
+@SetPrice(50)
+@SetPrice(110)
 class Product implements IProduct {
   price: number = 1000
   getPrice(): number {
     return this.price
-  }
-}
-
-function SetPricePrototype(price: number) {
-  return (target: Function) => {
-    target.prototype.price = price
   }
 }
 
@@ -2580,6 +2582,8 @@ function SetPrice(price: number) {
 
 console.log(new Product().getPrice()) // 300
 ```
+
+#### Advanced Usage
 
 Make decorators to add new field to a class with a date:
 
@@ -2658,5 +2662,56 @@ const pause = (ms: number) => new Promise(resolve => {
   console.log(product2.createdAtFixed) // 2024-10-15T01:28:57.530Z
   console.log(product2.createdAt)      // 2024-10-15T01:29:02.547Z
 })()
+```
+
+### Method Decorators
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+class Product implements IProduct {
+  constructor(public price: number = 0) {}
+
+  @LogExtended('Product price')
+  @Log
+  getPrice(): number {
+    return this.price
+  }
+}
+
+// decorator without params
+function Log(target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+  const original = descriptor.value
+
+  descriptor.value = function(...args: any[]) {
+    const result = original.call(this, ...args)
+    console.log(result)
+    return result
+  }
+}
+
+// decorator with params (decorators fabric)
+function LogExtended(title: string) {
+  return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+    const original = descriptor.value
+
+    descriptor.value = function(...args: any[]) {
+      const result = original.call(this, ...args)
+      console.log(`${title}: ${result}`)
+      return result
+    }
+  }
+}
+
+new Product().getPrice()
+// 0
+// Product price: 0
+
+new Product(150).getPrice()
+// 150
+// Product price: 150
 ```
 
