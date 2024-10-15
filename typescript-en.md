@@ -2726,7 +2726,7 @@ class Product {
 function Max(max: number) {
   return (
     target: Object,
-    propertyKey: string | symbol
+    propertyKey: string | symbol,
   ) => {
     let value: number
     const setter = function(newValue: number) {
@@ -2743,7 +2743,7 @@ function Max(max: number) {
 
     Object.defineProperty(target, propertyKey, {
       set: setter,
-      get: getter
+      get: getter,
     })
   }
 }
@@ -2757,3 +2757,71 @@ console.log(product.price) // 100
 product.price = 150 // Нельзя установить значение больше 100
 ```
 
+### Accessor Decorators
+
+```typescript
+class Product {
+  private _price: number
+
+  @Log()
+  set price(value: number) {
+    this._price = value
+  }
+
+  get price() {
+    return this._price
+  }
+}
+
+function Log() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor,
+  ) => {
+    const original = descriptor.set
+    const propertyName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
+
+    descriptor.set = (...args: any) => {
+      console.log(`Setter \`${propertyName}\` called`)
+      original?.apply(target, args)
+    }
+  }
+}
+
+const product = new Product()
+
+product.price = 100 // Setter `price` called
+console.log(product.price) // 100
+
+product.price = 150 // Setter `price` called
+console.log(product.price) // 150
+```
+
+### Parameter Decorators
+
+```typescript
+class Product {
+  private price: number
+
+  setPrice(@Param() value: number) {
+    this.price = value
+  }
+
+  getPrice() {
+    return this.price
+  }
+}
+
+function Param() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) => {
+    console.log(target) // {}
+    console.log(propertyKey) // setPrice
+    console.log(parameterIndex) // 0
+  }
+}
+```
