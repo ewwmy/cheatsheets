@@ -2873,3 +2873,81 @@ function Param() {
 }
 ```
 
+Advanced usage:
+
+```typescript
+import 'reflect-metadata'
+
+const PositiveMetadataKey: symbol = Symbol('POSITIVE_METADATA_KEY')
+
+class Product {
+  private price: number
+
+  getPrice(): number {
+    return this.price
+  }
+
+  @Validate()
+  setPrice(
+    @Positive() price: number,
+    @Positive() second?: number,
+    @Positive() third?: number,
+  ): number {
+    this.price = price + (second ?? 0) + (third ?? 0)
+    return this.price
+  }
+}
+
+function Positive() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) => {
+    let params: number[] =
+      Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
+        || []
+    params.push(parameterIndex)
+    Reflect.defineMetadata(PositiveMetadataKey, params, target, propertyKey)
+  }
+}
+
+function Validate() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>,
+  ) => {
+    const original = descriptor.value
+    const methodName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
+
+    descriptor.value = function(...args: any[]) {
+      const positiveParams: number[] =
+        Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
+      if (positiveParams) {
+        for (const index in positiveParams) {
+          if (args[index] < 0) {
+            throw new Error(`The value of the argument \`${index}\` in \`${methodName}\` must be positive, but ${args[index]} was passed`)
+          }
+        }
+      }
+      return original?.call(this, ...args)
+    }
+  }
+}
+
+const product = new Product()
+
+try {
+  console.log(product.setPrice(0, 100, 200)) // 300
+  console.log(product.setPrice(50, 300, 200)) // 550
+  console.log(product.setPrice(100, -100, 300)) // The value of the argument `1` in `setPrice` must be positive, but -100 was passed
+} catch (error) {
+  if (error instanceof Error) {
+    console.error(error.message)
+  } else {
+    console.error(error)
+  }
+}
+```
+
