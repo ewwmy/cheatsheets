@@ -2927,10 +2927,10 @@ function Validate() {
     const methodName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
 
     descriptor.value = function(...args: any[]) {
-      // get metadata with the indexes of the argumanes for this method (when the method is called)
-      const positiveParams: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
-      if (positiveParams) {
-        for (const index of positiveParams) {
+      // get metadata with the indexes of the parameters registered with `@Positive` for this method
+      const registeredParams: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
+      if (registeredParams) {
+        for (const index of registeredParams) {
           // check whether the value of the parameter registered with `@Positive` not less than 0
           if (args[index] < 0) {
             throw new Error(`The value of the argument \`${index}\` in \`${methodName}\` must be positive, but ${args[index]} was passed`)
