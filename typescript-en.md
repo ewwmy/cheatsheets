@@ -2957,3 +2957,228 @@ try {
 }
 ```
 
+### Decorators Order
+
+Code example with the universal decorator to test the order of initialization and implementation:
+
+```typescript
+@Test('class / Decorator 1')
+@Test('class / Decorator 2')
+@Test('class / Decorator 3')
+class Product {
+  @Test('prop1 / Decorator 1')
+  @Test('prop1 / Decorator 2')
+  @Test('prop1 / Decorator 3')
+  prop1: number
+
+  @Test('prop2 / Decorator 1')
+  @Test('prop2 / Decorator 2')
+  @Test('prop2 / Decorator 3')
+  prop2: number
+
+  @Test('staticProp1 / Decorator 1')
+  @Test('staticProp1 / Decorator 2')
+  @Test('staticProp1 / Decorator 3')
+  static staticProp1: number
+
+  @Test('staticProp2 / Decorator 1')
+  @Test('staticProp2 / Decorator 2')
+  @Test('staticProp2 / Decorator 3')
+  static staticProp2: number
+
+  @Test('staticMethod1() / Decorator 1')
+  @Test('staticMethod1() / Decorator 2')
+  @Test('staticMethod1() / Decorator 3')
+  static staticMethod1(
+    @Test('staticMethod1() / param1 / Decorator 1')
+    @Test('staticMethod1() / param1 / Decorator 2')
+    @Test('staticMethod1() / param1 / Decorator 3')
+    param1: number,
+    @Test('staticMethod1() / param2 / Decorator 1')
+    @Test('staticMethod1() / param2 / Decorator 2')
+    @Test('staticMethod1() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  @Test('staticMethod2() / Decorator 1')
+  @Test('staticMethod2() / Decorator 2')
+  @Test('staticMethod2() / Decorator 3')
+  static staticMethod2(
+    @Test('staticMethod2() / param1 / Decorator 1')
+    @Test('staticMethod2() / param1 / Decorator 2')
+    @Test('staticMethod2() / param1 / Decorator 3')
+    param1: number,
+    @Test('staticMethod2() / param2 / Decorator 1')
+    @Test('staticMethod2() / param2 / Decorator 2')
+    @Test('staticMethod2() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  @Test('method1() / Decorator 1')
+  @Test('method1() / Decorator 2')
+  @Test('method1() / Decorator 3')
+  method1(
+    @Test('method1() / param1 / Decorator 1')
+    @Test('method1() / param1 / Decorator 2')
+    @Test('method1() / param1 / Decorator 3')
+    param1: number,
+    @Test('method1() / param2 / Decorator 1')
+    @Test('method1() / param2 / Decorator 2')
+    @Test('method1() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  @Test('method2() / Decorator 1')
+  @Test('method2() / Decorator 2')
+  @Test('method2() / Decorator 3')
+  method2(
+    @Test('method2() / param1 / Decorator 1')
+    @Test('method2() / param1 / Decorator 2')
+    @Test('method2() / param1 / Decorator 3')
+    param1: number,
+    @Test('method2() / param2 / Decorator 1')
+    @Test('method2() / param2 / Decorator 2')
+    @Test('method2() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  constructor(
+    @Test('constructor() / param1 / Decorator 1')
+    @Test('constructor() / param1 / Decorator 2')
+    @Test('constructor() / param1 / Decorator 3')
+    param1: number,
+    @Test('constructor() / param2 / Decorator 1')
+    @Test('constructor() / param2 / Decorator 2')
+    @Test('constructor() / param2 / Decorator 3')
+    param2: number,
+  ) {}
+}
+
+// universal decorator
+function Test(name: string): any {
+  console.log(`Init: ${name}`)
+  return () => {
+    console.log(`Run:  ${name}`)
+  }
+}
+```
+
+Result:
+
+```
+Init: prop1 / Decorator 1
+Init: prop1 / Decorator 2
+Init: prop1 / Decorator 3
+Run:  prop1 / Decorator 3
+Run:  prop1 / Decorator 2
+Run:  prop1 / Decorator 1
+Init: prop2 / Decorator 1
+Init: prop2 / Decorator 2
+Init: prop2 / Decorator 3
+Run:  prop2 / Decorator 3
+Run:  prop2 / Decorator 2
+Run:  prop2 / Decorator 1
+Init: method1() / Decorator 1
+Init: method1() / Decorator 2
+Init: method1() / Decorator 3
+Init: method1() / param1 / Decorator 1
+Init: method1() / param1 / Decorator 2
+Init: method1() / param1 / Decorator 3
+Init: method1() / param2 / Decorator 1
+Init: method1() / param2 / Decorator 2
+Init: method1() / param2 / Decorator 3
+Run:  method1() / param2 / Decorator 3
+Run:  method1() / param2 / Decorator 2
+Run:  method1() / param2 / Decorator 1
+Run:  method1() / param1 / Decorator 3
+Run:  method1() / param1 / Decorator 2
+Run:  method1() / param1 / Decorator 1
+Run:  method1() / Decorator 3
+Run:  method1() / Decorator 2
+Run:  method1() / Decorator 1
+Init: method2() / Decorator 1
+Init: method2() / Decorator 2
+Init: method2() / Decorator 3
+Init: method2() / param1 / Decorator 1
+Init: method2() / param1 / Decorator 2
+Init: method2() / param1 / Decorator 3
+Init: method2() / param2 / Decorator 1
+Init: method2() / param2 / Decorator 2
+Init: method2() / param2 / Decorator 3
+Run:  method2() / param2 / Decorator 3
+Run:  method2() / param2 / Decorator 2
+Run:  method2() / param2 / Decorator 1
+Run:  method2() / param1 / Decorator 3
+Run:  method2() / param1 / Decorator 2
+Run:  method2() / param1 / Decorator 1
+Run:  method2() / Decorator 3
+Run:  method2() / Decorator 2
+Run:  method2() / Decorator 1
+Init: staticProp1 / Decorator 1
+Init: staticProp1 / Decorator 2
+Init: staticProp1 / Decorator 3
+Run:  staticProp1 / Decorator 3
+Run:  staticProp1 / Decorator 2
+Run:  staticProp1 / Decorator 1
+Init: staticProp2 / Decorator 1
+Init: staticProp2 / Decorator 2
+Init: staticProp2 / Decorator 3
+Run:  staticProp2 / Decorator 3
+Run:  staticProp2 / Decorator 2
+Run:  staticProp2 / Decorator 1
+Init: staticMethod1() / Decorator 1
+Init: staticMethod1() / Decorator 2
+Init: staticMethod1() / Decorator 3
+Init: staticMethod1() / param1 / Decorator 1
+Init: staticMethod1() / param1 / Decorator 2
+Init: staticMethod1() / param1 / Decorator 3
+Init: staticMethod1() / param2 / Decorator 1
+Init: staticMethod1() / param2 / Decorator 2
+Init: staticMethod1() / param2 / Decorator 3
+Run:  staticMethod1() / param2 / Decorator 3
+Run:  staticMethod1() / param2 / Decorator 2
+Run:  staticMethod1() / param2 / Decorator 1
+Run:  staticMethod1() / param1 / Decorator 3
+Run:  staticMethod1() / param1 / Decorator 2
+Run:  staticMethod1() / param1 / Decorator 1
+Run:  staticMethod1() / Decorator 3
+Run:  staticMethod1() / Decorator 2
+Run:  staticMethod1() / Decorator 1
+Init: staticMethod2() / Decorator 1
+Init: staticMethod2() / Decorator 2
+Init: staticMethod2() / Decorator 3
+Init: staticMethod2() / param1 / Decorator 1
+Init: staticMethod2() / param1 / Decorator 2
+Init: staticMethod2() / param1 / Decorator 3
+Init: staticMethod2() / param2 / Decorator 1
+Init: staticMethod2() / param2 / Decorator 2
+Init: staticMethod2() / param2 / Decorator 3
+Run:  staticMethod2() / param2 / Decorator 3
+Run:  staticMethod2() / param2 / Decorator 2
+Run:  staticMethod2() / param2 / Decorator 1
+Run:  staticMethod2() / param1 / Decorator 3
+Run:  staticMethod2() / param1 / Decorator 2
+Run:  staticMethod2() / param1 / Decorator 1
+Run:  staticMethod2() / Decorator 3
+Run:  staticMethod2() / Decorator 2
+Run:  staticMethod2() / Decorator 1
+Init: class / Decorator 1
+Init: class / Decorator 2
+Init: class / Decorator 3
+Init: constructor() / param1 / Decorator 1
+Init: constructor() / param1 / Decorator 2
+Init: constructor() / param1 / Decorator 3
+Init: constructor() / param2 / Decorator 1
+Init: constructor() / param2 / Decorator 2
+Init: constructor() / param2 / Decorator 3
+Run:  constructor() / param2 / Decorator 3
+Run:  constructor() / param2 / Decorator 2
+Run:  constructor() / param2 / Decorator 1
+Run:  constructor() / param1 / Decorator 3
+Run:  constructor() / param1 / Decorator 2
+Run:  constructor() / param1 / Decorator 1
+Run:  class / Decorator 3
+Run:  class / Decorator 2
+Run:  class / Decorator 1
+```
+
