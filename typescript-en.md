@@ -2683,11 +2683,7 @@ class Product implements IProduct {
 }
 
 // decorator without params
-function Log(
-  target: Object,
-  propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<(...args: any[]) => any>,
-) {
+function Log(target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
   const original = descriptor.value
 
   descriptor.value = function(...args: any[]) {
@@ -2699,11 +2695,7 @@ function Log(
 
 // decorator with params (decorators fabric)
 function LogExtended(title: string) {
-  return (
-    target: Object,
-    propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>,
-  ) => {
+  return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const original = descriptor.value
 
     descriptor.value = function(...args: any[]) {
