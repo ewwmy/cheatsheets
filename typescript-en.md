@@ -3490,3 +3490,247 @@ function LoggedMethod<This, Args extends any[], Return>(
 }
 ```
 
+## Modules
+
+> TypeScript supports a module system compatible with ES Modules and can export a project either as a single-file bundle, or as CommonJS, or as ES Module formats.
+
+|             | One-file bundle | CommonJS          | ES Modules |
+|-------------|-----------------|-------------------|------------|
+| Node.js     | ✅              | ✅                | ✅         |
+| Browser     | ✅              | Webpack, polyfill | ✅         |
+| TypeScript  | 🔼              | 🔼                | 🔼         |
+
+### `namespace`
+
+> Namespaces in TypeScript allow encapsulating names to prevent naming conflicts, typically in large codebases or when working with multiple libraries.
+
+```typescript
+namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+
+A.a // 5
+```
+
+### References
+
+> References (`///<reference>`) in TypeScript are an old way to include dependencies between files, often used to reference type declarations before modern module systems like ES Modules.
+
+`tsconfig.json`:
+
+```javascript
+{
+	"compilerOptions": {
+    ...
+		"module": "AMD",
+		"rootDir": "./src",
+		// "resolveJsonModule": true,
+		"outFile": "./app.js",
+		// "outDir": "./build",
+    ...
+  }
+}
+```
+
+`./app.ts`:
+
+```typescript
+/// <reference path="./modules/module1.ts" />
+console.log(A.a)
+```
+
+`./modules/module1.ts`:
+
+```typescript
+namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+```
+
+### CommonJS
+
+`tsconfig.json`:
+
+```javascript
+{
+	"compilerOptions": {
+    ...
+		"module": "CommonJS",
+		"rootDir": "./src",
+		"resolveJsonModule": true,
+		// "outFile": "./app.js",
+		"outDir": "./build",
+    ...
+  }
+}
+```
+
+> With those settings it will compile the project into CommonJS module system (`require` / `module.exports`).
+
+`./app.ts`:
+
+```typescript
+import { A } from './modules/module1'
+console.log(A.a)
+```
+
+`./modules/module1.ts`:
+
+```typescript
+export namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+```
+
+### ES Modules
+
+`tsconfig.json`:
+
+```javascript
+{
+	"compilerOptions": {
+    ...
+		"module": "ES6", // or "ES2015", which is a synonym
+		"rootDir": "./src",
+		"resolveJsonModule": true,
+		// "outFile": "./app.js",
+		"outDir": "./build",
+    ...
+  }
+}
+```
+
+`package.json`:
+
+```javascript
+{
+  ...
+  "type": "module",
+  ...
+}
+```
+
+> With those settings it will compile the project into ES Modules system (`import` / `export`).
+
+`./app.ts`:
+
+```typescript
+import { A } from './modules/module1'
+console.log(A.a)
+```
+
+`./modules/module1.ts`:
+
+```typescript
+export namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+```
+
+> ❗ When compiling TypeScript to ES Modules, make sure to add the `.js` extension to import paths. Without it, JavaScript won't be able to locate the modules. You can manually add the `.js` extension in TypeScript imports; it's valid for TypeScript, even though autocomplete might not suggest it.
+
+`./app.ts`:
+
+```typescript
+import { A } from './modules/module1.js' // ✅
+console.log(A.a)
+```
+
+### `import` / `export`
+
+`./app.ts`:
+
+```typescript
+import run, { a } from './modules/module1' // import default as `run`, `a` specifically
+import running from './modules/module1' // import default as `running`
+import * as all from './modules/module1' // import everything as `all`
+import { Test as MyClass } from './modules/module1' // import `Test` class as `MyClass` (alias)
+import { ITest, MyType } from './modules/module1'
+import { type MyType2 } from './modules/module1' // `type` is specially for types (only in compile-time)
+import type { MyType3 } from './modules/module1' // `type` is specially for types (only in compile-time)
+
+run()
+running()
+console.log(a)
+console.log(all.a, all.obj)
+new MyClass()
+const foo: ITest = {
+  c: 123,
+}
+const bar: MyType = 1
+```
+
+`./modules/module1.ts`:
+
+```typescript
+export const a = 5
+export const obj = {}
+
+export default function run() {
+  console.log('run')
+}
+
+export interface ITest {
+  c: number
+}
+export class Test {}
+
+export type MyType = number | string
+export type MyType2 = MyType
+export type MyType3 = MyType
+```
+
+### Type definitions for third-party libraries
+
+[npm](https://www.npmjs.com/) offers us three types of packages:
+- ![](./img/typescript/ts.png) with full TypeScript support
+- ![](./img/typescript/dt.png) with type definitions for TypeScript (available at [DefinitelyTypes on GitHub](https://github.com/DefinitelyTypes/DefinitelyTypes) and can be installed as `@types/package-name`)
+- without TypeScript support.
+
+#### Add Types for third-party package without TypeScript support
+
+```bash
+npm i really-relaxed-json
+```
+
+`./app.ts`:
+
+```typescript
+import { toJson } from 'really-relaxed-json' // ❗ will cause error in TypeScript
+const rjson = '[ one two three {foo:bar} ]'
+const json = toJson(rjson)
+console.log(json)
+```
+
+> Disable type checking for the library import (not recommended):
+
+```typescript
+// @ts-ignore
+import { toJson } from 'really-relaxed-json'
+// ...
+```
+
+> Manually add types:
+
+`./types.d.ts`:
+
+```typescript
+// should have the same name with the module
+declare module 'really-relaxed-json' {
+  export function toJson(rjsonString: string, compact?: boolean): string
+  // ...
+}
+```
+
