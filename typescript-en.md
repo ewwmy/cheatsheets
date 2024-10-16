@@ -2065,7 +2065,7 @@ console.log(res.isOpened) // true
 console.log(res.items[0]) // first
 ```
 
-## Advanced Types
+## Type Manipulations
 
 ### `keyof`
 
@@ -3221,6 +3221,12 @@ function ClassDecorator(target: any) {
 class MyClass {}
 ```
 
+##### Advanced usage
+
+```typescript
+
+```
+
 #### Method Decorators
 
 ```typescript
@@ -3234,10 +3240,30 @@ class MyClass {
 }
 ```
 
-Advanced usage:
+#### Extended example
 
 ```typescript
 class MyClass {
+  @MethodDecorator
+  myMethod(value: number): boolean {
+    return Boolean(value)
+  }
+}
+
+function MethodDecorator<This, Args extends any[], Return>(
+    target: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) {
+  return function(this: This, ...args: Args): Return {
+    const res = target.call(this, ...args)
+    return res
+  }
+}
+```
+
+##### Advanced usage
+
+```typescript
 class MyClass {
   private amount: number = 1
 
@@ -3253,7 +3279,6 @@ function Max(value: number) {
     target: (this: This, ...args: Args) => Return,
     context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
   ) {
-    console.log('Init')
     return function(this: This, ...args: Args): Return {
       if (args[0] > value) {
         throw new Error(`The value is more than ${value}`)
@@ -3266,18 +3291,14 @@ function Max(value: number) {
 
 try {
   const obj = new MyClass()
-  obj.setAmount(5) // ok
-  obj.setAmount(15) // error
+  obj.setAmount(5)
+  obj.setAmount(15) // The value is more than 10
 } catch (error) {
   if (error instanceof Error) {
     console.error(error.message)
   } else {
     console.error(error)
   }
-}
-
-// Init
-// The value is more than 10
 }
 ```
 
