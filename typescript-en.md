@@ -3490,3 +3490,161 @@ function LoggedMethod<This, Args extends any[], Return>(
 }
 ```
 
+## Modules
+
+> TypeScript supports a module system compatible with ES Modules and can export a project either as a single-file bundle, or as CommonJS, or as ES Module formats.
+
+|             | One-file bundle | CommonJS          | ES Modules |
+|-------------|-----------------|-------------------|------------|
+| Node.js     | ✅              | ✅                | ✅         |
+| Browser     | ✅              | Webpack, polyfill | ✅         |
+| TypeScript  | 🔼              | 🔼                | 🔼         |
+
+### `namespace`
+
+> Namespaces in TypeScript allow encapsulating names to prevent naming conflicts, typically in large codebases or when working with multiple libraries.
+
+```typescript
+namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+
+A.a // 5
+```
+
+### References
+
+> References (`///<reference>`) in TypeScript are an old way to include dependencies between files, often used to reference type declarations before modern module systems like ES Modules.
+
+`tsconfig.json`:
+
+```javascript
+{
+	"compilerOptions": {
+    ...
+		"module": "AMD",
+		"rootDir": "./src",
+		// "resolveJsonModule": true,
+		"outFile": "./app.js",
+		// "outDir": "./build",
+    ...
+  }
+}
+```
+
+`./app.ts`:
+
+```typescript
+/// <reference path="./modules/module1.ts" />
+console.log(A.a)
+```
+
+`./modules/module1.ts`:
+
+```typescript
+namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+```
+
+### CommonJS
+
+`tsconfig.json`:
+
+```javascript
+{
+	"compilerOptions": {
+    ...
+		"module": "CommonJS",
+		"rootDir": "./src",
+		"resolveJsonModule": true,
+		// "outFile": "./app.js",
+		"outDir": "./build",
+    ...
+  }
+}
+```
+
+> With those settings it will compile the project into CommonJS module system (`require` / `module.exports`).
+
+`./app.ts`:
+
+```typescript
+import { A } from './modules/module1'
+console.log(A.a)
+```
+
+`./modules/module1.ts`:
+
+```typescript
+export namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+```
+
+### ES Modules
+
+`tsconfig.json`:
+
+```javascript
+{
+	"compilerOptions": {
+    ...
+		"module": "ES6", // or "ES2015", which is a synonym
+		"rootDir": "./src",
+		"resolveJsonModule": true,
+		// "outFile": "./app.js",
+		"outDir": "./build",
+    ...
+  }
+}
+```
+
+`package.json`:
+
+```javascript
+{
+  ...
+  "type": "module",
+  ...
+}
+```
+
+> With those settings it will compile the project into ES Modules system (`import` / `export`).
+
+`./app.ts`:
+
+```typescript
+import { A } from './modules/module1'
+console.log(A.a)
+```
+
+`./modules/module1.ts`:
+
+```typescript
+export namespace A {
+  export const a = 5
+  export interface B {
+    c: number
+  }
+}
+```
+
+> ❗ When compiling TypeScript to ES Modules, make sure to add the `.js` extension to import paths. Without it, JavaScript won't be able to locate the modules. You can manually add the `.js` extension in TypeScript imports; it's valid for TypeScript, even though autocomplete might not suggest it.
+
+`./app.ts`:
+
+```typescript
+import { A } from './modules/module1.js' // ✅
+console.log(A.a)
+```
+
