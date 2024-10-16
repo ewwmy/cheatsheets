@@ -3221,10 +3221,23 @@ function ClassDecorator(target: any) {
 class MyClass {}
 ```
 
-##### Advanced usage
+##### Extended example
 
 ```typescript
+@ClassDecorator
+class MyClass {
+  
+  myMethod(value: number): boolean {
+    return Boolean(value)
+  }
+}
 
+function ClassDecorator<This, Args extends any[]>(
+    target: new (...args: Args) => This,
+    context: ClassDecoratorContext<new (...args: Args) => This>,
+) {
+  console.log('Init: Class decorator')
+}
 ```
 
 #### Method Decorators
@@ -3240,7 +3253,7 @@ class MyClass {
 }
 ```
 
-#### Extended example
+##### Extended example
 
 ```typescript
 class MyClass {
@@ -3254,6 +3267,7 @@ function MethodDecorator<This, Args extends any[], Return>(
     target: (this: This, ...args: Args) => Return,
     context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
 ) {
+  console.log('Init: Method decorator')
   return function(this: This, ...args: Args): Return {
     const res = target.call(this, ...args)
     return res
