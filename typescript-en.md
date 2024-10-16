@@ -2065,7 +2065,7 @@ console.log(res.isOpened) // true
 console.log(res.items[0]) // first
 ```
 
-## Advanced Types
+## Type Manipulations
 
 ### `keyof`
 
@@ -2512,5 +2512,864 @@ console.log( ResetPrice( new Product() ).getPrice() ) // 0
 
 LogPrice(ResetPrice( new Product() )).getPrice() // Price: 0
 ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
+```
+
+### Class Decorators
+
+#### Implementation Order
+
+> Class decorators initialize in direct order but run in back order.
+
+```typescript
+@SetPrice(300) // |        ^
+@SetPrice(50)  // | init   | run
+@SetPrice(110) // V        |
+class Product {
+  price: number = 0
+}
+```
+
+#### Basic Structure
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+@ResetPrice
+class Product implements IProduct {
+  price: number = 1000
+  getPrice(): number {
+    return this.price
+  }
+}
+
+function ResetPrice<T extends { new(...args: any[]): {} }>(target: T) {
+  return class extends target {
+    price = 0 // will set `price` to `0` even after the class initialization
+  }
+}
+
+console.log(new Product().getPrice()) // 0
+```
+
+#### Decorators Fabric
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+@SetPrice(300)
+@SetPrice(50)
+@SetPrice(110)
+class Product implements IProduct {
+  price: number = 1000
+  getPrice(): number {
+    return this.price
+  }
+}
+
+function SetPrice(price: number) {
+  return <T extends { new(...args: any[]): {} }>(target: T) => {
+    return class extends target {
+      price = price
+    }
+  }
+}
+
+console.log(new Product().getPrice()) // 300
+```
+
+#### Advanced Usage
+
+Make decorators to add new field to a class with a date:
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+@CreatedAt()
+@CreatedAtFixed()
+class Product implements IProduct {
+  price: number = 0
+  getPrice(): number {
+    return this.price
+  }
+}
+
+// by default: date will stay the same for any new instance of the class
+function CreatedAtFixed(date: Date = new Date()) {
+  return <T extends { new(...args: any[]): {} }>(target: T) => {
+    return class extends target {
+      createdAtFixed = date
+    }
+  }
+}
+
+// we need to define a type to call the property `createdAtFixed` later
+type CreatedAtFixed = {
+  createdAtFixed: Date
+}
+
+// by default: date will be different for any new instance of the class
+function CreatedAt(date?: Date) {
+  return <T extends { new (...args: any[]): {} }>(target: T) => {
+    return class extends target {
+      createdAt = date ?? new Date()
+    }
+  }
+}
+
+// we need to define a type to call the property `createdAt` later
+type CreatedAt = {
+  createdAt: Date
+}
+
+// a type definition that combines all the properties we add by decorators
+type ProductWithCreatedAt = Product & CreatedAt & CreatedAtFixed
+
+const pause = (ms: number) => new Promise(resolve => {
+  setTimeout(() => resolve(true), ms)
+})
+
+;(async () => {
+  // there is no other option to use properties added by decorators except type casting the instance with the custom type
+  const product1 = new Product() as ProductWithCreatedAt
+  console.log(product1)
+  // Product {
+  //   price: 0,
+  //   createdAtFixed: 2024-10-15T01:28:57.530Z,
+  //   createdAt: 2024-10-15T01:28:57.530Z
+  // }
+  console.log(product1.createdAtFixed) // 2024-10-15T01:28:57.530Z
+  console.log(product1.createdAt)      // 2024-10-15T01:28:57.530Z
+
+  await pause(5000)
+  
+  // there is no other option to use properties added by decorators except type casting the instance with the custom type
+  const product2 = new Product() as ProductWithCreatedAt
+  console.log(product2)
+  // Product {
+  //   price: 0,
+  //   createdAtFixed: 2024-10-15T01:28:57.530Z,
+  //   createdAt: 2024-10-15T01:29:02.547Z
+  // }
+  console.log(product2.createdAtFixed) // 2024-10-15T01:28:57.530Z
+  console.log(product2.createdAt)      // 2024-10-15T01:29:02.547Z
+})()
+```
+
+### Method Decorators
+
+```typescript
+interface IProduct {
+  price: number
+  getPrice(): number
+}
+
+class Product implements IProduct {
+  constructor(public price: number = 0) {}
+
+  @LogExtended('Product price')
+  @Log
+  getPrice(): number {
+    return this.price
+  }
+}
+
+// decorator without params
+function Log(target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+  const original = descriptor.value
+
+  descriptor.value = function(...args: any[]) {
+    const result = original.call(this, ...args)
+    console.log(result)
+    return result
+  }
+}
+
+// decorator with params (decorators fabric)
+function LogExtended(title: string) {
+  return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+    const original = descriptor.value
+
+    descriptor.value = function(...args: any[]) {
+      const result = original.call(this, ...args)
+      console.log(`${title}: ${result}`)
+      return result
+    }
+  }
+}
+
+new Product().getPrice()
+// 0
+// Product price: 0
+
+new Product(150).getPrice()
+// 150
+// Product price: 150
+```
+
+### Property Decorators
+
+```typescript
+class Product {
+  @Max(100)
+  price: number = 50
+}
+
+function Max(max: number) {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+  ) => {
+    let value: number
+    const setter = function(newValue: number) {
+      if (newValue > max) {
+        console.warn(`Нельзя установить значение больше ${max}`)
+      } else {
+        value = newValue
+      }
+    }
+
+    const getter = function() {
+      return value
+    }
+
+    Object.defineProperty(target, propertyKey, {
+      set: setter,
+      get: getter,
+    })
+  }
+}
+
+const product = new Product()
+console.log(product.price) // 50
+
+product.price = 100
+console.log(product.price) // 100
+
+product.price = 150 // Нельзя установить значение больше 100
+```
+
+### Accessor Decorators
+
+```typescript
+class Product {
+  private _price: number
+
+  @Log()
+  set price(value: number) {
+    this._price = value
+  }
+
+  get price() {
+    return this._price
+  }
+}
+
+function Log() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor,
+  ) => {
+    const original = descriptor.set
+    const propertyName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
+
+    descriptor.set = (...args: any) => {
+      console.log(`Setter \`${propertyName}\` called`)
+      original?.apply(target, args)
+    }
+  }
+}
+
+const product = new Product()
+
+product.price = 100 // Setter `price` called
+console.log(product.price) // 100
+
+product.price = 150 // Setter `price` called
+console.log(product.price) // 150
+```
+
+### Parameter Decorators
+
+```typescript
+class Product {
+  private price: number
+
+  setPrice(@Param() value: number) {
+    this.price = value
+  }
+
+  getPrice() {
+    return this.price
+  }
+}
+
+function Param() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) => {
+    console.log(target) // {}
+    console.log(propertyKey) // setPrice
+    console.log(parameterIndex) // 0
+  }
+}
+```
+
+### Metadata
+
+> Metadata is a JavaScript feature that allows setting and retrieving metadata about program structures like classes, methods or properties. It can be used to attach additional information to objects, which can be accessed and manipulated at runtime. In TypeScript, metadata is often utilized to store and access type-related information during JavaScript runtime, especially with decorators in combination with the `reflect-metadata` library.
+
+```javascript
+{
+  "compilerOptions": {
+    ...
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true, // Emit design-type metadata for decorated declarations in source files
+    ...
+  }
+}
+```
+
+To use this feature we need to install `reflect-metadata`:
+
+```bash
+npm install reflect-metadata
+```
+
+How to use:
+
+```typescript
+import 'reflect-metadata'
+
+class Product {
+  private price: number
+
+  getMultiplePrice(@Param() multiplier: number = 2): number {
+    return this.price * multiplier
+  }
+}
+
+function Param() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) => {
+    console.log(Reflect.getOwnMetadata('design:type', target, propertyKey)) // [Function: Function]
+    console.log(Reflect.getOwnMetadata('design:paramtypes', target, propertyKey)) // [ [Function: Number] ]
+    console.log(Reflect.getOwnMetadata('design:returntype', target, propertyKey)) // [Function: Number]
+  }
+}
+```
+
+Advanced usage:
+
+```typescript
+import 'reflect-metadata'
+
+const PositiveMetadataKey: symbol = Symbol('POSITIVE_METADATA_KEY')
+
+class Product {
+  private price: number
+
+  getPrice(): number {
+    return this.price
+  }
+
+  @Validate()
+  setPrice(
+    @Positive() price: number,
+    @Positive() second?: number,
+    @Positive() third?: number,
+  ): number {
+    this.price = price + (second ?? 0) + (third ?? 0)
+    return this.price
+  }
+}
+
+// parameter decorator
+function Positive() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) => {
+    // array for indexes of the method parameters (trying to get existent or set as an empty array) 
+    let params: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey) || []
+
+    // add the index of the current parameter
+    params.push(parameterIndex)
+
+    // register the indexes of the method parameters in metadata
+    Reflect.defineMetadata(PositiveMetadataKey, params, target, propertyKey)
+  }
+}
+
+// method decorator
+function Validate() {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>,
+  ) => {
+    const original = descriptor.value
+    const methodName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
+
+    descriptor.value = function(...args: any[]) {
+      // get metadata with the indexes of the parameters registered with `@Positive` for this method
+      const registeredParams: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
+      if (registeredParams) {
+        for (const index of registeredParams) {
+          // check whether the value of the parameter registered with `@Positive` not less than 0
+          if (args[index] < 0) {
+            throw new Error(`The value of the argument \`${index}\` in \`${methodName}\` must be positive, but ${args[index]} was passed`)
+          }
+        }
+      }
+      return original?.call(this, ...args)
+    }
+  }
+}
+
+const product = new Product()
+
+try {
+  console.log(product.setPrice(0, 100, 200)) // 300
+  console.log(product.setPrice(50, 300, 200)) // 550
+  console.log(product.setPrice(100, -100, 300)) // The value of the argument `1` in `setPrice` must be positive, but -100 was passed
+} catch (error) {
+  if (error instanceof Error) {
+    console.error(error.message)
+  } else {
+    console.error(error)
+  }
+}
+```
+
+### Decorators Order
+
+Code example with the universal decorator to test the order of initialization and implementation:
+
+```typescript
+@Test('class / Decorator 1')
+@Test('class / Decorator 2')
+@Test('class / Decorator 3')
+class Product {
+  @Test('prop1 / Decorator 1')
+  @Test('prop1 / Decorator 2')
+  @Test('prop1 / Decorator 3')
+  prop1: number
+
+  @Test('prop2 / Decorator 1')
+  @Test('prop2 / Decorator 2')
+  @Test('prop2 / Decorator 3')
+  prop2: number
+
+  @Test('staticProp1 / Decorator 1')
+  @Test('staticProp1 / Decorator 2')
+  @Test('staticProp1 / Decorator 3')
+  static staticProp1: number
+
+  @Test('staticProp2 / Decorator 1')
+  @Test('staticProp2 / Decorator 2')
+  @Test('staticProp2 / Decorator 3')
+  static staticProp2: number
+
+  @Test('staticMethod1() / Decorator 1')
+  @Test('staticMethod1() / Decorator 2')
+  @Test('staticMethod1() / Decorator 3')
+  static staticMethod1(
+    @Test('staticMethod1() / param1 / Decorator 1')
+    @Test('staticMethod1() / param1 / Decorator 2')
+    @Test('staticMethod1() / param1 / Decorator 3')
+    param1: number,
+    @Test('staticMethod1() / param2 / Decorator 1')
+    @Test('staticMethod1() / param2 / Decorator 2')
+    @Test('staticMethod1() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  @Test('staticMethod2() / Decorator 1')
+  @Test('staticMethod2() / Decorator 2')
+  @Test('staticMethod2() / Decorator 3')
+  static staticMethod2(
+    @Test('staticMethod2() / param1 / Decorator 1')
+    @Test('staticMethod2() / param1 / Decorator 2')
+    @Test('staticMethod2() / param1 / Decorator 3')
+    param1: number,
+    @Test('staticMethod2() / param2 / Decorator 1')
+    @Test('staticMethod2() / param2 / Decorator 2')
+    @Test('staticMethod2() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  @Test('method1() / Decorator 1')
+  @Test('method1() / Decorator 2')
+  @Test('method1() / Decorator 3')
+  method1(
+    @Test('method1() / param1 / Decorator 1')
+    @Test('method1() / param1 / Decorator 2')
+    @Test('method1() / param1 / Decorator 3')
+    param1: number,
+    @Test('method1() / param2 / Decorator 1')
+    @Test('method1() / param2 / Decorator 2')
+    @Test('method1() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  @Test('method2() / Decorator 1')
+  @Test('method2() / Decorator 2')
+  @Test('method2() / Decorator 3')
+  method2(
+    @Test('method2() / param1 / Decorator 1')
+    @Test('method2() / param1 / Decorator 2')
+    @Test('method2() / param1 / Decorator 3')
+    param1: number,
+    @Test('method2() / param2 / Decorator 1')
+    @Test('method2() / param2 / Decorator 2')
+    @Test('method2() / param2 / Decorator 3')
+    param2: number,
+  ): void {}
+
+  constructor(
+    @Test('constructor() / param1 / Decorator 1')
+    @Test('constructor() / param1 / Decorator 2')
+    @Test('constructor() / param1 / Decorator 3')
+    param1: number,
+    @Test('constructor() / param2 / Decorator 1')
+    @Test('constructor() / param2 / Decorator 2')
+    @Test('constructor() / param2 / Decorator 3')
+    param2: number,
+  ) {}
+}
+
+// universal decorator
+function Test(name: string): any {
+  console.log(`Init: ${name}`)
+  return () => {
+    console.log(`Run:  ${name}`)
+  }
+}
+```
+
+Result:
+
+```
+Init: prop1 / Decorator 1
+Init: prop1 / Decorator 2
+Init: prop1 / Decorator 3
+Run:  prop1 / Decorator 3
+Run:  prop1 / Decorator 2
+Run:  prop1 / Decorator 1
+Init: prop2 / Decorator 1
+Init: prop2 / Decorator 2
+Init: prop2 / Decorator 3
+Run:  prop2 / Decorator 3
+Run:  prop2 / Decorator 2
+Run:  prop2 / Decorator 1
+Init: method1() / Decorator 1
+Init: method1() / Decorator 2
+Init: method1() / Decorator 3
+Init: method1() / param1 / Decorator 1
+Init: method1() / param1 / Decorator 2
+Init: method1() / param1 / Decorator 3
+Init: method1() / param2 / Decorator 1
+Init: method1() / param2 / Decorator 2
+Init: method1() / param2 / Decorator 3
+Run:  method1() / param2 / Decorator 3
+Run:  method1() / param2 / Decorator 2
+Run:  method1() / param2 / Decorator 1
+Run:  method1() / param1 / Decorator 3
+Run:  method1() / param1 / Decorator 2
+Run:  method1() / param1 / Decorator 1
+Run:  method1() / Decorator 3
+Run:  method1() / Decorator 2
+Run:  method1() / Decorator 1
+Init: method2() / Decorator 1
+Init: method2() / Decorator 2
+Init: method2() / Decorator 3
+Init: method2() / param1 / Decorator 1
+Init: method2() / param1 / Decorator 2
+Init: method2() / param1 / Decorator 3
+Init: method2() / param2 / Decorator 1
+Init: method2() / param2 / Decorator 2
+Init: method2() / param2 / Decorator 3
+Run:  method2() / param2 / Decorator 3
+Run:  method2() / param2 / Decorator 2
+Run:  method2() / param2 / Decorator 1
+Run:  method2() / param1 / Decorator 3
+Run:  method2() / param1 / Decorator 2
+Run:  method2() / param1 / Decorator 1
+Run:  method2() / Decorator 3
+Run:  method2() / Decorator 2
+Run:  method2() / Decorator 1
+Init: staticProp1 / Decorator 1
+Init: staticProp1 / Decorator 2
+Init: staticProp1 / Decorator 3
+Run:  staticProp1 / Decorator 3
+Run:  staticProp1 / Decorator 2
+Run:  staticProp1 / Decorator 1
+Init: staticProp2 / Decorator 1
+Init: staticProp2 / Decorator 2
+Init: staticProp2 / Decorator 3
+Run:  staticProp2 / Decorator 3
+Run:  staticProp2 / Decorator 2
+Run:  staticProp2 / Decorator 1
+Init: staticMethod1() / Decorator 1
+Init: staticMethod1() / Decorator 2
+Init: staticMethod1() / Decorator 3
+Init: staticMethod1() / param1 / Decorator 1
+Init: staticMethod1() / param1 / Decorator 2
+Init: staticMethod1() / param1 / Decorator 3
+Init: staticMethod1() / param2 / Decorator 1
+Init: staticMethod1() / param2 / Decorator 2
+Init: staticMethod1() / param2 / Decorator 3
+Run:  staticMethod1() / param2 / Decorator 3
+Run:  staticMethod1() / param2 / Decorator 2
+Run:  staticMethod1() / param2 / Decorator 1
+Run:  staticMethod1() / param1 / Decorator 3
+Run:  staticMethod1() / param1 / Decorator 2
+Run:  staticMethod1() / param1 / Decorator 1
+Run:  staticMethod1() / Decorator 3
+Run:  staticMethod1() / Decorator 2
+Run:  staticMethod1() / Decorator 1
+Init: staticMethod2() / Decorator 1
+Init: staticMethod2() / Decorator 2
+Init: staticMethod2() / Decorator 3
+Init: staticMethod2() / param1 / Decorator 1
+Init: staticMethod2() / param1 / Decorator 2
+Init: staticMethod2() / param1 / Decorator 3
+Init: staticMethod2() / param2 / Decorator 1
+Init: staticMethod2() / param2 / Decorator 2
+Init: staticMethod2() / param2 / Decorator 3
+Run:  staticMethod2() / param2 / Decorator 3
+Run:  staticMethod2() / param2 / Decorator 2
+Run:  staticMethod2() / param2 / Decorator 1
+Run:  staticMethod2() / param1 / Decorator 3
+Run:  staticMethod2() / param1 / Decorator 2
+Run:  staticMethod2() / param1 / Decorator 1
+Run:  staticMethod2() / Decorator 3
+Run:  staticMethod2() / Decorator 2
+Run:  staticMethod2() / Decorator 1
+Init: class / Decorator 1
+Init: class / Decorator 2
+Init: class / Decorator 3
+Init: constructor() / param1 / Decorator 1
+Init: constructor() / param1 / Decorator 2
+Init: constructor() / param1 / Decorator 3
+Init: constructor() / param2 / Decorator 1
+Init: constructor() / param2 / Decorator 2
+Init: constructor() / param2 / Decorator 3
+Run:  constructor() / param2 / Decorator 3
+Run:  constructor() / param2 / Decorator 2
+Run:  constructor() / param2 / Decorator 1
+Run:  constructor() / param1 / Decorator 3
+Run:  constructor() / param1 / Decorator 2
+Run:  constructor() / param1 / Decorator 1
+Run:  class / Decorator 3
+Run:  class / Decorator 2
+Run:  class / Decorator 1
+```
+
+### TypeScript 5.0 Decorators
+
+> In TypeScript 5.0, decorators have been updated to align with the ECMAScript proposal. 
+
+```typescript
+// ordinary decorator
+function Decorator(target: any, context: any): void {}
+
+// decorator factory (to use decorator with arguments)
+function DecoratorFactory(param: any) {
+  return function (target: any, context: any): void {}
+}
+```
+
+To use the new decorators set up these options in `tsconfig.json`:
+
+```javascript
+{
+  "compilerOptions": {
+    ...
+    "target": "es2022",
+    // "experimentalDecorators": true,
+    // "emitDecoratorMetadata": true,
+    ...
+  }
+}
+```
+
+#### Class Decorators
+
+```typescript
+function ClassDecorator(target: any) {
+  console.log('Decorating the class:', target.name) // Decorating the class: MyClass
+}
+
+@ClassDecorator
+class MyClass {}
+```
+
+##### Advanced usage
+
+```typescript
+
+```
+
+#### Method Decorators
+
+```typescript
+function MethodDecorator(target: any, context: any) {
+  console.log('Decorating the method:', context) // Decorating the method: myMethod
+}
+
+class MyClass {
+  @MethodDecorator
+  myMethod() {}
+}
+```
+
+#### Extended example
+
+```typescript
+class MyClass {
+  @MethodDecorator
+  myMethod(value: number): boolean {
+    return Boolean(value)
+  }
+}
+
+function MethodDecorator<This, Args extends any[], Return>(
+    target: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) {
+  return function(this: This, ...args: Args): Return {
+    const res = target.call(this, ...args)
+    return res
+  }
+}
+```
+
+##### Advanced usage
+
+```typescript
+class MyClass {
+  private amount: number = 1
+
+  @Max(10)
+  setAmount(value: number): number {
+    this.amount = value
+    return this.amount
+  }
+}
+
+function Max(value: number) {
+  return function<This, Args extends any[], Return>(
+    target: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+  ) {
+    return function(this: This, ...args: Args): Return {
+      if (args[0] > value) {
+        throw new Error(`The value is more than ${value}`)
+      }
+      const res = target.call(this, ...args)
+      return res
+    }
+  }
+}
+
+try {
+  const obj = new MyClass()
+  obj.setAmount(5)
+  obj.setAmount(15) // The value is more than 10
+} catch (error) {
+  if (error instanceof Error) {
+    console.error(error.message)
+  } else {
+    console.error(error)
+  }
+}
+```
+
+#### Property Decorators
+
+```typescript
+function PropertyDecorator(target: any, context: any) {
+  console.log('Decorating the property:', context) // Decorating the property: myProperty
+}
+
+class MyClass {
+  @PropertyDecorator
+  myProperty: string
+}
+```
+
+#### Accessor Decorators
+
+```typescript
+function AccessorDecorator(target: any, context: any) {
+  console.log('Decorating the accessor:', context) // Decorating the accessor: value
+}
+
+class MyClass {
+  private _value: number = 0
+
+  @AccessorDecorator
+  get value() {
+    return this._value
+  }
+
+  set value(value: number) {
+    this._value = value
+  }
+}
+```
+
+#### Parameter Decorators
+
+> Parameter decorators in TypeScript have not been updated in TypeScript 5.0 as significantly as other decorator types, due to the complexity of retrofitting them into the new ECMAScript-compatible proposal.
+
+```typescript
+function ParameterDecorator(
+  target: any,
+  propertyKey: string | symbol,
+  parameterIndex: number,
+) {
+  console.log(`Decorating the method parameter: ${String(propertyKey)} at index ${parameterIndex}`)
+  // Decorating the method parameter: myMethod at index 0
+}
+
+class MyClass {
+  myMethod(@ParameterDecorator param: string) {}
+}
+```
+
+#### Well-typed Decorators
+
+```typescript
+function LoggedMethod<This, Args extends any[], Return>(
+  target: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) {
+    const methodName = String(context.name)
+    function replacementMethod(this: This, ...args: Args): Return {
+        console.log(`LOG: Entering method '${methodName}'.`)
+        const result = target.call(this, ...args)
+        console.log(`LOG: Exiting method '${methodName}'.`)
+        return result
+    }
+    return replacementMethod
+}
 ```
 
