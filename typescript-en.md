@@ -3196,6 +3196,20 @@ function DecoratorFactory(param: any) {
 }
 ```
 
+To use the new decorators set up these options in `tsconfig.json`:
+
+```javascript
+{
+  "compilerOptions": {
+    ...
+    "target": "es2022",
+    // "experimentalDecorators": true,
+    // "emitDecoratorMetadata": true,
+    ...
+  }
+}
+```
+
 #### Class Decorators
 
 ```typescript
@@ -3217,6 +3231,53 @@ function MethodDecorator(target: any, context: any) {
 class MyClass {
   @MethodDecorator
   myMethod() {}
+}
+```
+
+Advanced usage:
+
+```typescript
+class MyClass {
+class MyClass {
+  private amount: number = 1
+
+  @Max(10)
+  setAmount(value: number): number {
+    this.amount = value
+    return this.amount
+  }
+}
+
+function Max(value: number) {
+  return function<This, Args extends any[], Return>(
+    target: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+  ) {
+    console.log('Init')
+    return function(this: This, ...args: Args): Return {
+      if (args[0] > value) {
+        throw new Error(`The value is more than ${value}`)
+      }
+      const res = target.call(this, ...args)
+      return res
+    }
+  }
+}
+
+try {
+  const obj = new MyClass()
+  obj.setAmount(5) // ok
+  obj.setAmount(15) // error
+} catch (error) {
+  if (error instanceof Error) {
+    console.error(error.message)
+  } else {
+    console.error(error)
+  }
+}
+
+// Init
+// The value is more than 10
 }
 ```
 
