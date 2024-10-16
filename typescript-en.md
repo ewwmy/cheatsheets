@@ -3221,7 +3221,7 @@ function ClassDecorator(target: any) {
 class MyClass {}
 ```
 
-##### Extended example
+##### Extended Example
 
 ```typescript
 @ClassDecorator
@@ -3252,7 +3252,7 @@ class MyClass {
 }
 ```
 
-##### Extended example
+##### Extended Example
 
 ```typescript
 class MyClass {
@@ -3274,7 +3274,7 @@ function MethodDecorator<This, Args extends any[], Return>(
 }
 ```
 
-##### Advanced usage
+##### Advanced Usage
 
 ```typescript
 class MyClass {
@@ -3326,6 +3326,55 @@ class MyClass {
   @PropertyDecorator
   myProperty: string
 }
+```
+
+##### Extended Example
+
+```typescript
+class MyClass {
+  @PropertyDecorator // Init: Property decorator
+  myProperty: number = 1
+}
+
+function PropertyDecorator<This>(
+    target: undefined,
+    context: ClassFieldDecoratorContext<This, number>,
+) {
+  console.log('Init: Property decorator')
+  return function(value: number) {
+    console.log('Run: Property decorator')
+    return value
+  }
+}
+
+const obj = new MyClass() // Run: Property decorator
+```
+
+##### Advanced Usage
+
+```typescript
+class MyClass {
+  @Double // Init: Property decorator
+  myProperty: number = 5
+}
+
+function Double<This>(
+    target: undefined,
+    context: ClassFieldDecoratorContext<This, number>,
+) {
+  console.log('Init: Property decorator')
+  return function(value: number) {
+    // only once, on property initialization
+    console.log('Run: Property decorator')
+    return value * 2
+  }
+}
+
+const obj = new MyClass() // Run: Property decorator
+
+console.log(obj.myProperty) // 10
+obj.myProperty = 15
+console.log(obj.myProperty) // 15
 ```
 
 #### Accessor Decorators
