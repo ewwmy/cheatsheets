@@ -3714,7 +3714,7 @@ const json = toJson(rjson)
 console.log(json)
 ```
 
-> Disable type checking for the library import (not recommended):
+##### Disable type checking for the library import (not recommended)
 
 ```typescript
 // @ts-ignore
@@ -3722,7 +3722,7 @@ import { toJson } from 'really-relaxed-json'
 // ...
 ```
 
-> Manually add types:
+##### Manually add types
 
 `./types.d.ts`:
 
