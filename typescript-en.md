@@ -3226,7 +3226,6 @@ class MyClass {}
 ```typescript
 @ClassDecorator
 class MyClass {
-  
   myMethod(value: number): boolean {
     return Boolean(value)
   }
