@@ -3214,46 +3214,59 @@ To use the new decorators set up these options in `tsconfig.json`:
 
 ```typescript
 function ClassDecorator(target: any) {
-  console.log('Decorating the class:', target.name) // Decorating the class: MyClass
+  console.log('Decorating the class:', target.name)
 }
 
-@ClassDecorator
+@ClassDecorator // Decorating the class: MyClass
 class MyClass {}
 ```
 
-##### Advanced usage
+##### Extended Example
 
 ```typescript
+@ClassDecorator // Init: Class decorator
+class MyClass {
+  myMethod(value: number): boolean {
+    return Boolean(value)
+  }
+}
 
+function ClassDecorator<This, Args extends any[]>(
+    target: new (...args: Args) => This,
+    context: ClassDecoratorContext<new (...args: Args) => This>,
+) {
+  console.log('Init: Class decorator')
+}
 ```
 
 #### Method Decorators
 
 ```typescript
 function MethodDecorator(target: any, context: any) {
-  console.log('Decorating the method:', context) // Decorating the method: myMethod
+  console.log('Decorating the method:', context?.name)
 }
 
 class MyClass {
-  @MethodDecorator
+  @MethodDecorator // Decorating the method: myMethod
   myMethod() {}
 }
 ```
 
-#### Extended example
+##### Extended Example
 
 ```typescript
 class MyClass {
-  @MethodDecorator
+  @MethodDecorator // Init: Method decorator
   myMethod(value: number): boolean {
     return Boolean(value)
   }
 }
 
 function MethodDecorator<This, Args extends any[], Return>(
-    target: (this: This, ...args: Args) => Return,
-    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+  target: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
 ) {
+  console.log('Init: Method decorator')
   return function(this: This, ...args: Args): Return {
     const res = target.call(this, ...args)
     return res
@@ -3261,7 +3274,7 @@ function MethodDecorator<This, Args extends any[], Return>(
 }
 ```
 
-##### Advanced usage
+##### Advanced Usage
 
 ```typescript
 class MyClass {
@@ -3306,26 +3319,75 @@ try {
 
 ```typescript
 function PropertyDecorator(target: any, context: any) {
-  console.log('Decorating the property:', context) // Decorating the property: myProperty
+  console.log('Decorating the property:', context?.name)
 }
 
 class MyClass {
-  @PropertyDecorator
+  @PropertyDecorator // Decorating the property: myProperty
   myProperty: string
 }
+```
+
+##### Extended Example
+
+```typescript
+class MyClass {
+  @PropertyDecorator // Init: Property decorator
+  myProperty: number = 1
+}
+
+function PropertyDecorator<This>(
+    target: undefined,
+    context: ClassFieldDecoratorContext<This, number>,
+) {
+  console.log('Init: Property decorator')
+  return function(value: number) {
+    console.log('Run: Property decorator')
+    return value
+  }
+}
+
+const obj = new MyClass() // Run: Property decorator
+```
+
+##### Advanced Usage
+
+```typescript
+class MyClass {
+  @Double // Init: Property decorator
+  myProperty: number = 5
+}
+
+function Double<This>(
+    target: undefined,
+    context: ClassFieldDecoratorContext<This, number>,
+) {
+  console.log('Init: Property decorator')
+  return function(value: number) {
+    // only once, on property initialization
+    console.log('Run: Property decorator')
+    return value * 2
+  }
+}
+
+const obj = new MyClass() // Run: Property decorator
+
+console.log(obj.myProperty) // 10
+obj.myProperty = 15
+console.log(obj.myProperty) // 15
 ```
 
 #### Accessor Decorators
 
 ```typescript
 function AccessorDecorator(target: any, context: any) {
-  console.log('Decorating the accessor:', context) // Decorating the accessor: value
+  console.log('Decorating the accessor:', context?.name)
 }
 
 class MyClass {
   private _value: number = 0
 
-  @AccessorDecorator
+  @AccessorDecorator // Decorating the accessor: value
   get value() {
     return this._value
   }
@@ -3336,24 +3398,79 @@ class MyClass {
 }
 ```
 
+##### Extended Example
+
+```typescript
+class MyClass {
+  private _myProperty: string
+
+  get myProperty(): string {
+    return this._myProperty
+  }
+
+  @SetterDecorator // Init: Setter decorator
+  set myProperty(value: string) {
+    this._myProperty = value
+  }
+}
+
+function SetterDecorator<This, Return>(
+  target: (this: This, arg: any) => Return,
+  context: ClassSetterDecoratorContext<This, string>,
+) {
+  console.log('Init: Setter decorator')
+  return function(this: This, arg: any): Return {
+    const res = target.call(this, arg)
+    return res
+  }
+}
+```
+
+##### Advanced Usage
+
+```typescript
+class MyClass {
+  private _myProperty: string
+
+  get myProperty(): string {
+    return this._myProperty
+  }
+
+  @IsString // Init: Setter decorator
+  set myProperty(value: string) {
+    this._myProperty = value
+  }
+}
+
+function IsString<This, Return>(
+  target: (this: This, arg: any) => Return,
+  context: ClassSetterDecoratorContext<This, string>,
+) {
+  console.log('Init: Setter decorator')
+  return function(this: This, arg: any): Return {
+    if (typeof arg !== 'string') {
+      throw new Error(`Argument passed to \`${String(context.name)}\` setter is not a string`)
+    }
+    const res = target.call(this, arg)
+    return res
+  }
+}
+
+try {
+  const obj = new MyClass()
+
+  obj.myProperty = 'abc'
+  console.log(obj.myProperty) // abc
+  
+  obj.myProperty = (123 as any) // Argument passed to `myProperty` setter is not a string
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error)
+}
+```
+
 #### Parameter Decorators
 
 > Parameter decorators in TypeScript have not been updated in TypeScript 5.0 as significantly as other decorator types, due to the complexity of retrofitting them into the new ECMAScript-compatible proposal.
-
-```typescript
-function ParameterDecorator(
-  target: any,
-  propertyKey: string | symbol,
-  parameterIndex: number,
-) {
-  console.log(`Decorating the method parameter: ${String(propertyKey)} at index ${parameterIndex}`)
-  // Decorating the method parameter: myMethod at index 0
-}
-
-class MyClass {
-  myMethod(@ParameterDecorator param: string) {}
-}
-```
 
 #### Well-typed Decorators
 
