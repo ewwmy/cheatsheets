@@ -3243,7 +3243,7 @@ function ClassDecorator<This, Args extends any[]>(
 
 ```typescript
 function MethodDecorator(target: any, context: any) {
-  console.log('Decorating the method:', context)
+  console.log('Decorating the method:', context?.name)
 }
 
 class MyClass {
@@ -3319,7 +3319,7 @@ try {
 
 ```typescript
 function PropertyDecorator(target: any, context: any) {
-  console.log('Decorating the property:', context)
+  console.log('Decorating the property:', context?.name)
 }
 
 class MyClass {
@@ -3381,7 +3381,7 @@ console.log(obj.myProperty) // 15
 
 ```typescript
 function AccessorDecorator(target: any, context: any) {
-  console.log('Decorating the accessor:', context)
+  console.log('Decorating the accessor:', context?.name)
 }
 
 class MyClass {
