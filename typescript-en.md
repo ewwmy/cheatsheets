@@ -3653,13 +3653,13 @@ console.log(A.a)
 `./app.ts`:
 
 ```typescript
-import run, { a } from './modules/module1.js' // import default as `run`, `a` specifically
-import running from './modules/module1.js' // import default as `running`
-import * as all from './modules/module1.js' // import everything as `all`
-import { Test as MyClass } from './modules/module1.js' // import `Test` class as `MyClass` (alias)
-import { ITest, MyType } from './modules/module1.js'
-import { type MyType2 } from './modules/module1.js' // `type` is specially for types (only in compile-time)
-import type { MyType3 } from './modules/module1.js' // `type` is specially for types (only in compile-time)
+import run, { a } from './modules/module1' // import default as `run`, `a` specifically
+import running from './modules/module1' // import default as `running`
+import * as all from './modules/module1' // import everything as `all`
+import { Test as MyClass } from './modules/module1' // import `Test` class as `MyClass` (alias)
+import { ITest, MyType } from './modules/module1'
+import { type MyType2 } from './modules/module1' // `type` is specially for types (only in compile-time)
+import type { MyType3 } from './modules/module1' // `type` is specially for types (only in compile-time)
 
 run()
 running()
