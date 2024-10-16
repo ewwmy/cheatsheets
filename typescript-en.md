@@ -3692,3 +3692,45 @@ export type MyType2 = MyType
 export type MyType3 = MyType
 ```
 
+### Type definitions for third-party libraries
+
+[npm](https://www.npmjs.com/) offers us three types of packages:
+- ![](./img/typescript/ts.png) with full TypeScript support
+- ![](./img/typescript/dt.png) with type definitions for TypeScript (available at [DefinitelyTypes on GitHub](https://github.com/DefinitelyTypes/DefinitelyTypes) and can be installed as `@types/package-name`)
+- without TypeScript support.
+
+#### Add Types for third-party package without TypeScript support
+
+```bash
+npm i really-relaxed-json
+```
+
+`./app.ts`:
+
+```typescript
+import { toJson } from 'really-relaxed-json' // ❗ will cause error in TypeScript
+const rjson = '[ one two three {foo:bar} ]'
+const json = toJson(rjson)
+console.log(json)
+```
+
+> Disable type checking for the library import (not recommended):
+
+```typescript
+// @ts-ignore
+import { toJson } from 'really-relaxed-json'
+// ...
+```
+
+> Manually add types:
+
+`./types.d.ts`:
+
+```typescript
+// should have the same name with the module
+declare module 'really-relaxed-json' {
+  export function toJson(rjsonString: string, compact?: boolean): string
+  // ...
+}
+```
+
