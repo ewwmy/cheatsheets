@@ -3182,3 +3182,112 @@ Run:  class / Decorator 2
 Run:  class / Decorator 1
 ```
 
+### TypeScript 5.0 Decorators
+
+> In TypeScript 5.0, decorators have been updated to align with the ECMAScript proposal. 
+
+```typescript
+// ordinary decorator
+function Decorator(target: any, context: any): void {}
+
+// decorator factory (to use decorator with arguments)
+function DecoratorFactory(param: any) {
+  return function (target: any, context: any): void {}
+}
+```
+
+#### Class Decorators
+
+```typescript
+function ClassDecorator(target: any) {
+  console.log('Decorating the class:', target.name) // Decorating the class: MyClass
+}
+
+@ClassDecorator
+class MyClass {}
+```
+
+#### Method Decorators
+
+```typescript
+function MethodDecorator(target: any, context: any) {
+  console.log('Decorating the method:', context) // Decorating the method: myMethod
+}
+
+class MyClass {
+  @MethodDecorator
+  myMethod() {}
+}
+```
+
+#### Property Decorators
+
+```typescript
+function PropertyDecorator(target: any, context: any) {
+  console.log('Decorating the property:', context) // Decorating the property: myProperty
+}
+
+class MyClass {
+  @PropertyDecorator
+  myProperty: string
+}
+```
+
+#### Accessor Decorators
+
+```typescript
+function AccessorDecorator(target: any, context: any) {
+  console.log('Decorating the accessor:', context) // Decorating the accessor: value
+}
+
+class MyClass {
+  private _value: number = 0
+
+  @AccessorDecorator
+  get value() {
+    return this._value
+  }
+
+  set value(value: number) {
+    this._value = value
+  }
+}
+```
+
+#### Parameter Decorators
+
+> Parameter decorators in TypeScript have not been updated in TypeScript 5.0 as significantly as other decorator types, due to the complexity of retrofitting them into the new ECMAScript-compatible proposal.
+
+```typescript
+function ParameterDecorator(
+  target: any,
+  propertyKey: string | symbol,
+  parameterIndex: number,
+) {
+  console.log(`Decorating the method parameter: ${String(propertyKey)} at index ${parameterIndex}`)
+  // Decorating the method parameter: myMethod at index 0
+}
+
+class MyClass {
+  myMethod(@ParameterDecorator param: string) {}
+}
+```
+
+#### Well-typed Decorators
+
+```typescript
+function LoggedMethod<This, Args extends any[], Return>(
+  target: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) {
+    const methodName = String(context.name)
+    function replacementMethod(this: This, ...args: Args): Return {
+        console.log(`LOG: Entering method '${methodName}'.`)
+        const result = target.call(this, ...args)
+        console.log(`LOG: Exiting method '${methodName}'.`)
+        return result
+    }
+    return replacementMethod
+}
+```
+
