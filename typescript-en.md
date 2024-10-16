@@ -3648,3 +3648,47 @@ import { A } from './modules/module1.js' // ✅
 console.log(A.a)
 ```
 
+### `import` / `export`
+
+`./app.ts`:
+
+```typescript
+import run, { a } from './modules/module1.js' // import default as `run`, `a` specifically
+import running from './modules/module1.js' // import default as `running`
+import * as all from './modules/module1.js' // import everything as `all`
+import { Test as MyClass } from './modules/module1.js' // import `Test` class as `MyClass` (alias)
+import { ITest, MyType } from './modules/module1.js'
+import { type MyType2 } from './modules/module1.js' // `type` is specially for types (only in compile-time)
+import type { MyType3 } from './modules/module1.js' // `type` is specially for types (only in compile-time)
+
+run()
+running()
+console.log(a)
+console.log(all.a, all.obj)
+new MyClass()
+const foo: ITest = {
+  c: 123,
+}
+const bar: MyType = 1
+```
+
+`./modules/module1.ts`:
+
+```typescript
+export const a = 5
+export const obj = {}
+
+export default function run() {
+  console.log('run')
+}
+
+export interface ITest {
+  c: number
+}
+export class Test {}
+
+export type MyType = number | string
+export type MyType2 = MyType
+export type MyType3 = MyType
+```
+
