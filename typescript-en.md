@@ -3523,13 +3523,13 @@ A.a // 5
 
 ```javascript
 {
-	"compilerOptions": {
+  "compilerOptions": {
     ...
-		"module": "AMD",
-		"rootDir": "./src",
-		// "resolveJsonModule": true,
-		"outFile": "./app.js",
-		// "outDir": "./build",
+    "module": "AMD",
+    "rootDir": "./src",
+    // "resolveJsonModule": true,
+    "outFile": "./app.js",
+    // "outDir": "./build",
     ...
   }
 }
@@ -3559,13 +3559,13 @@ namespace A {
 
 ```javascript
 {
-	"compilerOptions": {
+  "compilerOptions": {
     ...
-		"module": "CommonJS",
-		"rootDir": "./src",
-		"resolveJsonModule": true,
-		// "outFile": "./app.js",
-		"outDir": "./build",
+    "module": "CommonJS",
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    // "outFile": "./app.js",
+    "outDir": "./build",
     ...
   }
 }
@@ -3597,13 +3597,13 @@ export namespace A {
 
 ```javascript
 {
-	"compilerOptions": {
+  "compilerOptions": {
     ...
-		"module": "ES6", // or "ES2015", which is a synonym
-		"rootDir": "./src",
-		"resolveJsonModule": true,
-		// "outFile": "./app.js",
-		"outDir": "./build",
+    "module": "ES6", // or "ES2015", which is a synonym
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    // "outFile": "./app.js",
+    "outDir": "./build",
     ...
   }
 }
