@@ -1524,6 +1524,32 @@ box.metaData // ❌
 box.#createdAt // ❌
 ```
 
+#### Private Constructor
+
+> `constructor` can be `private`, which can be used to implement **Singleton** design pattern:
+
+```typescript
+class MyClass {
+  private static instance: MyClass
+  public static getInstance(): MyClass {
+    if (!this.instance) {
+      this.instance = new MyClass()
+    }
+    return this.instance
+  }
+
+  private constructor() {}
+}
+
+const a1: MyClass = MyClass.getInstance()
+const a2: MyClass = MyClass.getInstance()
+const a3: MyClass = MyClass.getInstance()
+
+console.log(a1 instanceof MyClass) // true
+console.log(a1 === a2) // true
+console.log(a2 === a3) // true
+```
+
 ### `static`
 
 ```typescript
