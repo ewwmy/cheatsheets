@@ -4000,3 +4000,32 @@ app()
 // [ Result ]
 ```
 
+### TypeScript 5.3
+
+#### Type Narrowing in `switch`
+
+```typescript
+function foo(value: unknown) {
+  switch (true) {
+    case typeof value === 'string':
+      console.log(value.toUpperCase()) // before: ❌ // after: ✅
+      break
+    // ...
+  }
+}
+```
+
+#### Better Type Guards Usage
+
+```typescript
+function isString(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
+function foo(value: unknown) {
+  if (isString(value) === true) { // before: ❌ // after: ✅
+    // ...
+  }
+}
+```
+
