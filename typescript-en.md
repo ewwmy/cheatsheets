@@ -3760,3 +3760,243 @@ declare module 'really-relaxed-json' {
 }
 ```
 
+## TypeScript Updates
+
+### TypeScript 4.9
+
+#### `satisfies`
+
+##### Problem
+
+```typescript
+const palette = {
+    red: [255, 0, 0],
+    green: '#00ff00',
+    bleu: [0, 0, 255], // ❗ typo in property name
+}
+```
+
+##### Possible solution (before 4.9)
+
+```typescript
+type Colors = 'red' | 'green' | 'blue'
+type RGB = [red: number, green: number, blue: number]
+const palette: Record<Colors, string | RGB> = {
+    red: [255, 0, 0],
+    green: '#00ff00',
+    bleu: [0, 0, 255], // ❗ typo in property name
+    // ✅ the typo is now correctly detected
+}
+
+const greenNormalized = palette.green.toUpperCase() // ❌ but: property 'toUpperCase' does not exist on type 'string | RGB'
+```
+
+##### Solution (after 4.9)
+
+```typescript
+type Colors = 'red' | 'green' | 'blue'
+type RGB = [red: number, green: number, blue: number]
+const palette = {
+    red: [255, 0, 0],
+    green: '#00ff00',
+    bleu: [0, 0, 255],
+    // ✅ the typo is now caught
+} satisfies Record<Colors, string | RGB>
+
+const greenNormalized = palette.green.toUpperCase() // ✅
+```
+
+### TypeScript 5.0
+
+#### Stricter Enums
+
+```typescript
+enum Status {
+  Success,
+  Failed,
+}
+
+function statusInfo(status: Status) {}
+statusInfo(0) // before: ✅ // after: ✅
+statusInfo(1) // before: ✅ // after: ✅
+statusInfo(50) // before: ✅ // after: ❌
+```
+
+#### Constant Generics
+
+##### Problem
+
+```typescript
+class LanguageService<T> {
+  constructor(private langs: T[]) {}
+  pick(value: T) {}
+}
+
+const languageService = new LanguageService(['ru', 'en', 'fr'])
+languageService.pick('hfkbfksabfsdf') // ✅
+```
+
+##### Soultion
+
+```typescript
+class LanguageService<const T> { // after: ✅
+  constructor(private langs: T[]) {}
+  pick(value: T) {}
+}
+
+const languageService = new LanguageService(['ru', 'en', 'fr'])
+languageService.pick('ru') // after: ✅
+languageService.pick('en') // after: ✅
+languageService.pick('hfkbfksabfsdf') // after: ❌
+```
+
+#### Decorators
+
+See [TypeScript 5.0 Decorators](###typescript-5.0-decorators).
+
+`tsconfig.json`:
+
+```javascript
+{
+  "compilerOptions": {
+    ...
+    "experimentalDecorators": true, // true — old decorators // false — new decorators
+    ...
+  }
+}
+```
+
+### TypeScript 5.2
+
+#### `using`
+
+> Solves problem with releasing resources.
+
+##### Problem
+
+```typescript
+import { PrismaClient } from '@prisma/client'
+
+async function syncOrders() {
+  const client = new PrismaClient()
+  await client.$connect()
+  const res = await client.order.findMany({})
+  if (res) {
+    return res
+  }
+  return []
+  // the prisma client is never disconnected
+}
+
+async function app() {
+  console.log(await syncOrders())
+}
+
+app()
+```
+
+##### Solution with closing resources manually
+
+```typescript
+import { PrismaClient } from '@prisma/client'
+
+async function syncOrders() {
+  const client = new PrismaClient()
+  await client.$connect()
+  const res = await client.order.findMany({})
+  if (res) {
+    client.$disconnect() // ❗ code is repeated
+    return res
+  }
+  client.$disconnect() // ❗ code is repeated
+  return []
+}
+
+async function app() {
+  console.log(await syncOrders())
+}
+
+app()
+```
+
+##### Solution with `try` / `catch`
+
+```typescript
+import { PrismaClient } from '@prisma/client'
+
+async function syncOrders() {
+  const client = new PrismaClient()
+  try {
+    await client.$connect()
+    const res = await client.order.findMany({})
+    if (res) {
+      return res
+    }
+    return []
+  } catch {
+    return []
+  } finally {
+    client.$disconnect()
+  }
+}
+
+async function app() {
+  console.log(await syncOrders())
+}
+
+app()
+```
+
+##### Solution with `using`
+
+`tsconfig.json`:
+
+```javascript
+{
+  "compilerOptions": {
+    ...
+    "target": "es2022",
+    "lib": ["es2022", "esnext.disposable", "dom"],
+    ...
+  }
+}
+```
+
+```typescript
+import { PrismaClient } from '@prisma/client'
+
+async function useDb() {
+  const client = new PrismaClient()
+  await client.$connect()
+  console.log('Init')
+  return {
+    client,
+    async [Symbol.asyncDispose]() {
+      await client.$disconnect()
+      console.log('Dispose')
+    },
+  }
+}
+
+async function syncOrders() {
+  await using db = await useDb()
+  console.log('Function')
+  const res = await db.client.order.findMany({})
+  if (res) {
+    return res
+  }
+  return []
+}
+
+async function app() {
+  console.log(await syncOrders())
+}
+
+app()
+
+// Init
+// Function
+// Dispose
+// [ Result ]
+```
+
