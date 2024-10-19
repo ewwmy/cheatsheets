@@ -4029,3 +4029,82 @@ function foo(value: unknown) {
 }
 ```
 
+### TypeScript 5.3
+
+#### Better Type Narrowing
+
+```typescript
+const getDefault = () => 'default'
+
+function foo(name?: string) {
+  if (!name) {
+    name = getDefault()
+  }
+  return (age: number) => {
+    return name.toUpperCase() + ': ' + age.toString() // before: ❌ // after: ✅
+  }
+}
+
+const bar = foo()
+console.log(bar(33)) // DEFAULT: 33
+```
+
+#### `NoInfer<T>`
+
+##### Problem
+
+```typescript
+function getRoles<T extends string>(roles: T[], defaultRole: T) {}
+getRoles(['user', 'admin'], 'user') // ✅
+getRoles(['user', 'admin'], 'hkjsakjfbsdjkbfhsd') // ✅
+```
+
+##### Basic solution
+
+```typescript
+function getRoles<T extends string, D extends T>(roles: T[], defaultRole: D) {}
+getRoles(['user', 'admin'], 'user') // ✅
+getRoles(['user', 'admin'], 'hkjsakjfbsdjkbfhsd') // ❌
+```
+
+##### Solution with `NoInfer<T>`
+
+```typescript
+function getRoles<T extends string>(roles: T[], defaultRole: NoInfer<T>) {}
+getRoles(['user', 'admin'], 'user') // ✅
+getRoles(['user', 'admin'], 'hkjsakjfbsdjkbfhsd') // ❌
+```
+
+#### `Object.groupBy()` and `Map.groupBy()`
+
+`tsconfig.json`:
+
+```javascript
+{
+  "compilerOptions": {
+    ...
+    "target": "esnext",
+    ...
+  }
+}
+```
+
+> Node.js version must be ≥ 21.
+
+```typescript
+const users = [
+  { name: 'Alex', role: 'user' },
+  { name: 'Oxana', role: 'admin' },
+  { name: 'Smith', role: 'admin' },
+]
+
+const res = Object.groupBy(users, (user, index) => {
+  return user.role
+})
+console.log(res)
+// [Object: null prototype] {
+//   user: [ { name: 'Alex', role: 'user' } ],
+//   admin: [ { name: 'Oxana', role: 'admin' }, { name: 'Smith', role: 'admin' } ]
+// }
+```
+
