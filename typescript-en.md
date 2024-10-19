@@ -4029,7 +4029,7 @@ function foo(value: unknown) {
 }
 ```
 
-### TypeScript 5.3
+### TypeScript 5.4
 
 #### Better Type Narrowing
 
