@@ -224,7 +224,7 @@ console.log(foo) // Output: Hello, world!
 
 ### Dynamic imports
 
-#### Importing a module dynamically
+#### Importing a module asynchronously
 
 ```javascript
 // import.js
