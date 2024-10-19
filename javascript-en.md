@@ -234,6 +234,13 @@ import('./export.js')
   })
 ```
 
+```javascript
+// import.js
+async function main() {
+  const { foo } = await import('./export.js')
+}
+```
+
 ### Aliases and `*` import
 
 #### Importing all exports as a single object
