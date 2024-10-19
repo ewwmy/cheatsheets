@@ -224,7 +224,7 @@ console.log(foo) // Output: Hello, world!
 
 ### Dynamic imports
 
-#### Importing a module dynamically
+#### Importing a module asynchronously
 
 ```javascript
 // import.js
@@ -232,6 +232,13 @@ import('./export.js')
   .then(module => {
     console.log(module.foo) // Output: Hello, world!
   })
+```
+
+```javascript
+// import.js
+async function main() {
+  const { foo } = await import('./export.js')
+}
 ```
 
 ### Aliases and `*` import
