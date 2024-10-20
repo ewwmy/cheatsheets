@@ -148,3 +148,7 @@ node_modules/
 ```bash
 npm run build # will execute `./node_modules/.bin/some-binary` or `some-binary` if globally installed
 ```
+
+## `.npmignore`
+
+> Files that should not be included in the registry when the project is published.
