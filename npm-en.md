@@ -58,7 +58,16 @@ npm uni <packages> # same as above
 npm uninstall -g <packages> # uninstall specific packages globally (will delete the packages from the global scope but will not affect the local installation)
 ```
 
-## Scripts
+## `package.json`
+
+```javascript
+{
+  "main": "index.js", // entrypoint for resolving dependencies if the project is used as a package
+  "bin": "./index.js", // entrypoint to run if used as a bin (cli) utility
+}
+```
+
+### Scripts
 
 > Scripts are aliases in `package.json` that can be used to build, test, lint the project, or perform any other operations by running the command-line instructions described under the alias.
 
