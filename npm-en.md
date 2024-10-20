@@ -109,7 +109,7 @@ npm team destroy <scope:team> # remove a team
 npm team add <scope:team> <username> # add a user to a team
 npm team rm <scope:team> <username> # remove a user from a team
 npm team ls <scope>|<scope:team> # print teams in a scope | users in a team
-npm logout # log out
+npm logout # logout from the registry
 ```
 
 ## `node_modules`
