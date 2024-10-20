@@ -96,6 +96,22 @@ npm audit fix # try to fix security issues without updating major versions of th
 npm audit fix --force # fix security issues by updating the dependencies even if they have breaking changes
 ```
 
+## Login
+
+```bash
+npm login # login to npm registry
+npm whoami # print current username if logged in
+npm who am i # same as above
+npm profile get [property] # get profile parameter(s)
+npm profile set <property> <value> # set profile parameter
+npm team create <scope:team> # create a team
+npm team destroy <scope:team> # remove a team
+npm team add <scope:team> <username> # add a user to a team
+npm team rm <scope:team> <username> # remove a user from a team
+npm team ls <scope>|<scope:team> # print teams in a scope | users in a team
+npm logout # log out
+```
+
 ## `node_modules`
 
 > Directory tree where local dependencides are stored. The structure is flat even if the packages are actually nested:
