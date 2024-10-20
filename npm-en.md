@@ -71,7 +71,7 @@ npm uninstall -g <packages> # uninstall specific packages globally (will delete 
 
 > Scripts are aliases in `package.json` that can be used to build, test, lint the project, or perform any other operations by running the command-line instructions described under the alias.
 
-```json
+```javascript
 {
   "scripts": {
     "build": "build-util",
