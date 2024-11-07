@@ -330,3 +330,37 @@ emitter.on('removeListener', (event, listener) =>
 emitter.on('error', err => console.log(`Error: ${err.message}`))
 emitter.emit('error', new Error('Something went wrong')) // Error: Something went wrong
 ```
+
+## Advanced concepts
+
+### Architecture of Node.js
+
+![Event Loop](./img/nodejs/event-loop.png)
+
+### Event Loop
+
+```
+    ┌───────────────────────────┐
+┌─> │           timers          │   Executes setTimeout and setInterval callbacks
+│   └─────────────┬─────────────┘
+│        Microtasks: nextTick, Promises
+│   ┌─────────────┴─────────────┐
+│   │     pending callbacks     │   Executes system callbacks from previous I/O
+│   └─────────────┬─────────────┘
+│        Microtasks: nextTick, Promises
+│   ┌─────────────┴─────────────┐
+│   │       idle, prepare       │   Internal preparation steps
+│   └─────────────┬─────────────┘         ┌───────────────┐
+│   ┌─────────────┴─────────────┐         │   incoming:   │
+│   │           poll            │ <───────┤  connections, │   Main phase for I/O events
+│   └─────────────┬─────────────┘         │   data, etc.  │
+│        Microtasks: nextTick, Promises   └───────────────┘
+│   ┌─────────────┴─────────────┐
+│   │           check           │   Executes setImmediate callbacks
+│   └─────────────┬─────────────┘
+│        Microtasks: nextTick, Promises
+│   ┌─────────────┴─────────────┐
+└── │      close callbacks      │   Executes close event callbacks
+    └───────────────────────────┘
+         Microtasks: nextTick, Promises
+```
