@@ -122,6 +122,50 @@ import { a, b } from './foo.js'
 console.log(a + b()) // 3
 ```
 
+##### Variants of import
+
+```javascript
+// foo.js
+export const a = 1
+export function b() {}
+export default class C {}
+
+// bar.js
+import { a, b } from './foo.js' // import `a` and `b`
+import { a as first, b as second } from './foo.js' // import `a` and `b` as aliases
+import * as foo from './foo.js' // import everything as `foo`
+import Qux from './foo.js' // import default as `Qux`
+// import { a, b as second }, * as foo, Qux from './foo.js' // can be combined in one line
+
+a
+b()
+first
+second()
+foo.a
+foo.b()
+new Qux()
+```
+
+##### Async import
+
+```javascript
+;(async function () {
+  const { a, b } = await import('./foo.js')
+})()
+```
+
+Error handling is supported:
+
+```javascript
+;(async function () {
+  try {
+    const { a, b } = await import('./foo.js')
+  } catch {
+    console.error('Cannot load the module')
+  }
+})()
+```
+
 ##### How to turn on ES Modules
 
 Either:
