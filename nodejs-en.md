@@ -99,6 +99,14 @@ import { a, b } from './foo.js'
 console.log(a + b()) // 3
 ```
 
+##### How to turn on ES Modules
+
+Either:
+
+- Use `.mjs` extension
+- `"type": "module"` in `package.json`
+- `--input-type=module` as a command-line argument of `node`
+
 #### CommonJS vs ES Modules
 
 | CommonJS `require`          | ES Modules `import`          |
