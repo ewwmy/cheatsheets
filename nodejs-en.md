@@ -85,6 +85,29 @@ const { a, b } = require('./foo.js')
 console.log(a + b()) // 3
 ```
 
+##### Default-like export
+
+```javascript
+// foo.js
+function bar() {
+  console.log('bar')
+}
+module.exports = bar
+
+// baz.js
+const qux = require('./foo.js')
+qux() // 'bar'
+```
+
+##### Conditional import
+
+```javascript
+if (foo) {
+  const { bar } = require('./baz.js')
+  // ...
+}
+```
+
 #### ES Modules
 
 ```javascript
