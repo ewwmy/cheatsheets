@@ -240,27 +240,62 @@ require()
 | Error handling on `error` event                  | No built-in error handling on `error` event         |
 | Built-in events on adding and removing listeners | No built-in events on adding and removing listeners |
 
+#### How it works
+
 ```javascript
 const EventEmitter = require('events')
 const emitter = new EventEmitter()
 
-const hello = name => console.log(`Hello, ${name}!`)
+emitter.on('data', () => {})
+emitter.on('data', handlerFoo)
+emitter.on('data', handlerBar)
+
+emitter.on('close', someHandler)
+emitter.on('close', data => console.log(data))
+emitter.on('close', foo)
+```
+
+| Event name | Order | Listener function           |
+| ---------- | ----- | --------------------------- |
+| `'data'`   | 1     | `() => {}`                  |
+|            | 2     | `handlerFoo`                |
+|            | 3     | `handlerBar`                |
+| `'close'`  | 1     | `someHandler`               |
+|            | 2     | `data => console.log(data)` |
+|            | 3     | `foo`                       |
+
+#### Examples
+
+```javascript
+const EventEmitter = require('events')
+const emitter = new EventEmitter()
+
+const hello = () => console.log('Hello!')
+const bye = () => console.log('Goodbye!')
+const helloName = name => console.log(`Hello, ${name}!`)
 
 // adding listeners
 emitter.addListener('greet', hello)
-emitter.on('greetAlt', hello)
+emitter.on('greet', bye)
+emitter.on('greetAlt', helloName)
 
 // emitting events
-emitter.emit('greet', 'Alice') // Hello, Alice!
-emitter.emit('greetAlt', 'Alice') // Hello again, Alice!
+emitter.emit('greet') // Hello! ⏎ Goodbye!
+emitter.emit('greetAlt', 'Alice') // Hello, Alice!
 
 // removing listeners
 emitter.removeListener('greet', hello)
-emitter.off('greetAlt', hello)
+emitter.off('greetAlt', helloName)
 
 // emitting again
-emitter.emit('greet', 'Alice') // _
+emitter.emit('greet') // Goodbye!
 emitter.emit('greetAlt', 'Alice') // _
+
+// removing all listeners for an event
+emitter.removeAllListeners('greet')
+
+// removing all listeners
+emitter.removeAllListeners()
 
 // one-time listener
 emitter.once('greetOnce', name => console.log(`Once: Hello, ${name}!`))
