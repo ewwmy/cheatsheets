@@ -174,6 +174,23 @@ Either:
 - `"type": "module"` in `package.json`
 - `--input-type=module` as a command-line argument of `node`
 
+#### Import JSON files
+
+CommonJS:
+
+```javascript
+const data = require('./data.json')
+```
+
+ES Modules:
+
+```javascript
+import data from './data.json' assert { type: 'json' } // sync
+;(async () => {
+  const data = await import('./data.json', { assert: { type: 'json' } }) // async
+})()
+```
+
 #### CommonJS vs ES Modules
 
 | CommonJS `require`          | ES Modules `import`          |
@@ -182,3 +199,33 @@ Either:
 | Сan be used in conditions   | Сannot be used in conditions |
 | Executes entire file        | Imports only what's needed   |
 | No async (blocks execution) | Async load is supported      |
+
+### Global and Modular variables
+
+```javascript
+// globals
+global // root object
+console
+performance
+setTimeout
+setInterval
+setImmediate
+Event
+EventTarget
+Buffer
+URL
+URLSearchParams
+TextEncoder
+TextDecoder
+MessageChannel
+MessageEvent
+MessagePort
+// ...
+
+// modulars
+__dirname // absolute path to the directory of the current module file
+__filename // absolute path to the current module file
+exports
+module
+require()
+```
