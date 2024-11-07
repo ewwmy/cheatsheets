@@ -279,8 +279,11 @@ emitter.addListener('greet', hello)
 emitter.on('greet', bye)
 emitter.on('greetAlt', helloName)
 
+// adding listeners in the beginning of the list
+emitter.prependListener('greet', () => console.log('👋'))
+
 // emitting events
-emitter.emit('greet') // Hello! ⏎ Goodbye!
+emitter.emit('greet') // 👋 ⏎ Hello! ⏎ Goodbye!
 emitter.emit('greetAlt', 'Alice') // Hello, Alice!
 
 // removing listeners
