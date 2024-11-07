@@ -291,7 +291,7 @@ emitter.removeListener('greet', hello)
 emitter.off('greetAlt', helloName)
 
 // emitting again
-emitter.emit('greet') // Goodbye!
+emitter.emit('greet') // 👋 ⏎ Goodbye!
 emitter.emit('greetAlt', 'Alice') // _
 
 // removing all listeners for an event
