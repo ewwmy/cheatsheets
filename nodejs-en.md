@@ -229,3 +229,74 @@ exports
 module
 require()
 ```
+
+### Events
+
+| `EventEmitter`                                   | `EventTarget`                                       |
+| ------------------------------------------------ | --------------------------------------------------- |
+| From `events` module                             | From `globals`                                      |
+| Multiple listeners for one event                 | Only one listener for one event                     |
+| Compatible with browser `EventEmitter` API       | Partially compatible                                |
+| Error handling on `error` event                  | No built-in error handling on `error` event         |
+| Built-in events on adding and removing listeners | No built-in events on adding and removing listeners |
+
+```javascript
+const EventEmitter = require('events')
+const emitter = new EventEmitter()
+
+const hello = name => {
+  console.log(`Hello, ${name}!`)
+}
+
+// adding a listener to an event
+emitter.addListener('greet', hello)
+emitter.on('greetAlt', hello)
+
+// emitting an event
+emitter.emit('greet', 'Alice') // Hello, Alice!
+emitter.emit('greetAlt', 'Alice') // Hello again, Alice!
+
+// removing a listener from an event
+emitter.removeListener('greet', goodBye)
+emitter.off('greetAlt', goodBye)
+
+// emitting an event
+emitter.emit('greet', 'Alice') // _
+emitter.emit('greetAlt', 'Alice') // _
+
+// one-time listener (listener will trigger only once)
+emitter.once('greetOnce', name => {
+  console.log(`Once: Hello, ${name}!`)
+})
+
+// triggering the 'greetOnce' event, the listener will trigger only once
+emitter.emit('greetOnce', 'Bob') // Once: Hello, Bob!
+emitter.emit('greetOnce', 'Charlie') // _
+
+// sets / gets the maximum number of listeners for an event (default is 10)
+emitter.setMaxListeners(5)
+emitter.getMaxListeners()
+
+// gets the number of listeners for 'greet' event
+emitter.listenerCount('greet')
+
+// gets an array of all listeners for the 'greet' event
+emitter.listeners('greet')
+
+// gets a list of all registered event names with their listeners
+emitter.eventNames()
+
+// listening for when listeners are added or removed
+emitter.on('newListener', (event, listener) => {
+  console.log(`New listener added for event: ${event}`)
+})
+emitter.on('removeListener', (event, listener) => {
+  console.log(`Listener removed from event: ${event}`)
+})
+
+// built-in `error` event (throws an exception if not handled)
+emitter.on('error', err => {
+  console.log(`Error occurred: ${err.message}`)
+})
+emitter.emit('error', new Error('Something went wrong')) // Error occurred: Something went wrong
+```
