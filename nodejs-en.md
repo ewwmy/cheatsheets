@@ -503,3 +503,23 @@ new Promise(resolve => {
 
 // 1, 9, 10, 11, 2, 4, 3, 5, 6, 7, 8
 ```
+
+### Call stack and Debug mode
+
+```javascript
+const foo = 1
+
+function a() {
+  function b() {
+    function c() {
+      console.log(foo)
+    }
+    c()
+  }
+  b()
+}
+
+a() // 1
+```
+
+![Call stack and Debug mode in VS Code](./img/nodejs/debug-mode-breakpoints.png)
