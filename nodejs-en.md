@@ -426,3 +426,80 @@ setImmediate(() => {
 })
 // 'Timeout is reached' after 3 sec.
 ```
+
+### Event Loop examples
+
+#### Simple example
+
+```javascript
+console.log(1) // synchronous
+
+setTimeout(() => {
+  console.log(2) // timer
+}, 0)
+
+process.nextTick(() => {
+  console.log(3) // nextTick
+})
+
+Promise.resolve()
+  .then(() => {
+    console.log(4) // microtask - promise
+  })
+  .then(() => {
+    console.log(5) // another microtask within the same promise
+  })
+
+setImmediate(() => {
+  console.log(6) // immediate
+})
+
+console.log(7) // synchronous
+
+// 1, 7, 3, 4, 5, 2, 6
+```
+
+#### Extended example
+
+```javascript
+console.log(1) // synchronous
+
+setTimeout(() => {
+  console.log(2) // synchronous inside the timer
+  process.nextTick(() => {
+    console.log(3) // nextTick inside the timer
+  })
+
+  new Promise(resolve => {
+    console.log(4) // synchronous inside the promise
+    resolve()
+  })
+    .then(() => {
+      console.log(5) // then for the first promise
+      return new Promise(resolve => {
+        console.log(6) // synchronous inside the second promise
+        resolve()
+      })
+    })
+    .then(() => {
+      console.log(7) // then for the second promise
+    })
+}, 0)
+
+setImmediate(() => {
+  console.log(8) // immediate
+})
+
+new Promise(resolve => {
+  console.log(9) // synchronous inside the promise
+  resolve()
+})
+  .then(() => {
+    console.log(10) // first then for the promise
+  })
+  .then(() => {
+    console.log(11) // second then for the promise
+  })
+
+// 1, 9, 10, 11, 2, 4, 3, 5, 6, 7, 8
+```
