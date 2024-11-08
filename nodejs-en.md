@@ -526,7 +526,52 @@ a() // 1
 
 ### Performance
 
-...
+```javascript
+const { performance, PerformanceObserver } = require('perf_hooks')
+
+// // // performance measurement with marks
+performance.mark('start')
+// ... slow code ...
+performance.mark('end')
+performance.measure('slow', 'start', 'end') // label, mark1, mark2
+console.log(performance.getEntriesByName('slow'))
+
+// // // performance measurement with observer for `measure` type
+const measureObs = new PerformanceObserver((items, observer) => {
+  console.log(items.getEntries()) // all entries
+  console.log(items.getEntriesByName('slow')) // entries by name
+  console.log(items.getEntriesByType('measure')) // entries by type
+  observer.disconnect()
+})
+measureObs.observe({ entryTypes: ['measure'] }) // 'dns', 'function', 'gc', 'http', 'http2', 'mark', 'measure', 'net', 'node', 'resource'
+
+// // // performance measurement with observer for `function` type
+function slow() {
+  // ... slow code ...
+}
+slow = performance.timerify(slow)
+
+const funcObs = new PerformanceObserver((items, observer) => {
+  console.log(items.getEntries()) // all entries
+  observer.disconnect()
+})
+funcObs.observe({ entryTypes: ['function'] }) // types of entries that we observe
+
+// // // high-resolution timing for a function
+console.time('label')
+// ... slow code ...
+console.timeEnd('label')
+
+// // // inspecting event loop lag
+const start = Date.now()
+setImmediate(() => {
+  const lag = Date.now() - start
+  console.log(`Event Loop Lag: ${lag}ms`)
+})
+
+// // // memory usage
+console.log(process.memoryUsage()) // { rss, heapTotal, heapUsed, external, arrayBuffers }
+```
 
 ## Multi-threading
 
