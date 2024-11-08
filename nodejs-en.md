@@ -340,28 +340,38 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
 ### Event Loop
 
 ```
-    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┌─> ┃           timers          ┃   Executes setTimeout and setInterval callbacks
-│   ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│        Microtasks: nextTick, Promises
-│   ┌─────────────┴─────────────┐
-│   │     pending callbacks     │   Executes system callbacks from previous I/O
-│   └─────────────┬─────────────┘
-│        Microtasks: nextTick, Promises
-│   ┌─────────────┴─────────────┐
-│   │       idle, prepare       │   Internal preparation steps
-│   └─────────────┬─────────────┘         ┌───────────────┐
-│   ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓         │   incoming:   │
-│   ┃           poll            ┃ <───────┤  connections, │   Main phase for I/O events
-│   ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛         │   data, etc.  │
-│        Microtasks: nextTick, Promises   └───────────────┘
-│   ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
-│   ┃           check           ┃   Executes setImmediate callbacks
-│   ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│        Microtasks: nextTick, Promises
-│   ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
-│   ┃      close callbacks      ┃   Executes close event callbacks
-│   ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│        Microtasks: nextTick, Promises
-└─────────────────┘
+     ┌───────────────────────────┐
+     │       initialization      │   Synchronous code
+     └─────────────┬─────────────┘
+┌─────────────────>│
+│    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
+│    ┃           timers          ┃   Executes setTimeout and setInterval callbacks
+│    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
+│         Microtasks: nextTick, Promises
+│    ┌─────────────┴─────────────┐
+│    │     pending callbacks     │   Executes system callbacks from previous I/O
+│    └─────────────┬─────────────┘
+│         Microtasks: nextTick, Promises
+│    ┌─────────────┴─────────────┐
+│    │       idle, prepare       │   Internal preparation steps
+│    └─────────────┬─────────────┘         ┌───────────────┐
+│    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓         │   incoming:   │
+│    ┃           poll            ┃ <───────┤  connections, │   Main phase for I/O events
+│    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛         │   data, etc.  │
+│         Microtasks: nextTick, Promises   └───────────────┘
+│    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
+│    ┃           check           ┃   Executes setImmediate callbacks
+│    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
+│         Microtasks: nextTick, Promises
+│    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
+│    ┃      close callbacks      ┃   Executes close event callbacks
+│    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
+│         Microtasks: nextTick, Promises
+│    ┌─────────────┴─────────────┐
+└─no─┤           exit?           │   Checks whether the program is finished
+     └─────────────┬─────────────┘
+                  yes
+     ┌─────────────┴─────────────┐
+     │           finish          │
+     └───────────────────────────┘
 ```
