@@ -376,5 +376,47 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
      └───────────────────────────┘
 ```
 
-> Heavy synchronous operations may prevent the Event Loop from starting.
+> Heavy synchronous operations prevent the Event Loop from starting; it won't begin until the call stack is empty.
 > Heavy asynchronous operations should be moved out of the main thread, for example, into worker threads, to avoid blocking the Event Loop.
+
+### Timers
+
+> Timers don't guarantee exact timing because of the Event Loop. The more the Event Loop is loaded, the greater the delay may be.
+
+```javascript
+// a callback
+const greet = (name, emoji) => console.log(`Hello, ${name}! ${emoji}`)
+
+// executes a callback once after a delay (ms)
+setTimeout(() => console.log('Timeout'), 1000) // 'Timeout' after 1 sec.
+setTimeout(greet, 5000, 'Alice', '👋') // 'Hello, Alice! 👋' after 5 sec.
+
+// executes a callback once after a delay (ms) and saves the timer id into a variable
+const timeout = setTimeout(() => console.log('Timeout'), 1000)
+// cancels a timeout
+clearTimeout(timeout)
+
+// executes a callback repeatedly with a fixed delay (ms) and saves the timer id into a variable
+const interval = setInterval(() => console.log('Interval'), 1000)
+// cancels an interval
+clearInterval(interval)
+
+// executes a callback immediately after I/O events and saves the timer id into a variable
+const immediate = setImmediate(() => console.log('Immediate'))
+// cancels an immediate
+clearImmediate(immediate)
+
+// `ref` and `unref` usage
+const anotherTimer = setTimeout(() => {
+  console.log('Timeout is reached')
+}, 3000)
+
+// the timeout is unset
+anotherTimer.unref()
+
+// but at the `check` Event Loop stage we back the timer, so finally, it will be activated
+setImmediate(() => {
+  anotherTimer.ref()
+})
+// 'Timeout is reached' after 3 sec.
+```
