@@ -347,26 +347,28 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
      ┌───────────────────────────┐
      │       initialization      │   Synchronous code, `require`, register callbacks
      └─────────────┬─────────────┘
+     Microtasks: nextTick, Promises
 ┌─────────────────>│
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
 │    ┃           timers          ┃   Executes setTimeout and setInterval callbacks
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┌─────────────┴─────────────┐
 │    │     pending callbacks     │   Executes system callbacks from previous I/O
 │    └─────────────┬─────────────┘
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┌─────────────┴─────────────┐
 │    │       idle, prepare       │   Internal preparation steps
-│    └─────────────┬─────────────┘         ┌───────────────┐
+│    └─────────────┬─────────────┘
+│    Microtasks: nextTick, Promises        ┌───────────────┐
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓         │   incoming:   │
 │    ┃           poll            ┃ <───────┤  connections, │   Main phase for I/O events
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛         │   data, etc.  │
-│         Microtasks: nextTick, Promises   └───────────────┘
+│    Microtasks: nextTick, Promises        └───────────────┘
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
 │    ┃           check           ┃   Executes setImmediate callbacks
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
 │    ┃      close callbacks      ┃   Executes close event callbacks
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
