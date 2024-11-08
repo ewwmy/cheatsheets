@@ -341,7 +341,7 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
 
 ```
      ┌───────────────────────────┐
-     │       initialization      │   Synchronous code
+     │       initialization      │   Synchronous code, `require`, register callbacks
      └─────────────┬─────────────┘
 ┌─────────────────>│
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
