@@ -372,7 +372,7 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
 │    ┃      close callbacks      ┃   Executes close event callbacks
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┌─────────────┴─────────────┐
 └─no─┤           exit?           │   Checks whether the program is finished
      └─────────────┬─────────────┘
