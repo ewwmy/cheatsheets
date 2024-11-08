@@ -337,6 +337,10 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
 
 ![Event Loop](./img/nodejs/event-loop.png)
 
+#### Animated example
+
+![Event Loop Animated](./img/nodejs/event-loop-animated.gif)
+
 ### Event Loop
 
 ```
@@ -414,7 +418,7 @@ const anotherTimer = setTimeout(() => {
 // the timeout is unset
 anotherTimer.unref()
 
-// but at the `check` Event Loop stage we back the timer, so finally, it will be activated
+// reactivates the timer if the event loop is still active at `check` phase
 setImmediate(() => {
   anotherTimer.ref()
 })
