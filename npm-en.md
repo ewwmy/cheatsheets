@@ -58,11 +58,20 @@ npm uni <packages> # same as above
 npm uninstall -g <packages> # uninstall specific packages globally (will delete the packages from the global scope but will not affect the local installation)
 ```
 
-## Scripts
+## `package.json`
+
+```javascript
+{
+  "main": "index.js", // entrypoint for resolving dependencies if the project is used as a package
+  "bin": "./index.js", // entrypoint to run if used as a bin (cli) utility
+}
+```
+
+### Scripts
 
 > Scripts are aliases in `package.json` that can be used to build, test, lint the project, or perform any other operations by running the command-line instructions described under the alias.
 
-```json
+```javascript
 {
   "scripts": {
     "build": "build-util",
@@ -96,6 +105,22 @@ npm audit fix # try to fix security issues without updating major versions of th
 npm audit fix --force # fix security issues by updating the dependencies even if they have breaking changes
 ```
 
+## Login
+
+```bash
+npm login # login to npm registry
+npm whoami # print current username if logged in
+npm who am i # same as above
+npm profile get [property] # get profile parameter(s)
+npm profile set <property> <value> # set profile parameter
+npm team create <scope:team> # create a team
+npm team destroy <scope:team> # remove a team
+npm team add <scope:team> <username> # add a user to a team
+npm team rm <scope:team> <username> # remove a user from a team
+npm team ls <scope>|<scope:team> # print teams in a scope | users in a team
+npm logout # logout from the registry
+```
+
 ## `node_modules`
 
 > Directory tree where local dependencides are stored. The structure is flat even if the packages are actually nested:
@@ -123,3 +148,7 @@ node_modules/
 ```bash
 npm run build # will execute `./node_modules/.bin/some-binary` or `some-binary` if globally installed
 ```
+
+## `.npmignore`
+
+> Files that should not be included in the registry when the project is published.
