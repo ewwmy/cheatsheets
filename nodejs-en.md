@@ -529,6 +529,11 @@ a() // 1
 ```javascript
 const { performance, PerformanceObserver } = require('perf_hooks')
 
+// // // performance basic usage
+const start = performance.now()
+// ... slow code ...
+console.log(performance.now() - start)
+
 // // // performance measurement with marks
 performance.mark('start')
 // ... slow code ...
