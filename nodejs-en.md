@@ -375,3 +375,6 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
      │           finish          │
      └───────────────────────────┘
 ```
+
+> Heavy synchronous operations may prevent the Event Loop from starting.
+> Heavy asynchronous operations should be moved out of the main thread, for example, into worker threads, to avoid blocking the Event Loop.
