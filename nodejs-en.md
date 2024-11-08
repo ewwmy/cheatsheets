@@ -382,8 +382,8 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
      └───────────────────────────┘
 ```
 
-> Heavy synchronous operations prevent the Event Loop from starting; it won't begin until the call stack is empty.
-> Heavy asynchronous operations should be moved out of the main thread, for example, into worker threads, to avoid blocking the Event Loop.
+- Heavy synchronous operations prevent the Event Loop from starting; it won't begin until the call stack is empty.
+- Heavy asynchronous operations should be moved out of the main thread, for example, into worker threads, to avoid blocking the Event Loop.
 
 ### Timers
 
@@ -523,3 +523,78 @@ a() // 1
 ```
 
 ![Call stack and Debug mode in VS Code](./img/nodejs/debug-mode-breakpoints.png)
+
+### Performance
+
+...
+
+## Multi-threading
+
+### Worker threads
+
+- Node.js is a single-threaded environment, but it can use **Worker Threads** for multithreading to offload heavy computations.
+- `libuv` has a default thread pool of **`4` threads** to handle asynchronous I/O operations, but it can be expanded up to **`1024` threads** using the `UV_THREADPOOL_SIZE` environment variable.
+
+> Not every asynchronous operation uses **Worker Threads**.
+
+**Worker Threads:**
+
+- All filesystem operations with `fs.*`
+- `dns.lookup()`
+- Pipes (in some cases)
+- CPU-intensive calculations
+
+**OS-level Async Calls:**
+
+- TCP / UDP server and client
+- `http` / `https` client
+- `dns.resolve()`
+- Pipes
+- `child_process`
+
+Demonstrates that OS-level async calls operate independently of `UV_THREADPOOL_SIZE`, thus, requests are processed almost in parallel:
+
+```javascript
+const https = require('https')
+
+const start = performance.now()
+
+// number of threads can be set with `UV_THREADPOOL_SIZE` environment variable
+process.env.UV_THREADPOOL_SIZE = 4
+
+// https uses OS-level async calls
+for (let i = 0; i < 32; i++) {
+  https.get('https://example.com', res => {
+    res.on('data', () => {})
+    res.on('end', () => {
+      console.log(performance.now() - start) // ~ 1000 1001 1003 1007 1008 1010 1011 1015 ...
+    })
+  })
+}
+```
+
+Highlights the effect of `UV_THREADPOOL_SIZE`, showing output in batches, because only four threads can run in parallel when `UV_THREADPOOL_SIZE=4`:
+
+```javascript
+const crypto = require('crypto')
+
+const start = performance.now()
+
+// number of threads can be set with `UV_THREADPOOL_SIZE` environment variable
+process.env.UV_THREADPOOL_SIZE = 4
+
+// crypto uses worker threads
+for (let i = 0; i < 32; i++) {
+  crypto.pbkdf2('test', 'salt', 100000, 64, 'sha512', (err, key) => {
+    console.log(performance.now() - start) // ~ 60 61 63 63 (x4)   118 119 119 120 (x4) ...
+  })
+}
+```
+
+### `spawn` and `exec`
+
+...
+
+### `fork`
+
+...
