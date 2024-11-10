@@ -641,6 +641,62 @@ for (let i = 0; i < 32; i++) {
 }
 ```
 
+#### Usage of Worker Threads
+
+```javascript
+// ./workers/compute.js
+const { parentPort, workerData } = require('worker_threads')
+
+const compute = ({ items }) =>
+  items.map(num => {
+    for (let i = 0; i < 1e9; i++) Math.sqrt(i) // imitation of cpu-intensive calculation
+    return num ** 2
+  })
+
+parentPort.postMessage(compute(workerData))
+
+// ./index.js
+const { Worker } = require('worker_threads')
+
+const computeWorker = items => {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker('./workers/compute.js', {
+      workerData: {
+        items,
+      },
+    })
+
+    worker.on('message', msg => resolve(msg))
+    worker.on('error', err => reject(err))
+    worker.on('exit', () => console.log('Finished'))
+  })
+}
+
+const main = async () => {
+  try {
+    performance.mark('start')
+
+    const result = await Promise.all([
+      computeWorker([57, 31, 85, 48, 63, 92, 74, 59, 21]),
+      computeWorker([33, 67, 29, 50, 88, 41, 93, 77, 25]),
+      computeWorker([96, 45, 20, 58, 34, 99, 74, 89, 22]),
+      computeWorker([49, 27, 38, 97, 91, 53, 85, 32, 61]),
+    ])
+    console.log(result)
+
+    performance.mark('end')
+    performance.measure('main', 'start', 'end')
+    console.log(performance.getEntriesByName('main').pop())
+  } catch (error) {
+    console.error(`Error: ${error?.message}`)
+  }
+}
+
+main()
+```
+
+> ❗ Make sure you don't create worker threads on each web server connection! Create limited set of worker threads for that purpose instead.
+
 ### `spawn` and `exec`
 
 ...
