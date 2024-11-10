@@ -920,7 +920,7 @@ Source Position Table (size = 8)
 - **Sparkplug Compiler**: Compiles **bytecode** into **non-optimized machine code**, improving performance at the initial stages of execution.
 - **Profiling**: During execution, V8 profiles the code while running it through **Ignition** or **Sparkplug**, identifying parts that could be optimized (referred to as **hot code**).
   - If profiling indicates that a part of the code can be optimized, **TurboFan** is triggered to compile that **hot code** into **optimized machine code**.
-  - If **TurboFan**'s optimization assumptions fail during execution, control is returned to **Sparkplug** for re-compilation.
+  - If **TurboFan**'s optimization assumptions fail during execution, control is returned to **Sparkplug** for re-compilation (referred to as **deoptimization**).
 
 #### Optimization / Deoptimization
 
