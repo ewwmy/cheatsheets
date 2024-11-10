@@ -730,12 +730,12 @@ childProcess.stderr.on('data', data => {
   console.log(`Stderr: ${data}`)
 })
 
-childProcess.on('exit', exitCode => {
-  console.log(`Child process exited with code: ${exitCode}`)
-})
-
 childProcess.on('error', err => {
   console.error(`Error: ${err?.message}`)
+})
+
+childProcess.on('exit', exitCode => {
+  console.log(`Child process exited with code: ${exitCode}`)
 })
 ```
 
