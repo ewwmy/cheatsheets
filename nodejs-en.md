@@ -741,4 +741,32 @@ childProcess.on('exit', exitCode => {
 
 ### `fork`
 
-...
+> `fork` is used to create a child process in Node.js that runs a specified JavaScript file in a separate Node.js instance.
+
+```javascript
+// ./index.js
+const { fork } = require('child_process')
+
+const forkProcess = fork('./fork-client.js')
+
+forkProcess.on('message', msg => {
+  console.log(`Main process recieved: ${msg}`)
+})
+
+forkProcess.on('close', statusCode => {
+  console.log(`Exited: ${statusCode}`)
+})
+
+forkProcess.send('ping')
+forkProcess.send('disconnect')
+
+// ./fork-client.js
+process.on('message', msg => {
+  if (msg == 'disconnect') {
+    process.disconnect()
+    return
+  }
+  console.log(`Fork process recieved: ${msg}`)
+  process.send('pong')
+})
+```
