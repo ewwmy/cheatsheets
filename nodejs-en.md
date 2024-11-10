@@ -658,7 +658,7 @@ parentPort.postMessage(compute(workerData))
 // ./index.js
 const { Worker } = require('worker_threads')
 
-const computeWorker = items => {
+const computeWrapper = items => {
   return new Promise((resolve, reject) => {
     const worker = new Worker('./workers/compute.js', {
       workerData: {
@@ -677,10 +677,10 @@ const main = async () => {
     performance.mark('start')
 
     const result = await Promise.all([
-      computeWorker([57, 31, 85, 48, 63, 92, 74, 59, 21]),
-      computeWorker([33, 67, 29, 50, 88, 41, 93, 77, 25]),
-      computeWorker([96, 45, 20, 58, 34, 99, 74, 89, 22]),
-      computeWorker([49, 27, 38, 97, 91, 53, 85, 32, 61]),
+      computeWrapper([57, 31, 85, 48, 63, 92, 74, 59, 21]),
+      computeWrapper([33, 67, 29, 50, 88, 41, 93, 77, 25]),
+      computeWrapper([96, 45, 20, 58, 34, 99, 74, 89, 22]),
+      computeWrapper([49, 27, 38, 97, 91, 53, 85, 32, 61]),
     ])
     console.log(result)
 
