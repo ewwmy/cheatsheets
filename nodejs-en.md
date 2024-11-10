@@ -697,9 +697,47 @@ main()
 
 > ❗ Make sure you don't create worker threads on each web server connection! Create limited set of worker threads for that purpose instead.
 
-### `spawn` and `exec`
+### `exec`
 
-...
+```javascript
+const { exec } = require('child_process')
+
+const childProcess = exec('ls', (err, stdout, stderr) => {
+  if (err) {
+    console.error(`Error: ${err?.message}`)
+  }
+  console.log(`Stdout: ${stdout}`)
+  console.log(`Stderr: ${stderr}`)
+})
+
+childProcess.on('exit', exitCode => {
+  console.log(`Child process exited with code: ${exitCode}`)
+})
+```
+
+### `spawn`
+
+```javascript
+const { spawn } = require('child_process')
+
+const childProcess = spawn('ls')
+
+childProcess.stdout.on('data', data => {
+  console.log(`Stdout: ${data}`)
+})
+
+childProcess.stderr.on('data', data => {
+  console.log(`Stderr: ${data}`)
+})
+
+childProcess.on('exit', exitCode => {
+  console.log(`Child process exited with code: ${exitCode}`)
+})
+
+childProcess.on('error', err => {
+  console.error(`Error: ${err?.message}`)
+})
+```
 
 ### `fork`
 
