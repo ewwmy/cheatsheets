@@ -773,7 +773,15 @@ forkProcess.send('disconnect')
 
 ### Worker Thread vs Fork
 
-...
+| Worker Thread                                      | Fork                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| Uses a thread within the same Node.js process      | Creates a new Node.js process                                     |
+| Shares memory with the main thread                 | Isolates memory; uses IPC for communication with the main process |
+| Lightweight and efficient for CPU-bound tasks      | Heavier and better suited for independent processes or tasks      |
+| Can communicate directly with other Worker Threads | Forked processes cannot communicate directly with each other      |
+
+- Worker Threads are ideal for parallelizing CPU-bound tasks without incurring the overhead of creating a new process. They exist within the same memory space as the main thread, which allows faster data exchange (no need for serialization or deserialization).
+- Fork creates a completely separate process with its own memory space. This process communicates with the main process through Inter-Process Communication (IPC). Forked processes are useful for running fully isolated instances of Node.js, like independent servers or script runners.
 
 ## V8
 
