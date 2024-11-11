@@ -783,6 +783,8 @@ forkProcess.send('disconnect')
 - Worker Threads are ideal for parallelizing CPU-bound tasks without incurring the overhead of creating a new process. They exist within the same memory space as the main thread, which allows faster data exchange (no need for serialization or deserialization).
 - Fork creates a completely separate process with its own memory space. This process communicates with the main process through Inter-Process Communication (IPC). Forked processes are useful for running fully isolated instances of Node.js, like independent servers or script runners.
 
+> For transferring large amounts of data, use Worker Threads.
+
 ## V8
 
 ### Compilation stages
