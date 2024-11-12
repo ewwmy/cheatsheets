@@ -347,30 +347,32 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
      ┌───────────────────────────┐
      │       initialization      │   Synchronous code, `require`, register callbacks
      └─────────────┬─────────────┘
+     Microtasks: nextTick, Promises
 ┌─────────────────>│
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
 │    ┃           timers          ┃   Executes setTimeout and setInterval callbacks
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┌─────────────┴─────────────┐
 │    │     pending callbacks     │   Executes system callbacks from previous I/O
 │    └─────────────┬─────────────┘
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┌─────────────┴─────────────┐
 │    │       idle, prepare       │   Internal preparation steps
-│    └─────────────┬─────────────┘         ┌───────────────┐
+│    └─────────────┬─────────────┘
+│    Microtasks: nextTick, Promises        ┌───────────────┐
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓         │   incoming:   │
 │    ┃           poll            ┃ <───────┤  connections, │   Main phase for I/O events
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛         │   data, etc.  │
-│         Microtasks: nextTick, Promises   └───────────────┘
+│    Microtasks: nextTick, Promises        └───────────────┘
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
 │    ┃           check           ┃   Executes setImmediate callbacks
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┏━━━━━━━━━━━━━┷━━━━━━━━━━━━━┓
 │    ┃      close callbacks      ┃   Executes close event callbacks
 │    ┗━━━━━━━━━━━━━┯━━━━━━━━━━━━━┛
-│         Microtasks: nextTick, Promises
+│    Microtasks: nextTick, Promises
 │    ┌─────────────┴─────────────┐
 └─no─┤           exit?           │   Checks whether the program is finished
      └─────────────┬─────────────┘
@@ -380,8 +382,8 @@ emitter.emit('error', new Error('Something went wrong')) // Error: Something wen
      └───────────────────────────┘
 ```
 
-> Heavy synchronous operations prevent the Event Loop from starting; it won't begin until the call stack is empty.
-> Heavy asynchronous operations should be moved out of the main thread, for example, into worker threads, to avoid blocking the Event Loop.
+- Heavy synchronous operations prevent the Event Loop from starting; it won't begin until the call stack is empty.
+- Heavy asynchronous operations should be moved out of the main thread, for example, into worker threads, to avoid blocking the Event Loop.
 
 ### Timers
 
@@ -424,3 +426,518 @@ setImmediate(() => {
 })
 // 'Timeout is reached' after 3 sec.
 ```
+
+### Event Loop examples
+
+#### Simple example
+
+```javascript
+console.log(1) // synchronous
+
+setTimeout(() => {
+  console.log(2) // timer
+}, 0)
+
+process.nextTick(() => {
+  console.log(3) // nextTick
+})
+
+Promise.resolve()
+  .then(() => {
+    console.log(4) // microtask - promise
+  })
+  .then(() => {
+    console.log(5) // another microtask within the same promise
+  })
+
+setImmediate(() => {
+  console.log(6) // immediate
+})
+
+console.log(7) // synchronous
+
+// 1, 7, 3, 4, 5, 2, 6
+```
+
+#### Extended example
+
+```javascript
+console.log(1) // synchronous
+
+setTimeout(() => {
+  console.log(2) // synchronous inside the timer
+  process.nextTick(() => {
+    console.log(3) // nextTick inside the timer
+  })
+
+  new Promise(resolve => {
+    console.log(4) // synchronous inside the promise
+    resolve()
+  })
+    .then(() => {
+      console.log(5) // then for the first promise
+      return new Promise(resolve => {
+        console.log(6) // synchronous inside the second promise
+        resolve()
+      })
+    })
+    .then(() => {
+      console.log(7) // then for the second promise
+    })
+}, 0)
+
+setImmediate(() => {
+  console.log(8) // immediate
+})
+
+new Promise(resolve => {
+  console.log(9) // synchronous inside the promise
+  resolve()
+})
+  .then(() => {
+    console.log(10) // first then for the promise
+  })
+  .then(() => {
+    console.log(11) // second then for the promise
+  })
+
+// 1, 9, 10, 11, 2, 4, 3, 5, 6, 7, 8
+```
+
+### Call stack and Debug mode
+
+```javascript
+const foo = 1
+
+function a() {
+  function b() {
+    function c() {
+      console.log(foo)
+    }
+    c()
+  }
+  b()
+}
+
+a() // 1
+```
+
+![Call stack and Debug mode in VS Code](./img/nodejs/debug-mode-breakpoints.png)
+
+### Performance
+
+```javascript
+const { performance, PerformanceObserver } = require('perf_hooks')
+
+// // // performance basic usage
+const start = performance.now()
+// ... slow code ...
+console.log(performance.now() - start)
+
+// // // performance measurement with marks
+performance.mark('start')
+// ... slow code ...
+performance.mark('end')
+performance.measure('slow', 'start', 'end') // label, mark1, mark2
+console.log(performance.getEntriesByName('slow'))
+
+// // // performance measurement with observer for `measure` type
+const measureObs = new PerformanceObserver((items, observer) => {
+  console.log(items.getEntries()) // all entries
+  console.log(items.getEntriesByName('slow')) // entries by name
+  console.log(items.getEntriesByType('measure')) // entries by type
+  observer.disconnect()
+})
+measureObs.observe({ entryTypes: ['measure'] }) // 'dns', 'function', 'gc', 'http', 'http2', 'mark', 'measure', 'net', 'node', 'resource'
+
+// // // performance measurement with observer for `function` type
+function slow() {
+  // ... slow code ...
+}
+slow = performance.timerify(slow)
+
+const funcObs = new PerformanceObserver((items, observer) => {
+  console.log(items.getEntries()) // all entries
+  observer.disconnect()
+})
+funcObs.observe({ entryTypes: ['function'] }) // types of entries that we observe
+
+// // // high-resolution timing for a function
+console.time('label')
+// ... slow code ...
+console.timeEnd('label')
+
+// // // inspecting event loop lag
+const start = Date.now()
+setImmediate(() => {
+  const lag = Date.now() - start
+  console.log(`Event Loop Lag: ${lag}ms`)
+})
+
+// // // memory usage
+console.log(process.memoryUsage()) // { rss, heapTotal, heapUsed, external, arrayBuffers }
+```
+
+## Multi-threading
+
+### Worker threads
+
+- Node.js is a single-threaded environment, but it can use **Worker Threads** for multithreading to offload heavy computations.
+- `libuv` has a default thread pool of **`4` threads** to handle asynchronous I/O operations, but it can be expanded up to **`1024` threads** using the `UV_THREADPOOL_SIZE` environment variable.
+
+> Not every asynchronous operation uses **Worker Threads**.
+
+**Worker Threads:**
+
+- All filesystem operations with `fs.*`
+- `dns.lookup()`
+- Pipes (in some cases)
+- CPU-intensive calculations
+
+**OS-level Async Calls:**
+
+- TCP / UDP server and client
+- `http` / `https` client
+- `dns.resolve()`
+- Pipes
+- `child_process`
+
+Demonstrates that OS-level async calls operate independently of `UV_THREADPOOL_SIZE`, thus, requests are processed almost in parallel:
+
+```javascript
+const https = require('https')
+
+const start = performance.now()
+
+// number of threads can be set with `UV_THREADPOOL_SIZE` environment variable
+process.env.UV_THREADPOOL_SIZE = 4
+
+// https uses OS-level async calls
+for (let i = 0; i < 32; i++) {
+  https.get('https://example.com', res => {
+    res.on('data', () => {})
+    res.on('end', () => {
+      console.log(performance.now() - start) // ~ 1000 1001 1003 1007 1008 1010 1011 1015 ...
+    })
+  })
+}
+```
+
+Highlights the effect of `UV_THREADPOOL_SIZE`, showing output in batches, because only four threads can run in parallel when `UV_THREADPOOL_SIZE=4`:
+
+```javascript
+const crypto = require('crypto')
+
+const start = performance.now()
+
+// number of threads can be set with `UV_THREADPOOL_SIZE` environment variable
+process.env.UV_THREADPOOL_SIZE = 4
+
+// crypto uses worker threads
+for (let i = 0; i < 32; i++) {
+  crypto.pbkdf2('test', 'salt', 100000, 64, 'sha512', (err, key) => {
+    console.log(performance.now() - start) // ~ 60 61 63 63 (x4)   118 119 119 120 (x4) ...
+  })
+}
+```
+
+#### Usage of Worker Threads
+
+```javascript
+// ./workers/compute.js
+const { parentPort, workerData } = require('worker_threads')
+
+const compute = ({ items }) =>
+  items.map(num => {
+    for (let i = 0; i < 1e9; i++) Math.sqrt(i) // imitation of cpu-intensive calculation
+    return num ** 2
+  })
+
+parentPort.postMessage(compute(workerData))
+
+// ./index.js
+const { Worker } = require('worker_threads')
+
+const computeWrapper = items => {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker('./workers/compute.js', {
+      workerData: {
+        items,
+      },
+    })
+
+    worker.on('message', msg => resolve(msg))
+    worker.on('error', err => reject(err))
+    worker.on('exit', () => console.log('Finished'))
+  })
+}
+
+const main = async () => {
+  try {
+    performance.mark('start')
+
+    const result = await Promise.all([
+      computeWrapper([57, 31, 85, 48, 63, 92, 74, 59, 21]),
+      computeWrapper([33, 67, 29, 50, 88, 41, 93, 77, 25]),
+      computeWrapper([96, 45, 20, 58, 34, 99, 74, 89, 22]),
+      computeWrapper([49, 27, 38, 97, 91, 53, 85, 32, 61]),
+    ])
+    console.log(result)
+
+    performance.mark('end')
+    performance.measure('main', 'start', 'end')
+    console.log(performance.getEntriesByName('main').pop())
+  } catch (error) {
+    console.error(`Error: ${error?.message}`)
+  }
+}
+
+main()
+```
+
+> ❗ Make sure you don't create worker threads on each web server connection! Create limited set of worker threads for that purpose instead.
+
+### `exec`
+
+```javascript
+const { exec } = require('child_process')
+
+const childProcess = exec('ls', (err, stdout, stderr) => {
+  if (err) {
+    console.error(`Error: ${err?.message}`)
+  }
+  console.log(`Stdout: ${stdout}`)
+  console.log(`Stderr: ${stderr}`)
+})
+
+childProcess.on('exit', exitCode => {
+  console.log(`Child process exited with code: ${exitCode}`)
+})
+```
+
+### `spawn`
+
+```javascript
+const { spawn } = require('child_process')
+
+const childProcess = spawn('ls')
+
+childProcess.stdout.on('data', data => {
+  console.log(`Stdout: ${data}`)
+})
+
+childProcess.stderr.on('data', data => {
+  console.log(`Stderr: ${data}`)
+})
+
+childProcess.on('error', err => {
+  console.error(`Error: ${err?.message}`)
+})
+
+childProcess.on('exit', exitCode => {
+  console.log(`Child process exited with code: ${exitCode}`)
+})
+```
+
+### `fork`
+
+> `fork` is used to create a child process in Node.js that runs a specified JavaScript file in a separate Node.js instance.
+
+```javascript
+// ./fork.js
+process.on('message', msg => {
+  if (msg === 'disconnect') {
+    process.disconnect()
+    return
+  }
+  console.log(`Fork process recieved: ${msg}`)
+  process.send('pong')
+})
+
+// ./index.js
+const { fork } = require('child_process')
+
+const forkProcess = fork('./fork.js')
+
+forkProcess.on('message', msg => {
+  console.log(`Main process recieved: ${msg}`)
+})
+
+forkProcess.on('close', statusCode => {
+  console.log(`Exited: ${statusCode}`)
+})
+
+forkProcess.send('ping')
+forkProcess.send('disconnect')
+```
+
+### Worker Thread vs Fork
+
+| Worker Thread                                      | Fork                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| Uses a thread within the same Node.js process      | Creates a new Node.js process                                     |
+| Shares memory with the main thread                 | Isolates memory; uses IPC for communication with the main process |
+| Lightweight and efficient for CPU-bound tasks      | Heavier and better suited for independent processes or tasks      |
+| Can communicate directly with other Worker Threads | Forked processes cannot communicate directly with each other      |
+
+- Worker Threads are ideal for parallelizing CPU-bound tasks without incurring the overhead of creating a new process. They exist within the same memory space as the main thread, which allows faster data exchange (no need for serialization or deserialization).
+- Fork creates a completely separate process with its own memory space. This process communicates with the main process through Inter-Process Communication (IPC). Forked processes are useful for running fully isolated instances of Node.js, like independent servers or script runners.
+
+> For frequent or large data transfers, use Worker Threads. IPC has limitations with very large data transfers (~200 MB) and may cause errors when exceeding buffer capacity. Additionally, creating threads is less resource-intensive than creating separate processes.
+
+## V8
+
+### Compilation stages
+
+```
+┌─────────────────┐      ┌─────────┐      ┌──────────────┐      ┌──────────────────┐
+│   Source code   │─────>│   AST   │─────>│   Bytecode   │─────>│   Machine code   │
+└─────────────────┘      └─────────┘      └──────────────┘      └──────────────────┘
+```
+
+#### AST
+
+AST can be reviewed using the modern web service [AST explorer](https://astexplorer.net/).
+
+##### Example
+
+Source code:
+
+```javascript
+let items = ['one', 'two', 'three']
+
+function printItems() {
+  items.forEach((item, key) => console.log(`Item ${key}:` + item))
+}
+```
+
+AST (simplified):
+
+```
+Program {
+  body: [
+    VariableDeclaration {
+      declarations: [
+        VariableDeclarator {
+          id: Identifier {
+            name: "items"
+          }
+          init: ArrayExpression {
+            elements: [
+              Literal {
+                value: "one"
+                raw: "'one'"
+              }
+              Literal {
+                value: "two"
+                raw: "'two'"
+              }
+              Literal {
+                value: "three"
+                raw: "'three'"
+              }
+            ]
+          }
+        }
+      ]
+      kind: "let"
+    }
+    FunctionDeclaration {
+      id: Identifier {
+        name: "printItems"
+      }
+      expression: false
+      generator: false
+      async: false
+      params: []
+      body: BlockStatement {
+        body: [
+          ExpressionStatement {
+            ...
+          }
+        ]
+      }
+    }
+  ]
+  sourceType: "module"
+}
+```
+
+#### Bytecode
+
+```bash
+node --print-bytecode ./app.js
+```
+
+```javascript
+// ./app.js
+const main = () => {
+  const a = 3
+  return a * 5
+}
+main()
+```
+
+```
+...
+
+[generated bytecode for function: main (0x3dd5bfc5b559 <SharedFunctionInfo main>)]
+Bytecode length: 7
+Parameter count 1
+Register count 1
+Frame size 8
+Bytecode age: 0
+   33 S> 0x3dd5bfc5c01e @    0 : 0d 03             LdaSmi [3]
+         0x3dd5bfc5c020 @    2 : c4                Star0
+   46 S> 0x3dd5bfc5c021 @    3 : 46 05 00          MulSmi [5], [0]
+   49 S> 0x3dd5bfc5c024 @    6 : a9                Return
+Constant pool (size = 0)
+Handler Table (size = 0)
+Source Position Table (size = 8)
+0x3dd5bfc5c029 <ByteArray[8]>
+```
+
+### How V8 works
+
+```
+┌─────────────────┐      ┌────────────┐      ┌─────────┐
+│   Source code   │─────>│   Parser   │─────>│   AST   │
+└─────────────────┘      └────────────┘      └─────────┘
+                                                  │
+        ┌─────────────────────────────────────────┘
+        V
+┌──────────────┐
+│   Ignition   │      ┌──────────────┐
+│  interpreter │─────>│   Bytecode   │
+└──────────────┘      └──────────────┘
+                             │
+                             └──────────────────┐
+                                                V
+┌──────────────┐                        ┌──────────────┐
+│   TurboFan   │<╴╴╴╴╴optimization╶╶╶╶╶╶│   Sparkplug  │
+│   compiler   │╴╴╴╴╴deoptimization╶╶╶╶>│   compiler   │
+└──────────────┘                        └──────────────┘
+       │                                        │
+       V                                        V
+┌──────────────┐                       ┌─────────────────┐
+│  Optimized   │                       │  Non-optimized  │
+│ machine code │╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴│  machine code   │
+└──────────────┘                       └─────────────────┘
+```
+
+- **Parser**: Converts the source code into an Abstract Syntax Tree (**AST**).
+- **Ignition Interpreter**: Converts the AST into **bytecode** for fast interpretation.
+- **Sparkplug Compiler**: Compiles **bytecode** into **non-optimized machine code**, improving performance at the initial stages of execution.
+- **Profiling**: During execution, V8 profiles the code while running it through **Ignition** or **Sparkplug**, identifying parts that could be optimized (referred to as **hot code**).
+  - If profiling indicates that a part of the code can be optimized, **TurboFan** is triggered to compile that **hot code** into **optimized machine code**.
+  - If **TurboFan**'s optimization assumptions fail during execution, control is returned to **Sparkplug** for re-compilation (referred to as **deoptimization**).
+
+#### Optimization / Deoptimization
+
+> **TurboFan** makes optimizations by creating **Hidden Classes** to make assumptions about data types.
+
+How to make code optimization work:
+
+- Maintain consistent data types when passing arguments into functions: `add(1); add(2);` ~~`add('3');`~~
+- Maintain the order of properties in objects.
+- TypeScript generates well-optimized JavaScript code.
