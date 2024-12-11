@@ -941,3 +941,30 @@ How to make code optimization work:
 - Maintain consistent data types when passing arguments into functions: `add(1); add(2);` ~~`add('3');`~~
 - Maintain the order of properties in objects.
 - TypeScript generates well-optimized JavaScript code.
+
+### Memory
+
+Node.js (via V8) manages memory automatically with a **Garbage Collector (GC)**, freeing unused memory to prevent leaks.
+
+- **Reference Counting**: Tracks object references; doesn’t handle cyclic references well.
+- **Mark-and-Sweep**: Pauses execution to scan objects; frees unmarked ones.
+- **Tri-Color Marking**: Efficient, incremental algorithm; reduces pauses.
+
+#### Memory Fragmentation
+
+- **Stop-and-Copy**: Compacts memory by copying live objects to a new space; pauses execution.
+
+#### Generational GC: Young and Old Spaces
+
+- **Young Space**: Holds short-lived objects; managed with **Parallel Scavenger** GC:
+  - **Nursery**: New objects go here.
+  - **Intermediate**: Retains objects after initial GC.
+- **Old Space**: Stores long-lived objects; uses **Mark-Sweep** and **Incremental Marking**.
+
+#### Debugging GC
+
+Show detailed GC logs:
+
+```bash
+node --expose-gc --trace_gc_verbose app.js
+```
