@@ -602,6 +602,12 @@ docker-compose up --build
 DB_PASSWORD=postgres docker-compose up --build
 ```
 
+Можно указать конкретный compose-файл:
+
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
+
 ### Плюсы и минусы
 
 #### Плюсы
