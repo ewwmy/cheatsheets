@@ -303,6 +303,7 @@ docker run -d -p 5432:5432 --name my-postgres -v ./data:/var/lib/postgresql/data
 - `COPY` — копирование файлов, где `.` (точка) — рабочая директория
 - `VOLUME` — указывает директорию в контейнере, которая будет использоваться для хранения данных, не теряющихся при перезапуске контейнера (эта директория становится томом, данные в котором могут храниться за пределами контейнера, например, на хосте или в отдельном Docker-томе)
 - `EXPOSE` — информирует, какой порт слушает контейнер (но не открывает его физически). Эта команда задает, какой порт нужно "опубликовать" при запуске контейнера с помощью `docker run`, используя флаг `-p` для "публикации" одного или нескольких портов, или `-P` для "публикации" всех exposed портов
+- `ENV` — задать переменную окружения, которая будет доступна как в самом Dockerfile, так и в контейнере: `ENV NODE_ENV=production`; переменные окружения, переданные через ключ `-e` при запуске через `docker run`, имеют приоритет над переменными окружения, заданными через `ENV` в Dockerfile
 - `RUN` — выполнить определенную команду при сборке образа
 - `CMD` — команда для запуска приложения или параметры по умолчанию для команды `ENTRYPOINT`
 - `ENTRYPOINT` — команда для запуска приложения.
@@ -754,6 +755,8 @@ POSTGRES_PASSWORD=password
 POSTGRES_DB=main
 ```
 
+> По умолчанию при запуске (и/или сборке) с помощью `docker compose`, будут проброшены переменные из файла `.env`, лежащего в той же директории, что и docker-compose файл. Но можно явно задать файл(ы) .env: `docker compose --env-file .env.production up`.
+
 `compose.yml`:
 
 ```docker-compose
@@ -823,6 +826,101 @@ docker compose down
 
 ```bash
 docker compose down my-app-backend
+```
+
+### Переменные окружения и несколько конфигураций
+
+Использование env-файла отличного от `./.env`:
+
+```bash
+docker compose --env-file .env.production up
+```
+
+В docker-compose конфигурации также можно задать env-файлы, которые будет использован:
+
+```yaml
+services:
+  app:
+    image: my-app
+    env_file:
+      - .env.common
+      - .env.specific
+```
+
+Можно передавать отдельные переменные окружения прямо в docker-compose.yml, независимо от --env-file и env_file:
+
+```yaml
+services:
+  app:
+    image: my-app
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://user:password@db:5432/mydb
+```
+
+Импортированные переменные окружения можно использовать в конфигурации docker-compose:
+
+```yaml
+services:
+  app:
+    image: my-app
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT:-3000} # Значение по умолчанию `3000`, если переменная `PORT` не определена
+```
+
+Использование нескольких файлов конфигурации docker-compose и env-файла:
+
+```bash
+docker compose --file docker-compose.yml --file docker-compose.override.yml --env-file .env.production up
+```
+
+Можно гибко комбинировать опции задания переменных окружения на разных уровнях:
+
+```bash
+docker compose --env-file .env.production up
+```
+
+```yaml
+services:
+  app:
+    image: my-app
+    env_file:
+      - .env.common
+      - .env.development
+    environment:
+      - DATABASE_URL=postgres://override_user:override_pass@localhost:5432/override_db
+```
+
+Приоритет (от низшего к высшему):
+
+- `.env.production` (указан в командной строке) предоставляет базовые переменные для `docker-compose.yml`
+- `.env.common` и `.env.development` (в секции `env_file` в `docker-compose.yml`) добавляют или перекрывают переменные
+- секция `environment` (в `docker-compose.yml`) имеет наивысший приоритет, и переменные из него перекрывают все остальные.
+
+Переменные окружения, определенные в конфигурации docker-compose, затем передаются в Dockerfile'ы и могут использоваться (и переопределяться) уже там:
+
+```dockerfile
+EXPOSE ${APP_DOCKER_PORT:-3000} # будет использоваться значение переменной `APP_DOCKER_PORT`, если она определена, иначе `3000`
+ENV NODE_ENV=production # задает переменную `NODE_ENV`, но она может быть переопределена переменной c таким же именем извне (это своего рода значение по умолчанию для переменной)
+```
+
+Ну и, как уже было показано ранее, переменные окружения можно передавать непосредственно при запуске контейнера `docker run`:
+
+```bash
+docker run -e APP_PORT=5000 -e APP_NAME='my-app' my-image
+```
+
+или при сборке/запуске контейнеров через `docker compose`:
+
+```bash
+NODE_ENV=development APP_NAME=my-app docker compose up
+```
+
+Можно комбинировать:
+
+```bash
+NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production up
 ```
 
 ---
