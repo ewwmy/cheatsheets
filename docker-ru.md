@@ -592,7 +592,7 @@ volumes:
 Пример команды для сборки и запуска:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 Вначале будут собраны образы, затем будут запущены контейнеры.
@@ -600,13 +600,13 @@ docker-compose up --build
 Можно прокидывать переменные окружения в контейнеры:
 
 ```bash
-DB_PASSWORD=postgres docker-compose up --build
+DB_PASSWORD=postgres docker compose up --build
 ```
 
 Можно указать конкретный compose-файл:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up
+docker compose -f docker-compose.dev.yml up
 ```
 
 ### Плюсы и минусы
@@ -792,10 +792,22 @@ services:
 docker compose up
 ```
 
+Собрать образы и запустить все сервисы:
+
+```bash
+docker compose up --build
+```
+
 Запустить все сервисы в фоне:
 
 ```bash
 docker compose up -d
+```
+
+Собрать образы и запустить все сервисы в фоне:
+
+```bash
+docker compose up --build -d
 ```
 
 Посмотреть логи:
@@ -921,6 +933,18 @@ NODE_ENV=development APP_NAME=my-app docker compose up
 
 ```bash
 NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production up
+```
+
+Наиболее расширенный пример:
+
+```bash
+NODE_ENV=development APP_NAME=my-app docker compose --file docker-compose.yml --file docker-compose.override.yml --env-file .env.production up --build -d
+```
+
+или
+
+```bash
+NODE_ENV=development APP_NAME=my-app docker compose -f docker-compose.yml -f docker-compose.override.yml --env-file .env.production up --build -d
 ```
 
 ---
