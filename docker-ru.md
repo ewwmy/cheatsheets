@@ -792,6 +792,12 @@ services:
 
 ### Команды `docker compose`
 
+Собрать все образы:
+
+```bash
+docker compose build
+```
+
 Запустить все сервисы:
 
 ```bash
@@ -890,7 +896,7 @@ services:
 Использование нескольких файлов конфигурации docker-compose и env-файла:
 
 ```bash
-docker compose --file docker-compose.yml --file docker-compose.override.yml --env-file .env.production up
+docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.override.yml up
 ```
 
 Можно гибко комбинировать опции задания переменных окружения на разных уровнях:
@@ -945,14 +951,28 @@ NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production u
 Наиболее расширенный пример:
 
 ```bash
-NODE_ENV=development APP_NAME=my-app docker compose --file docker-compose.yml --file docker-compose.override.yml --env-file .env.production up --build -d
+NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.override.yml up --build -d
 ```
 
-или
+Переменные среды, переданные в команду `docker compose` или подгруженные из `.env`-файлов, **не передаются автоматически в контейнер**. Чтобы они стали доступны в контейнере, их нужно пробросить в `docker-compose.yml` / `environment`:
 
-```bash
-NODE_ENV=development APP_NAME=my-app docker compose -f docker-compose.yml -f docker-compose.override.yml --env-file .env.production up --build -d
+```yaml
+environment:
+  NODE_ENV: ${NODE_ENV:-production}
+  DATABASE_URL: ${DATABASE_URL:-}
 ```
+
+Переменные среды, объявленные в `docker-compose.yml` / `environment`:
+
+- передаются в контейнер и доступны во время его выполнения
+- становятся доступны в `Dockerfile` и могут быть использованы при сборке:
+
+```dockerfile
+ENV NODE_ENV=production
+ENV DATABASE_URL=${DATABASE_URL:-some_url}
+```
+
+> Переменные среды из `docker-compose.yml` имеют приоритет над переменными из `Dockerfile` / `ENV`; то есть, при совпадении имен, в контейнер попадет значение переменной из `docker-compose.yml` / `environment`.
 
 ---
 
