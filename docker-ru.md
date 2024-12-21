@@ -792,6 +792,12 @@ services:
 
 ### Команды `docker compose`
 
+Собрать все образы:
+
+```bash
+docker compose build
+```
+
 Запустить все сервисы:
 
 ```bash
