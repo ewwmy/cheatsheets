@@ -896,7 +896,7 @@ services:
 Использование нескольких файлов конфигурации docker-compose и env-файла:
 
 ```bash
-docker compose --file docker-compose.yml --file docker-compose.override.yml --env-file .env.production up
+docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.override.yml up
 ```
 
 Можно гибко комбинировать опции задания переменных окружения на разных уровнях:
@@ -951,13 +951,7 @@ NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production u
 Наиболее расширенный пример:
 
 ```bash
-NODE_ENV=development APP_NAME=my-app docker compose --file docker-compose.yml --file docker-compose.override.yml --env-file .env.production up --build -d
-```
-
-или
-
-```bash
-NODE_ENV=development APP_NAME=my-app docker compose -f docker-compose.yml -f docker-compose.override.yml --env-file .env.production up --build -d
+NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.override.yml up --build -d
 ```
 
 ---
