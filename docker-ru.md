@@ -972,7 +972,7 @@ ENV NODE_ENV=production
 ENV DATABASE_URL=${DATABASE_URL:-some_url}
 ```
 
-> Переменные среды из `docker-compose.yml` имеют приоритет над переменными из `Dockerfile` / `ENV`; то есть, при совпадении имен, в контейнер попадет значение переменной из `docker-compose.yml` / `environment`.
+> Переменные среды, объявленные в `docker-compose.yml` / `environment`, имеют приоритет над переменными из `Dockerfile` / `ENV`; то есть, при совпадении имен, в контейнер попадет значение переменной из `docker-compose.yml` / `environment`.
 
 ---
 
