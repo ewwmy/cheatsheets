@@ -954,6 +954,26 @@ NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production u
 NODE_ENV=development APP_NAME=my-app docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.override.yml up --build -d
 ```
 
+Переменные среды, переданные в команду `docker compose` или подгруженные из `.env`-файлов, **не передаются автоматически в контейнер**. Чтобы они стали доступны в контейнере, их нужно пробросить в `docker-compose.yml` / `environment`:
+
+```yaml
+environment:
+  NODE_ENV: ${NODE_ENV:-production}
+  DATABASE_URL: ${DATABASE_URL:-}
+```
+
+Переменные среды, объявленные в `docker-compose.yml` / `environment`:
+
+- передаются в контейнер и доступны во время его выполнения
+- становятся доступны в `Dockerfile` и могут быть использованы при сборке:
+
+```dockerfile
+ENV NODE_ENV=production
+ENV DATABASE_URL=${DATABASE_URL:-some_url}
+```
+
+> Переменные среды из `docker-compose.yml` имеют приоритет над переменными из `Dockerfile` / `ENV`; то есть, при совпадении имен, в контейнер попадет значение переменной из `docker-compose.yml` / `environment`.
+
 ---
 
 - [Docker за 20 минут - YouTube](https://www.youtube.com/watch?v=Z_cUS7kCAsE)
