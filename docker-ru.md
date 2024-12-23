@@ -840,6 +840,12 @@ docker compose logs -f my-app-backend
 docker compose logs -f my-app-backend my-app-frontend
 ```
 
+Запустить команду в работающем контейнере:
+
+```bash
+docker compose exec my-app-backend <command> [args...]
+```
+
 Остановить все сервисы (контейнеры):
 
 ```bash
