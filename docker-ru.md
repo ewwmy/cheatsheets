@@ -866,7 +866,7 @@ docker compose down my-app-backend
 docker compose --env-file .env.production up
 ```
 
-В docker-compose конфигурации также можно задать env-файлы, которые будет использован:
+В docker-compose конфигурации также можно задать env-файлы, которые будут использованы:
 
 ```yaml
 services:
