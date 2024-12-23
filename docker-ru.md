@@ -840,7 +840,7 @@ docker compose logs -f my-app-backend
 docker compose logs -f my-app-backend my-app-frontend
 ```
 
-Запустить команду в работающем контейнере:
+Запустить команду в работающем сервисе (контейнере):
 
 ```bash
 docker compose exec my-app-backend <command> [args...]
