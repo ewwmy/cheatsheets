@@ -840,6 +840,12 @@ docker compose logs -f my-app-backend
 docker compose logs -f my-app-backend my-app-frontend
 ```
 
+Запустить команду в работающем сервисе (контейнере):
+
+```bash
+docker compose exec my-app-backend <command> [args...]
+```
+
 Остановить все сервисы (контейнеры):
 
 ```bash
@@ -860,7 +866,7 @@ docker compose down my-app-backend
 docker compose --env-file .env.production up
 ```
 
-В docker-compose конфигурации также можно задать env-файлы, которые будет использован:
+В docker-compose конфигурации также можно задать env-файлы, которые будут использованы:
 
 ```yaml
 services:
@@ -972,7 +978,7 @@ ENV NODE_ENV=production
 ENV DATABASE_URL=${DATABASE_URL:-some_url}
 ```
 
-> Переменные среды из `docker-compose.yml` имеют приоритет над переменными из `Dockerfile` / `ENV`; то есть, при совпадении имен, в контейнер попадет значение переменной из `docker-compose.yml` / `environment`.
+> Переменные среды, объявленные в `docker-compose.yml` / `environment`, имеют приоритет над переменными из `Dockerfile` / `ENV`; то есть, при совпадении имен, в контейнер попадет значение переменной из `docker-compose.yml` / `environment`.
 
 ---
 
