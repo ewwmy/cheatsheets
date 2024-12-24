@@ -411,9 +411,11 @@ docker build -t go-hello:1.0 .
 #### Вывести шаги, выполненные при сборке образа
 
 ```bash
-docker history image-name
-docker history image-id
+docker history <image-name>
+docker history <image-id>
 ```
+
+Команда отображает информацию о слоях образа, их размере и инструкциях, которые были выполнены на каждом шаге сборки.
 
 #### Отключение кэширования при сборке образа
 
