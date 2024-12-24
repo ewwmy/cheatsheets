@@ -852,6 +852,12 @@ docker compose logs -f my-app-backend my-app-frontend
 docker compose exec my-app-backend <command> [args...]
 ```
 
+Войти в командную строку работающего сервиса (контейнера):
+
+```bash
+docker compose exec my-app-backend sh
+```
+
 Остановить все сервисы (контейнеры):
 
 ```bash
