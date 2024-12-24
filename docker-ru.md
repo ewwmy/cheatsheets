@@ -798,6 +798,12 @@ services:
 docker compose build
 ```
 
+Собрать все образы (избегать использования кэшированных слоев при сборке):
+
+```bash
+docker compose build --no-cache
+```
+
 Запустить все сервисы:
 
 ```bash
