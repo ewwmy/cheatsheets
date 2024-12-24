@@ -408,6 +408,13 @@ docker build [-f <path/to/Dockerfile>] [-t <name>[:<tag>]] <context_dir>
 docker build -t go-hello:1.0 .
 ```
 
+#### Вывести шаги, выполненные при сборке образа
+
+```bash
+docker history image-name
+docker history image-id
+```
+
 #### Отключение кэширования при сборке образа
 
 Иногда нужно принудительно избежать использования кэшированных слоев при сборке образа. Для этого используется опция `--no-cache`:
