@@ -968,3 +968,42 @@ Show detailed GC logs:
 ```bash
 node --expose-gc --trace_gc_verbose app.js
 ```
+
+## `process`, `os`, `path`
+
+### `process`
+
+```javascript
+process.argv // array of passed command-line arguments, including `node` and the executing filename
+process.env // object with the environment variables
+process.env.MY_VAR // access to the `MY_VAR` environment variable
+```
+
+### `os`
+
+```javascript
+import { homedir } from 'node:os'
+homedir() // absoulte path of the home directory
+```
+
+### `path`
+
+```javascript
+import { join, basename, dirname, extname, relative } from 'node:path'
+
+join('/a/b', 'something.txt') // safely concatenate path parts together: '/a/b/something.txt'
+join('/a/b//', '/something.txt') // safely concatenate path parts together: '/a/b/something.txt'
+join('a/b', '../c/d') // safely concatenate path parts together: 'a/c/d'
+
+basename('/a/b/c') // last element of the path: 'c'
+basename('/a/b/file.smth.txt') // last element of the path: 'file.smth.txt'
+
+dirname('/a/b/c') // part of the path without the last element: '/a/b'
+dirname('/a/b/file.smth.txt') // part of the path without the last element: '/a/b'
+
+extname('/a/b/c') // extension: ''
+extname('/a/b/file.smth.txt') // extension: '.txt'
+
+relative('/a/b', '/a/b/c/file.txt') // relative path between two passed: 'c/file.txt'
+relative('/a/b/c', '/a/b/file.txt') // relative path between two passed: '../file.txt'
+```
