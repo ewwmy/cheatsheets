@@ -979,6 +979,18 @@ process.env // object with the environment variables
 process.env.MY_VAR // access to the `MY_VAR` environment variable
 ```
 
+Set environment variables:
+
+```bash
+MY_VAR=something node app.js
+```
+
+`app.js`:
+
+```javascript
+console.log(process.env.MY_VAR) // 'something'
+```
+
 ### `os`
 
 ```javascript
