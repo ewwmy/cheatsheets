@@ -1001,7 +1001,16 @@ homedir() // absoulte path of the home directory
 ### `path`
 
 ```javascript
-import { join, basename, dirname, extname, relative } from 'node:path'
+import {
+  join,
+  basename,
+  dirname,
+  extname,
+  relative,
+  isAbsolute,
+  resolve,
+  sep,
+} from 'node:path'
 
 join('/a/b', 'something.txt') // safely concatenate path parts together: '/a/b/something.txt'
 join('/a/b//', '/something.txt') // safely concatenate path parts together: '/a/b/something.txt'
@@ -1018,4 +1027,15 @@ extname('/a/b/file.smth.txt') // extension: '.txt'
 
 relative('/a/b', '/a/b/c/file.txt') // relative path between two passed: 'c/file.txt'
 relative('/a/b/c', '/a/b/file.txt') // relative path between two passed: '../file.txt'
+
+isAbsolute('/a/b') // check if the path is absolute: true
+isAbsolute('a/b') // check if the path is absolute: false
+
+resolve('/a/b/c') // make absolute path: '/a/b/c'
+
+// current dir: '/home/user/tests':
+resolve('a/b/..') // make absolute path: '/home/user/tests/a'
+resolve('../..') // make absolute path: '/home'
+
+sep // path separator for the current OS: '/'
 ```
