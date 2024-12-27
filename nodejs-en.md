@@ -1046,3 +1046,29 @@ resolve('../..') // make absolute path: '/home'
 
 sep // path separator for the current OS: '/'
 ```
+
+## Environment variables in Linux
+
+```bash
+# create a session-only variable
+MY_VAR="session_value" # available only in this shell
+
+# print the value of a variable
+echo $MY_VAR
+
+# export an already defined variable
+export MY_VAR # makes an existing variable available to child processes
+
+# export a new variable (to child processes)
+export ANOTHER_VAR="exported_value" # available in this shell and all child processes
+
+# unset a variable
+unset MY_VAR # removes the variable
+
+# pass variables to a command or script (it overrides variables for the command)
+MY_VAR="some_value" ANOTHER_VAR="another_value" node ./app.js # only for this command
+
+# persist a variable across sessions (add to ~/.bashrc or ~/.bash_profile)
+echo 'export MY_VAR="persistent_value"' >> ~/.bashrc
+source ~/.bashrc # apply changes to the current session
+```
