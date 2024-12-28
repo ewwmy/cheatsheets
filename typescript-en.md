@@ -1304,11 +1304,11 @@ function prettify(value: string): string
 function prettify(value: number): number
 function prettify(value: number | string): number | string {
   if (typeof value === 'string') return value.trim()
-  else return value.toFixed(2)
+  else return Math.floor(value)
 }
 
 console.log(prettify('  abc ')) // "abc"
-console.log(prettify(123.456789)) // 123.46
+console.log(prettify(123.957)) // 123
 ```
 
 - the implementation of an overloaded function must handle all cases from the union of input types, but each overload allows specifying more precise input and return types for callers
