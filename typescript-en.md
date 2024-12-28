@@ -1196,7 +1196,7 @@ obj.name = 'Alex' // now we are sure that `obj` is `User` and has the property `
 
 ```typescript
 class User {
-  name: string // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+  name: string // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
 
   constructor(name: string) {
     this.name = name
@@ -1253,7 +1253,7 @@ console.log(payment)
 
 ```typescript
 class User {
-  // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+  // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
   name: string
   age: number
 
@@ -1794,7 +1794,7 @@ b.c() // a
     "strictNullChecks": true, // possible `null` or `undefined` values will be considered
     "strictFunctionTypes": true, // strict function type checking
     "strictBindCallApply": true, // check that the arguments for 'bind', 'call', 'apply' match the original function
-    "strictPropertyInitialization": false, // check for class properties that are declared but not set in the constructor
+    "strictPropertyInitialization": true, // check for class properties that are declared but not set in the constructor
     "noImplicitThis": true, // enable error reporting when `this` is given the type `any`
     "useUnknownInCatchVariables": true, // catch clause variables are `unknown` instead of `any`
     "alwaysStrict": true, // ensure 'use strict' is always enabled in javascript files
