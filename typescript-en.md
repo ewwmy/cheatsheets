@@ -44,7 +44,7 @@ tsc --watch # compile typescript files of the project in watch mode (automatical
 TypeScript can automatically infer the types of variables and return values based on the assigned values. Explicit type annotations are not always necessary.
 
 ```typescript
-let x = 5; // TypeScript infers `x` as type `number`
+let x = 5 // TypeScript infers `x` as type `number`
 ```
 
 ### Type Annotations (Аннотации типов)
@@ -52,9 +52,9 @@ let x = 5; // TypeScript infers `x` as type `number`
 Explicitly define the types of variables, function parameters, and return values.
 
 ```typescript
-let y: string = "Hello";
+let y: string = 'Hello'
 function greet(name: string): string {
-  return `Hello, ${name}`;
+  return `Hello, ${name}`
 }
 ```
 
@@ -63,9 +63,9 @@ function greet(name: string): string {
 Combine multiple types, allowing a variable to hold values of different types.
 
 ```typescript
-let id: string | number;
-id = 123; // valid
-id = "ABC"; // valid
+let id: string | number
+id = 123 // valid
+id = 'ABC' // valid
 ```
 
 ### Type Narrowing (Сужение типов)
@@ -74,10 +74,10 @@ Narrow down the type of a variable within conditional blocks based on type check
 
 ```typescript
 function printId(id: string | number) {
-  if (typeof id === "string") {
-    console.log(id.toUpperCase()); // id is treated as string
+  if (typeof id === 'string') {
+    console.log(id.toUpperCase()) // id is treated as string
   } else {
-    console.log(id); // id is treated as number
+    console.log(id) // id is treated as number
   }
 }
 ```
@@ -87,8 +87,8 @@ function printId(id: string | number) {
 Restrict variables to a specific literal value or set of values.
 
 ```typescript
-let direction: "left" | "right" | "up" | "down";
-direction = "left"; // valid
+let direction: 'left' | 'right' | 'up' | 'down'
+direction = 'left' // valid
 ```
 
 ### Type Aliases (Псевдонимы типов)
@@ -96,8 +96,8 @@ direction = "left"; // valid
 Create custom type names for more complex type combinations or reusability.
 
 ```typescript
-type ID = string | number;
-let userId: ID;
+type ID = string | number
+let userId: ID
 ```
 
 ### Interfaces (Интерфейсы)
@@ -106,10 +106,10 @@ Define the structure of an object. Similar to types but primarily used for objec
 
 ```typescript
 interface User {
-  id: number;
-  name: string;
+  id: number
+  name: string
 }
-let user: User = { id: 1, name: "Alice" };
+let user: User = { id: 1, name: 'Alice' }
 ```
 
 ### Intersection Types (Пересечение типов)
@@ -118,13 +118,13 @@ Combine multiple types into one, requiring all properties to be present.
 
 ```typescript
 interface Employee {
-  employeeId: number;
+  employeeId: number
 }
 interface Person {
-  name: string;
+  name: string
 }
-type EmployeePerson = Employee & Person;
-let emp: EmployeePerson = { employeeId: 123, name: "Alice" };
+type EmployeePerson = Employee & Person
+let emp: EmployeePerson = { employeeId: 123, name: 'Alice' }
 ```
 
 ### Type Guards (Защита типов)
@@ -133,7 +133,7 @@ Methods or constructs that allow TypeScript to infer a more specific type inside
 
 ```typescript
 function isString(value: unknown): value is string {
-  return typeof value === "string";
+  return typeof value === 'string'
 }
 ```
 
@@ -143,9 +143,9 @@ Create reusable components with type placeholders that can be specified when the
 
 ```typescript
 function identity<T>(value: T): T {
-  return value;
+  return value
 }
-let num = identity<number>(5);
+let num = identity<number>(5)
 ```
 
 ### Enums (Перечисления)
@@ -157,9 +157,9 @@ enum Direction {
   Up,
   Down,
   Left,
-  Right
+  Right,
 }
-let dir: Direction = Direction.Up;
+let dir: Direction = Direction.Up
 ```
 
 ### Type Assertion (Type Casting) (Утверждение типа)
@@ -167,8 +167,8 @@ let dir: Direction = Direction.Up;
 Tell TypeScript to treat a value as a specific type.
 
 ```typescript
-let someValue: unknown = "Hello";
-let strLength: number = (someValue as string).length;
+let someValue: unknown = 'Hello'
+let strLength: number = (someValue as string).length
 ```
 
 ### Never Type (Тип Never)
@@ -177,7 +177,7 @@ Represents values that never occur, commonly used in functions that never return
 
 ```typescript
 function error(message: string): never {
-  throw new Error(message);
+  throw new Error(message)
 }
 ```
 
@@ -187,11 +187,11 @@ Use `?` to mark properties or parameters as optional.
 
 ```typescript
 interface Person {
-  name: string;
-  age?: number;
+  name: string
+  age?: number
 }
 function greet(name: string, age?: number) {
-  console.log(`Hello, ${name}`);
+  console.log(`Hello, ${name}`)
 }
 ```
 
@@ -201,10 +201,10 @@ Properties that can be set once and are immutable afterward.
 
 ```typescript
 interface User {
-  readonly id: number;
-  name: string;
+  readonly id: number
+  name: string
 }
-let user: User = { id: 1, name: "Alice" };
+let user: User = { id: 1, name: 'Alice' }
 // user.id = 2; // Error: Cannot assign to 'id' because it is a read-only property
 ```
 
@@ -212,15 +212,15 @@ let user: User = { id: 1, name: "Alice" };
 
 > Don't use `any` type! If you use `any` type you don't need TypeScript.
 
-Typescript | JavaScript
----|---
-`number` | `number`
-`string` | `string`
-`boolean` | `boolean`
-`object` | `object`
-Array | Array
-Tuple | Array
-Enum | `function` \| `const` value
+| Typescript | JavaScript                  |
+| ---------- | --------------------------- |
+| `number`   | `number`                    |
+| `string`   | `string`                    |
+| `boolean`  | `boolean`                   |
+| `object`   | `object`                    |
+| Array      | Array                       |
+| Tuple      | Array                       |
+| Enum       | `function` \| `const` value |
 
 ### Object types
 
@@ -231,7 +231,7 @@ type User = {
 }
 
 const getAge = (user: User): number => {
-    return user.age
+  return user.age
 }
 
 const user = {
@@ -241,9 +241,7 @@ const user = {
   skills: ['html', 'css'],
 }
 
-console.log(
-  getAge(user)
-) // 33
+console.log(getAge(user)) // 33
 ```
 
 ### Arrays
@@ -261,7 +259,7 @@ const user1: User = {
 }
 
 const user2: User = {
-  name: 'Elena'
+  name: 'Elena',
 }
 
 const users: User[] = [user1, user2]
@@ -375,7 +373,7 @@ enum TaskStatus {
   Planned = 'planned', // 'planned'
   InProcess = 'process', // 'process'
   Done = 'completed', // 'completed'
-  Canceled = 'canceled' // 'canceled'
+  Canceled = 'canceled', // 'canceled'
 }
 
 const taskStatus: TaskStatus = TaskStatus.Done // 'completed'
@@ -420,8 +418,7 @@ const logData = (data: boolean | number | string) => {
     console.log(
       data.trim() // `data` has only `string` type here (narrowed to `string`)
     )
-  }
-  else if (typeof data === 'number') {
+  } else if (typeof data === 'number') {
     console.log(
       data.toFixed(2) // `data` has only `number` type here (narrowed to `number`)
     )
@@ -431,11 +428,13 @@ const logData = (data: boolean | number | string) => {
 }
 
 const logError = (error: string | string[]) => {
-  if (Array.isArray(error)) { // narrow `error` to array of `string` (`string[]`)
+  if (Array.isArray(error)) {
+    // narrow `error` to array of `string` (`string[]`)
     console.log(
       error.join(' ') // `error` is narrowed to array of `string` (`string[]`)
     )
-  } else { // `error` can be only `string` here
+  } else {
+    // `error` can be only `string` here
     console.log(
       error.trim() // `error` is narrowed to `string`
     )
@@ -567,9 +566,9 @@ type User = {
 
 ```typescript
 type User = {
-  name: string,
-  age: number,
-  skills: string[],
+  name: string
+  age: number
+  skills: string[]
 }
 ```
 
@@ -577,9 +576,9 @@ type User = {
 
 ```typescript
 type User = {
-  name: string;
-  age: number;
-  skills: string[];
+  name: string
+  age: number
+  skills: string[]
 }
 ```
 
@@ -647,7 +646,6 @@ const user: UserExtended = {
 - methods in an interface cannot be marked as `async`
 - a method in a class can be `async` and return a `Promise<T>`, where `T` matches the return type defined in the interface.
 
-
 ✅ Either with nothing after each field definition:
 
 ```typescript
@@ -662,9 +660,9 @@ interface User {
 
 ```typescript
 interface User {
-  name: string,
-  age: number,
-  skills: string[],
+  name: string
+  age: number
+  skills: string[]
 }
 ```
 
@@ -672,9 +670,9 @@ interface User {
 
 ```typescript
 interface User {
-  name: string;
-  age: number;
-  skills: string[];
+  name: string
+  age: number
+  skills: string[]
 }
 ```
 
@@ -852,7 +850,8 @@ const user: User = {
 Optional function or method arguments:
 
 ```typescript
-const multiply = (a: number, b?: number): number => { // equivalent to (a: number, b: number | undefined) ✅
+const multiply = (a: number, b?: number): number => {
+  // equivalent to (a: number, b: number | undefined) ✅
   if (!b) {
     return a * a
   }
@@ -901,20 +900,20 @@ console.log(str ?? 'something else') // 'something else'
 
 ```typescript
 const funcVoid = (): void => {
-  console.log('something') // must not return anything
+  console.log('something') // can only return `undefined` or nothing
 }
 
 const funcUndefined = (): undefined => {
   return undefined // can only return `undefined` or nothing
 }
 
-const funcNothingUndef = (): undefined => {} // ✅
-const funcNothing = () => {} // ✅ returns `void` type implicitly
+const funcNothingUndef = (): undefined => {} // ✅ type `undefined`
+const funcNothing = () => {} // ✅ type `void`
 
-const valVoid = funcVoid() // void
-const valUndefined = funcUndefined() // undefined
-const valNothingUndef = funcNothingUndef() // undefined
-const valNothing = funcNothing() // void
+const valVoid = funcVoid() // type `void`, value `undefined`
+const valUndefined = funcUndefined() // type `undefined`, value `undefined`
+const valNothingUndef = funcNothingUndef() // type `undefined`, value `undefined`
+const valNothing = funcNothing() // type `void`, value `undefined`
 ```
 
 Can be used in function types:
@@ -923,13 +922,13 @@ Can be used in function types:
 type VoidFunc = () => void
 
 const funcVoidTyped: VoidFunc = () => {
-    return 'something' // ✅
+  return 'something' // ✅
 }
 
 const valVoidTyped = funcVoidTyped() // void
 
 const funcVoidUntyped = (): void => {
-    return 'something' // ❌
+  return 'something' // ❌
 }
 ```
 
@@ -939,13 +938,13 @@ const funcVoidUntyped = (): void => {
 const skills = ['javascript', 'typescript', 'devops']
 
 type User = {
-    name: string
-    skills: string[]
+  name: string
+  skills: string[]
 }
 
 const user: User = {
-    name: 'Alex',
-    skills: [],
+  name: 'Alex',
+  skills: [],
 }
 
 // returning `void` type in the signature of the callback in `forEach` provides compatibility with every type of value can be returned there
@@ -1009,7 +1008,8 @@ const processOuter = (value: unknown): void => {
 ```typescript
 try {
   throw new Error('Something went wrong')
-} catch (err) { // `err` is `unknown` and should be narrowed
+} catch (err) {
+  // `err` is `unknown` and should be narrowed
   if (err instanceof Error) {
     console.log(`Error: ${err.message}`) // 'Error: Something went wrong'
   }
@@ -1148,20 +1148,23 @@ const logSomething = (value: string | number) => {
 Type guards for objects:
 
 ```typescript
-interface User { name: string }
-interface UserWithRole { name: string; role: string }
+interface User {
+  name: string
+}
+interface UserWithRole {
+  name: string
+  role: string
+}
 
 // preferred type guard
-const isUserWithRole =
-  (user: User | UserWithRole): user is UserWithRole => {
-    return 'role' in user
-  }
+const isUserWithRole = (user: User | UserWithRole): user is UserWithRole => {
+  return 'role' in user
+}
 
 // not recommended
-const isUserWithRoleAlt =
-  (user: User | UserWithRole): user is UserWithRole => {
-    return (user as UserWithRole).role !== undefined
-  }
+const isUserWithRoleAlt = (user: User | UserWithRole): user is UserWithRole => {
+  return (user as UserWithRole).role !== undefined
+}
 ```
 
 #### `asserts`
@@ -1290,10 +1293,8 @@ class User {
   addSkill(skill: string): void
   addSkill(skills: string[]): void
   addSkill(skillOrSkills: string | string[]): void {
-    if (typeof skillOrSkills === 'string')
-      this.skills.push(skillOrSkills)
-    else
-      this.skills.concat(skillOrSkills)
+    if (typeof skillOrSkills === 'string') this.skills.push(skillOrSkills)
+    else this.skills.concat(skillOrSkills)
   }
 }
 ```
@@ -1304,13 +1305,11 @@ class User {
 function decorateLog(message: string): string
 function decorateLog(message: number): number
 function decorateLog(message: number | string): number | string {
-  if (typeof message === 'string')
-    return `[LOG]: ${message.trim()}`
-  else
-    return `[LOG]: ${message.toFixed(2)}`
+  if (typeof message === 'string') return `[LOG]: ${message.trim()}`
+  else return `[LOG]: ${message.toFixed(2)}`
 }
 
-console.log(decorateLog('  abc ')) // "[LOG]: abc" 
+console.log(decorateLog('  abc ')) // "[LOG]: abc"
 console.log(decorateLog(123.456789)) // "[LOG]: 123.46"
 ```
 
@@ -1422,6 +1421,7 @@ console.log(payment.status) // paid
 #### Usage `super` in `constructor`s
 
 A `super` call in a child `constructor`:
+
 - must be called before accessing `this` in the constructor of the child class
 - must be the first statement in the constructor when the child class contains initialized properties.
 
@@ -1587,8 +1587,6 @@ class Service {
     }
     return false
   }
-
-
 }
 
 console.log(Service.findProperty('initial')) // true
@@ -1697,7 +1695,8 @@ if (userOrAdmin.isAdmin()) {
 - abstract methods must be implemented in child classes.
 
 ```typescript
-abstract class A { // cannot be instantiated
+abstract class A {
+  // cannot be instantiated
   public abstract a(): void // should not have an implementation, can be only defined in an abstract class
 
   public b() {
@@ -1707,10 +1706,10 @@ abstract class A { // cannot be instantiated
   public c() {
     this.a() // abstract method can be called within a non-abstract method
   }
-
 }
 
-class B extends A { // must implement all abstract methods that are defined in the parent classes
+class B extends A {
+  // must implement all abstract methods that are defined in the parent classes
   public a(): void {
     console.log('a')
   }
@@ -1839,7 +1838,8 @@ async function test() {
   })
 }
 
-const access: Record<string, boolean> = { // { [key: string]: boolean }
+const access: Record<string, boolean> = {
+  // { [key: string]: boolean }
   readable: true,
   writable: false,
   executable: false,
@@ -1854,12 +1854,12 @@ function logMiddleware<T>(data: T): T {
   return data
 }
 
-const res1 = logMiddleware(10)            // res1: 10 = 10
-const res2 = logMiddleware('abc')         // res2: 'abc' = 'abc'
-let res3 = logMiddleware('abc')           // res3: string = 'abc'
+const res1 = logMiddleware(10) // res1: 10 = 10
+const res2 = logMiddleware('abc') // res2: 'abc' = 'abc'
+let res3 = logMiddleware('abc') // res3: string = 'abc'
 
 // we can specify the generic type explicitly when call
-const res4 = logMiddleware<number>(10)    // res4: number = 10
+const res4 = logMiddleware<number>(10) // res4: number = 10
 const res5 = logMiddleware<string>('abc') // res5: string = 'abc'
 
 function getHalf<T>(data: Array<T>): Array<T> {
@@ -1867,13 +1867,13 @@ function getHalf<T>(data: Array<T>): Array<T> {
   return data.splice(0, resultLength)
 }
 
-getHalf([1, 3, 4])         // function getHalf<number>(data: number[]): Array<number>
+getHalf([1, 3, 4]) // function getHalf<number>(data: number[]): Array<number>
 getHalf<number>([1, 3, 4]) // function getHalf<number>(data: number[]): Array<number>
 
 // function signature with generics
 const getHalfCopy: <T>(data: Array<T>) => Array<T> = getHalf
 
-getHalfCopy([1, 3, 4])     // getHalfCopy: <number>(data: number[]) => Array<number>
+getHalfCopy([1, 3, 4]) // getHalfCopy: <number>(data: number[]) => Array<number>
 ```
 
 ### Generics in Types and Interfaces
@@ -1892,26 +1892,28 @@ type LogLineType<T> = {
 const logLine: ILogLine<{ a: number }> = {
   timeStamp: new Date(),
   data: {
-    a: 1
-  }
+    a: 1,
+  },
 }
 
 const logLineType: LogLineType<{ b: string }> = {
   timeStamp: new Date(),
   data: {
     b: 'abc',
-  }
+  },
 }
 ```
 
 ### Generic `extends`
 
 ```typescript
-class Vehicle { // it can be an interface or a type as well
+class Vehicle {
+  // it can be an interface or a type as well
   constructor(public run: number) {}
 }
 
-class Car extends Vehicle { // it can be an interface as well
+class Car extends Vehicle {
+  // it can be an interface as well
   capacity: number
 }
 
@@ -1934,8 +1936,9 @@ function logId<T extends string | number, Y>(
   // function arguments
   id: T,
   additionalData: Y
-): { // return type
-  id: T,
+): {
+  // return type
+  id: T
   data: Y
 } {
   // function body
@@ -1952,7 +1955,7 @@ class Resp<D, E> {
 
 const resp = new Resp<string, number>('data')
 
-class HTTPResp<F> extends Resp<string, number>  {
+class HTTPResp<F> extends Resp<string, number> {
   code: F
 
   setCode(code: F) {
@@ -2010,7 +2013,7 @@ class Swimmer {
 class Animal {
   constructor(public name: string) {}
   move() {
-      console.log(`${this.name} is moving`)
+    console.log(`${this.name} is moving`)
   }
 }
 
@@ -2019,16 +2022,16 @@ class Duck {
   private swimmer: Swimmer
 
   constructor(name: string) {
-      this.animal = new Animal(name)
-      this.swimmer = new Swimmer(name)
+    this.animal = new Animal(name)
+    this.swimmer = new Swimmer(name)
   }
 
   move() {
-      this.animal.move()
+    this.animal.move()
   }
 
   swim() {
-      this.swimmer.swim()
+    this.swimmer.swim()
   }
 }
 
@@ -2124,9 +2127,7 @@ const userSomething = getValue(user, 'something') // ❌
 #### Type narrowing / JavaScript runtime
 
 ```typescript
-let foo: string | number =
-  Math.random() > 0.5 ?
-    'abc' : 123
+let foo: string | number = Math.random() > 0.5 ? 'abc' : 123
 
 if (typeof foo === 'string') {
   // foo: string
@@ -2139,9 +2140,7 @@ if (typeof foo === 'string') {
 #### Getting type of the value / TypeScript feature
 
 ```typescript
-let foo: string | number =
-  Math.random() > 0.5 ?
-    'abc' : 123
+let foo: string | number = Math.random() > 0.5 ? 'abc' : 123
 
 let bar: typeof foo
 // bar: string | number
@@ -2180,7 +2179,7 @@ interface MyUser {
 
 const myUser: MyUser = {
   name: 'Alex',
-  phones: ['123', '456', '789']
+  phones: ['123', '456', '789'],
 }
 
 // getting type of a type/interface field by accessing its index
@@ -2196,7 +2195,7 @@ type UserPhone = MyUser['phones'][number] // string
 
 // convert array of strings to a type of unioned string literals
 const roles = ['user', 'manager', 'admin'] as const
-type Role = typeof roles[number] // 'user' | 'manager' | 'admin'
+type Role = (typeof roles)[number] // 'user' | 'manager' | 'admin'
 ```
 
 ### Conditional Types
@@ -2245,7 +2244,9 @@ function getUserOverloaded(dbIdOrId: string | number): User | UserPersisted {
   }
 }
 
-type UserOrUserPersisted<T extends string | number> = T extends number ? User : UserPersisted
+type UserOrUserPersisted<T extends string | number> = T extends number
+  ? User
+  : UserPersisted
 
 function getUser<T extends string | number>(id: T): UserOrUserPersisted<T> {
   if (typeof id === 'number') {
@@ -2266,17 +2267,17 @@ const res2 = getUser('abc') // UserPersisted
 
 ```typescript
 // bad-typed function from an external module
-function runTransaction(transaction: {
-  fromTo: [string, string]
-}) {
+function runTransaction(transaction: { fromTo: [string, string] }) {
   console.log(transaction)
 }
 
 // a type which captures the first argument of a compatible function type
-type GetFirstArg<T> = T extends (first: infer First, ...args: any[]) => any ? First : never
+type GetFirstArg<T> = T extends (first: infer First, ...args: any[]) => any
+  ? First
+  : never
 
 const transaction: GetFirstArg<typeof runTransaction> = {
-  fromTo: ['1', '2']
+  fromTo: ['1', '2'],
 }
 
 runTransaction(transaction) // { fromTo: [ '1', '2' ] }
@@ -2334,16 +2335,16 @@ Advanced usage:
 type AccessType = 'read' | 'update' | 'create'
 
 type UserRoles = {
-  customers?: AccessType,
-  projects?: AccessType,
-  adminPanel?: AccessType,
+  customers?: AccessType
+  projects?: AccessType
+  adminPanel?: AccessType
 }
 
 // ❌ a type made from another type by hands (we can lose the connection between these two types if one of them is changed)
 type UserAltRoles = {
-  customers?: boolean,
-  projects?: boolean,
-  adminPanel?: boolean,
+  customers?: boolean
+  projects?: boolean
+  adminPanel?: boolean
 }
 
 // type mapper
@@ -2367,7 +2368,7 @@ type UserMappedRoles = MapToBoolean<UserRoles>
 ### Template Literal Types
 
 ```typescript
-type ReadOrWrite = 'read' | 'write';
+type ReadOrWrite = 'read' | 'write'
 type Bulk = 'bulk' | ''
 
 // string literal type
@@ -2436,10 +2437,7 @@ type ExcludeedStringTypes = Exclude<'from' | 'to' | Payment, string>
 
 ```typescript
 class User {
-  constructor(
-    public id: number,
-    public name: string,
-  ) {}
+  constructor(public id: number, public name: string) {}
 }
 
 function getUser(id: number): User {
@@ -2490,7 +2488,8 @@ export class A {
   myName: string
 
   @Method // method decorator
-  setName(@Param name: string) { // parameter decorator
+  setName(@Param name: string) {
+    // parameter decorator
     this.myName = name
   }
 }
@@ -2533,11 +2532,11 @@ function LogPrice(obj: IProduct) {
   return obj
 }
 
-console.log( new Product().getPrice() ) // 1000
-console.log( ResetPrice( new Product() ).getPrice() ) // 0
+console.log(new Product().getPrice()) // 1000
+console.log(ResetPrice(new Product()).getPrice()) // 0
 
-LogPrice(ResetPrice( new Product() )).getPrice() // Price: 0
-ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
+LogPrice(ResetPrice(new Product())).getPrice() // Price: 0
+ResetPrice(LogPrice(new Product())).getPrice() // Price: 1000
 ```
 
 ### Class Decorators
@@ -2548,7 +2547,7 @@ ResetPrice(LogPrice( new Product() )).getPrice() // Price: 1000
 
 ```typescript
 @SetPrice(300) // |        ^
-@SetPrice(50)  // | init   | run
+@SetPrice(50) // | init   | run
 @SetPrice(110) // V        |
 class Product {
   price: number = 0
@@ -2571,7 +2570,7 @@ class Product implements IProduct {
   }
 }
 
-function ResetPrice<T extends { new(...args: any[]): {} }>(target: T) {
+function ResetPrice<T extends { new (...args: any[]): {} }>(target: T) {
   return class extends target {
     price = 0 // will set `price` to `0` even after the class initialization
   }
@@ -2599,7 +2598,7 @@ class Product implements IProduct {
 }
 
 function SetPrice(price: number) {
-  return <T extends { new(...args: any[]): {} }>(target: T) => {
+  return <T extends { new (...args: any[]): {} }>(target: T) => {
     return class extends target {
       price = price
     }
@@ -2630,7 +2629,7 @@ class Product implements IProduct {
 
 // by default: date will stay the same for any new instance of the class
 function CreatedAtFixed(date: Date = new Date()) {
-  return <T extends { new(...args: any[]): {} }>(target: T) => {
+  return <T extends { new (...args: any[]): {} }>(target: T) => {
     return class extends target {
       createdAtFixed = date
     }
@@ -2659,9 +2658,10 @@ type CreatedAt = {
 // a type definition that combines all the properties we add by decorators
 type ProductWithCreatedAt = Product & CreatedAt & CreatedAtFixed
 
-const pause = (ms: number) => new Promise(resolve => {
-  setTimeout(() => resolve(true), ms)
-})
+const pause = (ms: number) =>
+  new Promise(resolve => {
+    setTimeout(() => resolve(true), ms)
+  })
 
 ;(async () => {
   // there is no other option to use properties added by decorators except type casting the instance with the custom type
@@ -2673,10 +2673,10 @@ const pause = (ms: number) => new Promise(resolve => {
   //   createdAt: 2024-10-15T01:28:57.530Z
   // }
   console.log(product1.createdAtFixed) // 2024-10-15T01:28:57.530Z
-  console.log(product1.createdAt)      // 2024-10-15T01:28:57.530Z
+  console.log(product1.createdAt) // 2024-10-15T01:28:57.530Z
 
   await pause(5000)
-  
+
   // there is no other option to use properties added by decorators except type casting the instance with the custom type
   const product2 = new Product() as ProductWithCreatedAt
   console.log(product2)
@@ -2686,7 +2686,7 @@ const pause = (ms: number) => new Promise(resolve => {
   //   createdAt: 2024-10-15T01:29:02.547Z
   // }
   console.log(product2.createdAtFixed) // 2024-10-15T01:28:57.530Z
-  console.log(product2.createdAt)      // 2024-10-15T01:29:02.547Z
+  console.log(product2.createdAt) // 2024-10-15T01:29:02.547Z
 })()
 ```
 
@@ -2709,10 +2709,14 @@ class Product implements IProduct {
 }
 
 // decorator without params
-function Log(target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+function Log(
+  target: Object,
+  propertyKey: string | symbol,
+  descriptor: PropertyDescriptor
+) {
   const original = descriptor.value
 
-  descriptor.value = function(...args: any[]) {
+  descriptor.value = function (...args: any[]) {
     const result = original.call(this, ...args)
     console.log(result)
     return result
@@ -2721,10 +2725,14 @@ function Log(target: Object, propertyKey: string | symbol, descriptor: PropertyD
 
 // decorator with params (decorators fabric)
 function LogExtended(title: string) {
-  return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor
+  ) => {
     const original = descriptor.value
 
-    descriptor.value = function(...args: any[]) {
+    descriptor.value = function (...args: any[]) {
       const result = original.call(this, ...args)
       console.log(`${title}: ${result}`)
       return result
@@ -2750,12 +2758,9 @@ class Product {
 }
 
 function Max(max: number) {
-  return (
-    target: Object,
-    propertyKey: string | symbol,
-  ) => {
+  return (target: Object, propertyKey: string | symbol) => {
     let value: number
-    const setter = function(newValue: number) {
+    const setter = function (newValue: number) {
       if (newValue > max) {
         console.warn(`Нельзя установить значение больше ${max}`)
       } else {
@@ -2763,7 +2768,7 @@ function Max(max: number) {
       }
     }
 
-    const getter = function() {
+    const getter = function () {
       return value
     }
 
@@ -2803,10 +2808,11 @@ function Log() {
   return (
     target: Object,
     propertyKey: string | symbol,
-    descriptor: PropertyDescriptor,
+    descriptor: PropertyDescriptor
   ) => {
     const original = descriptor.set
-    const propertyName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
+    const propertyName =
+      typeof propertyKey === 'string' ? propertyKey : '[symbol]'
 
     descriptor.set = (...args: any) => {
       console.log(`Setter \`${propertyName}\` called`)
@@ -2843,7 +2849,7 @@ function Param() {
   return (
     target: Object,
     propertyKey: string | symbol,
-    parameterIndex: number,
+    parameterIndex: number
   ) => {
     console.log(target) // {}
     console.log(propertyKey) // setPrice
@@ -2890,11 +2896,15 @@ function Param() {
   return (
     target: Object,
     propertyKey: string | symbol,
-    parameterIndex: number,
+    parameterIndex: number
   ) => {
     console.log(Reflect.getOwnMetadata('design:type', target, propertyKey)) // [Function: Function]
-    console.log(Reflect.getOwnMetadata('design:paramtypes', target, propertyKey)) // [ [Function: Number] ]
-    console.log(Reflect.getOwnMetadata('design:returntype', target, propertyKey)) // [Function: Number]
+    console.log(
+      Reflect.getOwnMetadata('design:paramtypes', target, propertyKey)
+    ) // [ [Function: Number] ]
+    console.log(
+      Reflect.getOwnMetadata('design:returntype', target, propertyKey)
+    ) // [Function: Number]
   }
 }
 ```
@@ -2917,7 +2927,7 @@ class Product {
   setPrice(
     @Positive() price: number,
     @Positive() second?: number,
-    @Positive() third?: number,
+    @Positive() third?: number
   ): number {
     this.price = price + (second ?? 0) + (third ?? 0)
     return this.price
@@ -2929,10 +2939,11 @@ function Positive() {
   return (
     target: Object,
     propertyKey: string | symbol,
-    parameterIndex: number,
+    parameterIndex: number
   ) => {
-    // array for indexes of the method parameters (trying to get existent or set as an empty array) 
-    let params: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey) || []
+    // array for indexes of the method parameters (trying to get existent or set as an empty array)
+    let params: number[] =
+      Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey) || []
 
     // add the index of the current parameter
     params.push(parameterIndex)
@@ -2947,19 +2958,26 @@ function Validate() {
   return (
     target: Object,
     propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>
   ) => {
     const original = descriptor.value
-    const methodName = (typeof propertyKey === 'string' ? propertyKey : '[symbol]')
+    const methodName =
+      typeof propertyKey === 'string' ? propertyKey : '[symbol]'
 
-    descriptor.value = function(...args: any[]) {
+    descriptor.value = function (...args: any[]) {
       // get metadata with the indexes of the parameters registered with `@Positive` for this method
-      const registeredParams: number[] = Reflect.getOwnMetadata(PositiveMetadataKey, target, propertyKey)
+      const registeredParams: number[] = Reflect.getOwnMetadata(
+        PositiveMetadataKey,
+        target,
+        propertyKey
+      )
       if (registeredParams) {
         for (const index of registeredParams) {
           // check whether the value of the parameter registered with `@Positive` not less than 0
           if (args[index] < 0) {
-            throw new Error(`The value of the argument \`${index}\` in \`${methodName}\` must be positive, but ${args[index]} was passed`)
+            throw new Error(
+              `The value of the argument \`${index}\` in \`${methodName}\` must be positive, but ${args[index]} was passed`
+            )
           }
         }
       }
@@ -3023,7 +3041,7 @@ class Product {
     @Test('staticMethod1() / param2 / Decorator 1')
     @Test('staticMethod1() / param2 / Decorator 2')
     @Test('staticMethod1() / param2 / Decorator 3')
-    param2: number,
+    param2: number
   ): void {}
 
   @Test('staticMethod2() / Decorator 1')
@@ -3037,7 +3055,7 @@ class Product {
     @Test('staticMethod2() / param2 / Decorator 1')
     @Test('staticMethod2() / param2 / Decorator 2')
     @Test('staticMethod2() / param2 / Decorator 3')
-    param2: number,
+    param2: number
   ): void {}
 
   @Test('method1() / Decorator 1')
@@ -3051,7 +3069,7 @@ class Product {
     @Test('method1() / param2 / Decorator 1')
     @Test('method1() / param2 / Decorator 2')
     @Test('method1() / param2 / Decorator 3')
-    param2: number,
+    param2: number
   ): void {}
 
   @Test('method2() / Decorator 1')
@@ -3065,7 +3083,7 @@ class Product {
     @Test('method2() / param2 / Decorator 1')
     @Test('method2() / param2 / Decorator 2')
     @Test('method2() / param2 / Decorator 3')
-    param2: number,
+    param2: number
   ): void {}
 
   constructor(
@@ -3076,7 +3094,7 @@ class Product {
     @Test('constructor() / param2 / Decorator 1')
     @Test('constructor() / param2 / Decorator 2')
     @Test('constructor() / param2 / Decorator 3')
-    param2: number,
+    param2: number
   ) {}
 }
 
@@ -3210,7 +3228,7 @@ Run:  class / Decorator 1
 
 ### TypeScript 5.0 Decorators
 
-> In TypeScript 5.0, decorators have been updated to align with the ECMAScript proposal. 
+> In TypeScript 5.0, decorators have been updated to align with the ECMAScript proposal.
 
 ```typescript
 // ordinary decorator
@@ -3258,8 +3276,8 @@ class MyClass {
 }
 
 function ClassDecorator<This, Args extends any[]>(
-    target: new (...args: Args) => This,
-    context: ClassDecoratorContext<new (...args: Args) => This>,
+  target: new (...args: Args) => This,
+  context: ClassDecoratorContext<new (...args: Args) => This>
 ) {
   console.log('Init: Class decorator')
 }
@@ -3290,10 +3308,13 @@ class MyClass {
 
 function MethodDecorator<This, Args extends any[], Return>(
   target: (this: This, ...args: Args) => Return,
-  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+  context: ClassMethodDecoratorContext<
+    This,
+    (this: This, ...args: Args) => Return
+  >
 ) {
   console.log('Init: Method decorator')
-  return function(this: This, ...args: Args): Return {
+  return function (this: This, ...args: Args): Return {
     const res = target.call(this, ...args)
     return res
   }
@@ -3314,11 +3335,14 @@ class MyClass {
 }
 
 function Max(value: number) {
-  return function<This, Args extends any[], Return>(
+  return function <This, Args extends any[], Return>(
     target: (this: This, ...args: Args) => Return,
-    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+    context: ClassMethodDecoratorContext<
+      This,
+      (this: This, ...args: Args) => Return
+    >
   ) {
-    return function(this: This, ...args: Args): Return {
+    return function (this: This, ...args: Args): Return {
       if (args[0] > value) {
         throw new Error(`The value is more than ${value}`)
       }
@@ -3363,11 +3387,11 @@ class MyClass {
 }
 
 function PropertyDecorator<This>(
-    target: undefined,
-    context: ClassFieldDecoratorContext<This, number>,
+  target: undefined,
+  context: ClassFieldDecoratorContext<This, number>
 ) {
   console.log('Init: Property decorator')
-  return function(value: number) {
+  return function (value: number) {
     console.log('Run: Property decorator')
     return value
   }
@@ -3385,11 +3409,11 @@ class MyClass {
 }
 
 function Double<This>(
-    target: undefined,
-    context: ClassFieldDecoratorContext<This, number>,
+  target: undefined,
+  context: ClassFieldDecoratorContext<This, number>
 ) {
   console.log('Init: Property decorator')
-  return function(value: number) {
+  return function (value: number) {
     // only once, on property initialization
     console.log('Run: Property decorator')
     return value * 2
@@ -3442,10 +3466,10 @@ class MyClass {
 
 function SetterDecorator<This, Return>(
   target: (this: This, arg: any) => Return,
-  context: ClassSetterDecoratorContext<This, string>,
+  context: ClassSetterDecoratorContext<This, string>
 ) {
   console.log('Init: Setter decorator')
-  return function(this: This, arg: any): Return {
+  return function (this: This, arg: any): Return {
     const res = target.call(this, arg)
     return res
   }
@@ -3470,12 +3494,14 @@ class MyClass {
 
 function IsString<This, Return>(
   target: (this: This, arg: any) => Return,
-  context: ClassSetterDecoratorContext<This, string>,
+  context: ClassSetterDecoratorContext<This, string>
 ) {
   console.log('Init: Setter decorator')
-  return function(this: This, arg: any): Return {
+  return function (this: This, arg: any): Return {
     if (typeof arg !== 'string') {
-      throw new Error(`Argument passed to \`${String(context.name)}\` setter is not a string`)
+      throw new Error(
+        `Argument passed to \`${String(context.name)}\` setter is not a string`
+      )
     }
     const res = target.call(this, arg)
     return res
@@ -3487,8 +3513,8 @@ try {
 
   obj.myProperty = 'abc'
   console.log(obj.myProperty) // abc
-  
-  obj.myProperty = (123 as any) // Argument passed to `myProperty` setter is not a string
+
+  obj.myProperty = 123 as any // Argument passed to `myProperty` setter is not a string
 } catch (error) {
   console.error(error instanceof Error ? error.message : error)
 }
@@ -3503,16 +3529,19 @@ try {
 ```typescript
 function LoggedMethod<This, Args extends any[], Return>(
   target: (this: This, ...args: Args) => Return,
-  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+  context: ClassMethodDecoratorContext<
+    This,
+    (this: This, ...args: Args) => Return
+  >
 ) {
-    const methodName = String(context.name)
-    function replacementMethod(this: This, ...args: Args): Return {
-        console.log(`LOG: Entering method '${methodName}'.`)
-        const result = target.call(this, ...args)
-        console.log(`LOG: Exiting method '${methodName}'.`)
-        return result
-    }
-    return replacementMethod
+  const methodName = String(context.name)
+  function replacementMethod(this: This, ...args: Args): Return {
+    console.log(`LOG: Entering method '${methodName}'.`)
+    const result = target.call(this, ...args)
+    console.log(`LOG: Exiting method '${methodName}'.`)
+    return result
+  }
+  return replacementMethod
 }
 ```
 
@@ -3520,11 +3549,11 @@ function LoggedMethod<This, Args extends any[], Return>(
 
 > TypeScript supports a module system compatible with ES Modules and can export a project either as a single-file bundle, or as CommonJS, or as ES Module formats.
 
-|             | One-file bundle | CommonJS          | ES Modules |
-|-------------|-----------------|-------------------|------------|
-| Node.js     | ✅              | ✅                | ✅         |
-| Browser     | ✅              | Webpack, polyfill | ✅         |
-| TypeScript  | 🔼              | 🔼                | 🔼         |
+|            | One-file bundle | CommonJS          | ES Modules |
+| ---------- | --------------- | ----------------- | ---------- |
+| Node.js    | ✅              | ✅                | ✅         |
+| Browser    | ✅              | Webpack, polyfill | ✅         |
+| TypeScript | 🔼              | 🔼                | 🔼         |
 
 ### `namespace`
 
@@ -3721,6 +3750,7 @@ export type MyType3 = MyType
 ### Type definitions for third-party libraries
 
 [npm](https://www.npmjs.com/) offers us three types of packages:
+
 - ![](./img/typescript/ts.png) with full TypeScript support
 - ![](./img/typescript/dt.png) with type definitions for TypeScript (available at [DefinitelyTypes on GitHub](https://github.com/DefinitelyTypes/DefinitelyTypes) and can be installed as `@types/package-name`)
 - without TypeScript support.
@@ -3770,9 +3800,9 @@ declare module 'really-relaxed-json' {
 
 ```typescript
 const palette = {
-    red: [255, 0, 0],
-    green: '#00ff00',
-    bleu: [0, 0, 255], // ❗ typo in property name
+  red: [255, 0, 0],
+  green: '#00ff00',
+  bleu: [0, 0, 255], // ❗ typo in property name
 }
 ```
 
@@ -3782,10 +3812,10 @@ const palette = {
 type Colors = 'red' | 'green' | 'blue'
 type RGB = [red: number, green: number, blue: number]
 const palette: Record<Colors, string | RGB> = {
-    red: [255, 0, 0],
-    green: '#00ff00',
-    bleu: [0, 0, 255], // ❗ typo in property name
-    // ✅ the typo is now correctly detected
+  red: [255, 0, 0],
+  green: '#00ff00',
+  bleu: [0, 0, 255], // ❗ typo in property name
+  // ✅ the typo is now correctly detected
 }
 
 const greenNormalized = palette.green.toUpperCase() // ❌ but: property 'toUpperCase' does not exist on type 'string | RGB'
@@ -3797,10 +3827,10 @@ const greenNormalized = palette.green.toUpperCase() // ❌ but: property 'toUppe
 type Colors = 'red' | 'green' | 'blue'
 type RGB = [red: number, green: number, blue: number]
 const palette = {
-    red: [255, 0, 0],
-    green: '#00ff00',
-    bleu: [0, 0, 255],
-    // ✅ the typo is now caught
+  red: [255, 0, 0],
+  green: '#00ff00',
+  bleu: [0, 0, 255],
+  // ✅ the typo is now caught
 } satisfies Record<Colors, string | RGB>
 
 const greenNormalized = palette.green.toUpperCase() // ✅
@@ -3839,7 +3869,8 @@ languageService.pick('hfkbfksabfsdf') // ✅
 ##### Soultion
 
 ```typescript
-class LanguageService<const T> { // after: ✅
+class LanguageService<const T> {
+  // after: ✅
   constructor(private langs: T[]) {}
   pick(value: T) {}
 }
@@ -4023,7 +4054,8 @@ function isString(value: unknown): value is string {
 }
 
 function foo(value: unknown) {
-  if (isString(value) === true) { // before: ❌ // after: ✅
+  if (isString(value) === true) {
+    // before: ❌ // after: ✅
     // ...
   }
 }
@@ -4107,4 +4139,3 @@ console.log(res)
 //   admin: [ { name: 'Oxana', role: 'admin' }, { name: 'Smith', role: 'admin' } ]
 // }
 ```
-
