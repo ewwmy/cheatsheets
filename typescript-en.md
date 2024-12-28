@@ -1293,7 +1293,6 @@ const user = new User()
 
 user.addSkill('javascript')
 user.addSkill(['typescript', 'go'])
-
 // User { skills: ["javascript", "typescript", "go"] }
 ```
 
