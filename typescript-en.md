@@ -1349,16 +1349,14 @@ interface IDimmable {
 
 class SmartLight implements ISwitchable, IDimmable {
   isOn: boolean = false
-  brightness: number = 0
+  brightness: number = 100
 
   turnOn(): void {
     this.isOn = true
-    this.brightness = 100
   }
 
   turnOff(): void {
     this.isOn = false
-    this.brightness = 0
   }
 
   setBrightness(level: string | number): void {
