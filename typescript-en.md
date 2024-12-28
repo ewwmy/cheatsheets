@@ -1251,6 +1251,8 @@ console.log(payment)
 
 ### Methods Overload
 
+Constructor overload:
+
 ```typescript
 class User {
   // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
@@ -1261,21 +1263,10 @@ class User {
   constructor(name?: string, age?: number)
   // overload signature 2
   constructor(name: string, age?: number)
-
   // implementation signature
   constructor(name: string, age: number) {
     this.name = name
     this.age = age
-  }
-
-  // overload is also available for other methods
-
-  // overload signature
-  logName(greet?: string): void
-
-  // implementation signature
-  logName(greet: string): void {
-    console.log(`[${greet}]: ${this.name}`)
   }
 }
 
@@ -1284,22 +1275,29 @@ const user2 = new User('Alex') // User { name: 'Alex', age: undefined }
 const user3 = new User('Elena', 33) // User { name: 'Elena', age: 33 }
 ```
 
-Extended example:
+Method overload:
 
 ```typescript
 class User {
-  skills: string[]
+  skills: string[] = []
 
   addSkill(skill: string): void
   addSkill(skills: string[]): void
   addSkill(skillOrSkills: string | string[]): void {
     if (typeof skillOrSkills === 'string') this.skills.push(skillOrSkills)
-    else this.skills.concat(skillOrSkills)
+    else this.skills.push(...skillOrSkills)
   }
 }
+
+const user = new User()
+
+user.addSkill('javascript')
+user.addSkill(['typescript', 'go'])
+
+// User { skills: ["javascript", "typescript", "go"] }
 ```
 
-> Functions can be overloaded as well.
+Functions can be overloaded as well:
 
 ```typescript
 function prettify(value: string): string
