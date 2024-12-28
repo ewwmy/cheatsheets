@@ -1196,7 +1196,7 @@ obj.name = 'Alex' // now we are sure that `obj` is `User` and has the property `
 
 ```typescript
 class User {
-  name: string // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+  name: string // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
 
   constructor(name: string) {
     this.name = name
@@ -1253,7 +1253,7 @@ console.log(payment)
 
 ```typescript
 class User {
-  // `strictPropertyInitialization` is recommended to be set to `false` in `tsconfig.json` to have uninitialized properties in classes
+  // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
   name: string
   age: number
 
@@ -1302,16 +1302,19 @@ class User {
 > Functions can be overloaded as well.
 
 ```typescript
-function decorateLog(message: string): string
-function decorateLog(message: number): number
-function decorateLog(message: number | string): number | string {
-  if (typeof message === 'string') return `[LOG]: ${message.trim()}`
-  else return `[LOG]: ${message.toFixed(2)}`
+function prettify(value: string): string
+function prettify(value: number): number
+function prettify(value: number | string): number | string {
+  if (typeof value === 'string') return value.trim()
+  else return value.toFixed(2)
 }
 
-console.log(decorateLog('  abc ')) // "[LOG]: abc"
-console.log(decorateLog(123.456789)) // "[LOG]: 123.46"
+console.log(prettify('  abc ')) // "abc"
+console.log(prettify(123.456789)) // 123.46
 ```
+
+- the implementation of an overloaded function must handle all cases from the union of input types, but each overload allows specifying more precise input and return types for callers
+- overloads make it easier to define different behaviors for specific input types, which helps developers understand the function better and improves autocompletion in IDEs by showing the exact types expected for each case.
 
 ### Getters and Setters
 
@@ -1791,7 +1794,7 @@ b.c() // a
     "strictNullChecks": true, // possible `null` or `undefined` values will be considered
     "strictFunctionTypes": true, // strict function type checking
     "strictBindCallApply": true, // check that the arguments for 'bind', 'call', 'apply' match the original function
-    "strictPropertyInitialization": false, // check for class properties that are declared but not set in the constructor
+    "strictPropertyInitialization": true, // check for class properties that are declared but not set in the constructor
     "noImplicitThis": true, // enable error reporting when `this` is given the type `any`
     "useUnknownInCatchVariables": true, // catch clause variables are `unknown` instead of `any`
     "alwaysStrict": true, // ensure 'use strict' is always enabled in javascript files
