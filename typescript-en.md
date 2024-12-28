@@ -1302,16 +1302,19 @@ class User {
 > Functions can be overloaded as well.
 
 ```typescript
-function decorateLog(message: string): string
-function decorateLog(message: number): number
-function decorateLog(message: number | string): number | string {
-  if (typeof message === 'string') return `[LOG]: ${message.trim()}`
-  else return `[LOG]: ${message.toFixed(2)}`
+function prettify(value: string): string
+function prettify(value: number): number
+function prettify(value: number | string): number | string {
+  if (typeof value === 'string') return value.trim()
+  else return value.toFixed(2)
 }
 
-console.log(decorateLog('  abc ')) // "[LOG]: abc"
-console.log(decorateLog(123.456789)) // "[LOG]: 123.46"
+console.log(prettify('  abc ')) // "abc"
+console.log(prettify(123.456789)) // 123.46
 ```
+
+- the implementation of an overloaded function must handle all cases from the union of input types, but each overload allows specifying more precise input and return types for callers
+- overloads make it easier to define different behaviors for specific input types, which helps developers understand the function better and improves autocompletion in IDEs by showing the exact types expected for each case.
 
 ### Getters and Setters
 
