@@ -1398,7 +1398,7 @@ class PaymentExtended extends Payment {
   // `override` keyword indicates that the method is an override and will cause a compilation error if the method doesn't exist in the parent class
   // without `override` it's still a valid override but the compiler will not check whether the method exists in the parent class, which can lead to potential issues if the method in the parent class is removed
   override pay(date?: Date): void {
-    super.pay() // call the parent method `pay()` (but it's not required to call `super` in an override method)
+    super.pay() // call the parent method `pay()` (though calling `super` is not required in an override method)
     if (date) {
       this.paidAt = date
     }
