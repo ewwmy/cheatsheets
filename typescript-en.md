@@ -852,25 +852,25 @@ Difference between an optional property and `T | undefined`:
 ```typescript
 class MyClass {
   optional?: string // optional property, may be missing
-  existing: string | undefined // required property, allows `undefined`
+  required: string | undefined // required property, allows `undefined`
 }
 
 // behaviour:
 
 const entity = new MyClass()
 console.log('optional' in entity) // `false`, because it wasn't initialized in the constructor
-console.log('existing' in entity) // `false`, because it wasn't initialized in the constructor
+console.log('required' in entity) // `false`, because it wasn't initialized in the constructor
 
 entity.optional = undefined
-entity.existing = undefined
+entity.required = undefined
 console.log('optional' in entity) // `true`, because it has been explicitly set to `undefined`
-console.log('existing' in entity) // `true`, because it has been explicitly set to `undefined`
+console.log('required' in entity) // `true`, because it has been explicitly set to `undefined`
 
 // difference:
 
 const obj1: MyClass = {} // ❌
 const obj2: MyClass = { optional: undefined } // ❌
-const obj3: MyClass = { existing: undefined } // ✅
+const obj3: MyClass = { required: undefined } // ✅
 ```
 
 Optional function or method arguments:
