@@ -56,7 +56,9 @@ git merge my-branch # смерджить (влить) ветку my-branch в т
 git branch -D my-branch # удалить ветку my-branch локально
 git push --delete origin my-branch # удалить ветку my-branch в удаленном репозитории origin
 git branch --set-upstream-to=origin/master # установить origin/master как upstream (ветку по умолчанию) для последующих пушей из текущей ветки
+git branch -u origin/master # то же, что `git branch --set-upstream-to=origin/master`
 git branch --set-upstream-to=origin/master my-branch # установить origin/master как upstream (ветку по умолчанию) для последующих пушей из ветки my-branch
+git branch -u origin/master my-branch # то же, что `git branch --set-upstream-to=origin/master my-branch`
 git branch --unset-upstream # удалить информацию об upstream (ветки по умолчанию) для последующих пушей из текущей ветки
 git branch --unset-upstream my-branch # удалить информацию об upstream (ветки по умолчанию) для последующих пушей из ветки my-branch
 ```
