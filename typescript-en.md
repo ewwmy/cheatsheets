@@ -1302,7 +1302,7 @@ Functions can be overloaded as well:
 ```typescript
 function prettify(value: string): string
 function prettify(value: number): number
-function prettify(value: number | string): number | string {
+function prettify(value: string | number): string | number {
   if (typeof value === 'string') return value.trim()
   else return Math.floor(value)
 }
