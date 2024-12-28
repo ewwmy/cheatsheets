@@ -48,7 +48,7 @@ npm update # update (or install) all the packages listed in `package.json` up to
 npm upgrade # same as above
 npm up # same as above
 
-npm update <packages> # update (or install) specific packages if they're listed in `package.json` up to their newest versions according to the version rules described in `package.json` and lock their updated versions in `package-lock.json` 
+npm update <packages> # update (or install) specific packages if they're listed in `package.json` up to their newest versions according to the version rules described in `package.json` and lock their updated versions in `package-lock.json`
 
 npm uninstall <packages> # uninstall specific packages and lock the changes in `package-lock.json` (will remove listed dependencies from the `package.json`)
 npm remove <packages> # same as above
@@ -65,6 +65,40 @@ npm uninstall -g <packages> # uninstall specific packages globally (will delete 
   "main": "index.js", // entrypoint for resolving dependencies if the project is used as a package
   "bin": "./index.js", // entrypoint to run if used as a bin (cli) utility
 }
+```
+
+### Globally installed bin (CLI) packages
+
+```javascript
+{
+  "bin": {
+    "util-name": "node index.js"
+  }
+}
+```
+
+Or:
+
+```javascript
+{
+  "bin": {
+    "util-name": "index.js"
+  }
+}
+```
+
+`index.js`:
+
+```javascript
+#!/usr/bin/env node
+
+// other code...
+```
+
+Run:
+
+```bash
+util-name
 ```
 
 ### Scripts

@@ -968,3 +968,107 @@ Show detailed GC logs:
 ```bash
 node --expose-gc --trace_gc_verbose app.js
 ```
+
+## `process`, `os`, `path`
+
+### `process`
+
+```javascript
+process.argv // array of passed command-line arguments, including `node` and the executing filename
+process.env // object with the environment variables
+process.env.MY_VAR // access to the `MY_VAR` environment variable
+```
+
+Pass environment variables:
+
+```bash
+MY_VAR=something node app.js
+```
+
+Or set environment variables globally:
+
+```bash
+export MY_VAR=something
+node app.js
+```
+
+`app.js`:
+
+```javascript
+console.log(process.env.MY_VAR) // 'something'
+```
+
+### `os`
+
+```javascript
+import { homedir } from 'node:os'
+homedir() // absoulte path of the home directory
+```
+
+### `path`
+
+```javascript
+import {
+  join,
+  basename,
+  dirname,
+  extname,
+  relative,
+  isAbsolute,
+  resolve,
+  sep,
+} from 'node:path'
+
+join('/a/b', 'something.txt') // safely concatenate path parts together: '/a/b/something.txt'
+join('/a/b//', '/something.txt') // safely concatenate path parts together: '/a/b/something.txt'
+join('a/b', '../c/d') // safely concatenate path parts together: 'a/c/d'
+
+basename('/a/b/c') // last element of the path: 'c'
+basename('/a/b/file.smth.txt') // last element of the path: 'file.smth.txt'
+
+dirname('/a/b/c') // part of the path without the last element: '/a/b'
+dirname('/a/b/file.smth.txt') // part of the path without the last element: '/a/b'
+
+extname('/a/b/c') // extension: ''
+extname('/a/b/file.smth.txt') // extension: '.txt'
+
+relative('/a/b', '/a/b/c/file.txt') // relative path between two passed: 'c/file.txt'
+relative('/a/b/c', '/a/b/file.txt') // relative path between two passed: '../file.txt'
+
+isAbsolute('/a/b') // check if the path is absolute: true
+isAbsolute('a/b') // check if the path is absolute: false
+
+resolve('/a/b/c') // make absolute path: '/a/b/c'
+
+// current dir: '/home/user/tests':
+resolve('a/b/..') // make absolute path: '/home/user/tests/a'
+resolve('../..') // make absolute path: '/home'
+
+sep // path separator for the current OS: '/'
+```
+
+## Environment variables in Linux
+
+```bash
+# create a session-only variable
+MY_VAR="session_value" # available only in this shell
+
+# print the value of a variable
+echo $MY_VAR
+
+# export an already defined variable
+export MY_VAR # makes an existing variable available to child processes
+
+# export a new variable (to child processes)
+export ANOTHER_VAR="exported_value" # available in this shell and all child processes
+
+# unset a variable
+unset MY_VAR # removes the variable
+
+# pass variables to a command or script (it overrides variables for the command)
+MY_VAR="some_value" ANOTHER_VAR="another_value" node ./app.js # only for this command
+
+# persist a variable across sessions (add to ~/.bashrc or ~/.bash_profile)
+echo 'export MY_VAR="persistent_value"' >> ~/.bashrc
+source ~/.bashrc # apply changes to the current session
+```
