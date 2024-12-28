@@ -55,6 +55,10 @@ git checkout file.txt # отменить все изменения в рабоч
 git merge my-branch # смерджить (влить) ветку my-branch в текущую ветку
 git branch -D my-branch # удалить ветку my-branch локально
 git push --delete origin my-branch # удалить ветку my-branch в удаленном репозитории origin
+git branch --set-upstream-to=origin/master # установить origin/master как upstream (ветку по умолчанию) для последующих пушей из текущей ветки
+git branch --set-upstream-to=origin/master my-branch # установить origin/master как upstream (ветку по умолчанию) для последующих пушей из ветки my-branch
+git branch --unset-upstream # удалить информацию об upstream (ветки по умолчанию) для последующих пушей из текущей ветки
+git branch --unset-upstream my-branch # удалить информацию об upstream (ветки по умолчанию) для последующих пушей из ветки my-branch
 ```
 
 ## Теги
