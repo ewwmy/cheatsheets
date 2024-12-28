@@ -1387,34 +1387,31 @@ class Payment {
   }
 }
 
-class PersistedPayment extends Payment {
-  databaseId: number
-  paidAt: Date
+class PaymentExtended extends Payment {
+  paidAt?: Date
 
   constructor() {
     const id = Math.ceil(Math.random() * 100)
     super(id)
   }
 
-  save() {
-    console.log('Saved to the database')
-  }
-
   // `override` keyword indicates that the method is an override and will cause a compilation error if the method doesn't exist in the parent class
   // without `override` it's still a valid override but the compiler will not check whether the method exists in the parent class, which can lead to potential issues if the method in the parent class is removed
   override pay(date?: Date): void {
-    super.pay() // call the parent method `pay()` (but it's not mandatory to call `super` in an override method)
+    super.pay() // call the parent method `pay()` (but it's not required to call `super` in an override method)
     if (date) {
       this.paidAt = date
     }
   }
 }
 
-const payment = new PersistedPayment()
+const payment = new PaymentExtended()
 
-console.log(payment.status) // new
+console.log(payment) // PaymentExtended { status: "new", id: 47 }
 payment.pay()
-console.log(payment.status) // paid
+console.log(payment) // PaymentExtended { status: "paid", id: 47 }
+payment.pay(new Date())
+console.log(payment) // PaymentExtended { status: "paid", id: 47, paidAt: "2024-12-28T20:22:26.412Z" }
 ```
 
 #### Usage `super` in `constructor`s
