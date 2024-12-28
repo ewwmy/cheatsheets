@@ -1406,10 +1406,11 @@ class PaymentExtended extends Payment {
 }
 
 const payment = new PaymentExtended()
-
 console.log(payment) // PaymentExtended { status: "new", id: 47 }
+
 payment.pay()
 console.log(payment) // PaymentExtended { status: "paid", id: 47 }
+
 payment.pay(new Date())
 console.log(payment) // PaymentExtended { status: "paid", id: 47, paidAt: "2024-12-28T20:22:26.412Z" }
 ```
