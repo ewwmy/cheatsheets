@@ -847,6 +847,32 @@ const user: User = {
 } // ✅
 ```
 
+Difference between an optional property and `T | undefined`:
+
+```typescript
+class MyClass {
+  optional?: string // optional property, may be missing
+  existing: string | undefined // required property, allows `undefined`
+}
+
+// behaviour:
+
+const entity = new MyClass()
+console.log('optional' in entity) // `false`, because it wasn't initialized in the constructor
+console.log('existing' in entity) // `false`, because it wasn't initialized in the constructor
+
+entity.optional = undefined
+entity.existing = undefined
+console.log('optional' in entity) // `true`, because it has been explicitly set to `undefined`
+console.log('existing' in entity) // `true`, because it has been explicitly set to `undefined`
+
+// difference:
+
+const obj1: MyClass = {} // ❌
+const obj2: MyClass = { optional: undefined } // ❌
+const obj3: MyClass = { existing: undefined } // ✅
+```
+
 Optional function or method arguments:
 
 ```typescript
@@ -1320,10 +1346,10 @@ console.log(prettify(123.957)) // 123
 
 ```typescript
 class User {
-  _login: string
-  _age: number
+  _login?: string
+  _age?: number
 
-  get login(): string {
+  get login(): string | undefined {
     return this._login
   }
 
@@ -1331,6 +1357,10 @@ class User {
     this._login = `user-${login}`
   }
 }
+
+const user = new User()
+user.login = 'alex'
+console.log(user.login) // "user-alex"
 ```
 
 ### `implements`
