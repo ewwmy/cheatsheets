@@ -851,8 +851,8 @@ Difference between an optional property and `T | undefined`:
 
 ```typescript
 class MyClass {
-  optional?: string // optional property, may be missing
-  required: string | undefined // required property, allows `undefined`
+  optional?: string // optional property, may be missing, allows either `string` or `undefined`
+  required: string | undefined // required property, allows either `string` or `undefined`
 }
 
 // behaviour:
