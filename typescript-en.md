@@ -1312,7 +1312,7 @@ console.log(prettify(123.957)) // 123
 ```
 
 - the implementation of an overloaded function must handle all cases from the union of input types, but each overload allows specifying more precise input and return types for callers
-- overloads make it easier to define different behaviors for specific input types, which helps developers understand the function better and improves autocompletion in IDEs by showing the exact types expected for each case.
+- overloads make it easier to define different behaviors for specific input types, which helps developers understand the function better and improves hints in IDEs by showing the exact types expected for each case.
 
 ### Getters and Setters
 
