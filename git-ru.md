@@ -18,6 +18,7 @@ git config --global core.editor "vim" # установить vim редакто�
 
 ```bash
 git config user.email test123@example.com
+git config core.fileMode false # игнорировать файловые права доступа (не рекомендуется)
 ```
 
 В этом случае будет обновлен конфиг `./.git/config`.
