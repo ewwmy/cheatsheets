@@ -21,6 +21,10 @@ node_modules/
 ```bash
 npm init # initialize an npm repository with the settings specified in interactive mode
 npm init -y # initialize an npm repository with default settings (will not ask anything)
+npm init <package> # same as `npx create-<package>` (or `npm exec create-<package>`)
+npm init <@scope> # same as `npx <@scope>/create` (or `npm exec <@scope>/create`)
+npm init <@scope/package> # same as `npx <@scope>/create-<package>` (or `npm exec <@scope>/create-<package>`)
+npm create # same as `npm init`
 ```
 
 ## Dependencies
@@ -174,11 +178,11 @@ Run:
 my-package # executes `index.js`
 ```
 
-## `npx`
+## `npx` and `npm exec`
 
-Run a command from a local or remote npm package.
+> Run a command from a local or remote npm package.
 
-> `npx` and `npm exec` are mostly equivalent. The only difference is how they process the input arguments.
+`npx` and `npm exec` are mostly equivalent. The only difference is how they process the input arguments.
 
 ## Cache
 
@@ -227,6 +231,8 @@ The `name` field in `package.json` is used to identify the package in the npm re
   "name": "my-package"
 }
 ```
+
+Scoped package names allow for more flexible and consistent naming: `@scope/my-package`.
 
 Useful commands / Workflow:
 
