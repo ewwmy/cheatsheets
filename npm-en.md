@@ -101,6 +101,26 @@ npm run start -- --param="value" # pass positional arguments to the script; will
 npm run custom:script # any custom script is allowed; will execute `custom-util --all --use-input="default"`
 ```
 
+#### Pre/Post scripts
+
+> Scripts with the prefixes `pre` and `post` in the name, will be automatically executed when the matching script is called:
+
+```javascript
+{
+  "scripts": {
+    "prebuild": "build-util --prepare",
+    "build": "build-util",
+    "postbuild": "build-util --clear-cache"
+  }
+}
+```
+
+In the example above, `npm run build` will execute `prebuild`, `build` and `postbuild`.
+
+#### Life cycle scripts
+
+> There are several predefined script names that will be triggered on specific `npm` events. For example, the `prepare` script will be executed when calling `npm publish` and `npm pack` before those actions will be performed.
+
 ### `bin`
 
 > Used to define CLI utilities for the package.
