@@ -178,11 +178,43 @@ Run:
 my-package # executes `index.js`
 ```
 
-## `npx` and `npm exec`
+## `npx` / `npm exec`
 
 > Run a command from a local or remote npm package.
 
-`npx` and `npm exec` are mostly equivalent. The only difference is how they process the input arguments.
+`npx` and `npm exec` are functionally equivalent but differ in how they handle arguments:
+
+- `npx` — all flags and options must be set before any positional arguments
+- `npm exec` — a double-hyphen `--` flag can be used to suppress npm's parsing of switches and options that should be sent to the executed command.
+
+```bash
+npm exec my-js-bin # run the javascript binary `my-js-bin` of a package (globally installed or in the package directory), or run the main (default) javascript binary of the remote package `my-js-bin`
+npx my-js-bin # same as `npm exec my-js-bin`
+
+npm exec my-js-bin -- --arg="value" -t -a # same as `npm exec my-js-bin` but plus passing positional arguments to `my-js-bin`
+npx my-js-bin --arg="value" -t -a # same as `npm exec my-js-bin -- --arg="value" -t -a`
+
+npm exec -c 'my-js-bin' # run the javascript binary `my-js-bin` of a package (globally installed or in the package directory)
+npm exec -c 'my-js-bin --arg="value" -t -a' # same as `npm exec -c 'my-js-bin'` but plus passing positional arguments to `my-js-bin`
+
+npm exec -- my-package # run the main (default) javascript binary of the remote package `my-package`
+npm exec -- my-package --arg="value" -t -a # same as `npm exec -- my-package` but plus passing positional arguments to the main (default) javascript binary of the package
+npm exec -- my-package@1.0.0 # same as `npm exec -- my-package` but for version `1.0.0` of the package `my-package`
+
+npm exec --package="../my-package" -- my-js-bin # run a javascript binary `my-js-bin` from the local package placed in `../my-package`
+npm exec --package="../my-package" -- my-js-bin --arg="value" -t -a # same as `npm exec --package="../my-package" -- my-js-bin` but plus passing positional arguments to `my-js-bin`
+
+npm exec --package="../my-package" -c 'my-js-bin' # TODO: same as `npm exec --package="../my-package" -- my-js-bin` ???
+npm exec --package="../my-package" -c 'my-js-bin --arg="value" -t -a' # TODO: same as `npm exec --package="../my-package" -- my-js-bin --arg="value" -t -a` ???
+
+npm exec --package="my-package" -- my-js-bin # run a javascript binary `my-js-bin` from the remote package `my-package`
+npm exec --package="my-package" -- my-js-bin --arg="value" -t -a # same as `npm exec --package="my-package" -- my-js-bin` but plus passing positional arguments to `my-js-bin`
+npm exec --package="my-package@1.0.0" -- my-js-bin # same as `npm exec --package="my-package" -- my-js-bin` but for version `1.0.0` of the package `my-package`
+
+npm exec --package="my-package" -c 'my-js-bin' # TODO: same as `npm exec --package="my-package" -- my-js-bin` ???
+npm exec --package="my-package" -c 'my-js-bin --arg="value" -t -a' # TODO: same as `npm exec --package="my-package" -- my-js-bin --arg="value" -t -a` ???
+npm exec --package="my-package@1.0.0" -c 'my-js-bin' # TODO: same as `npm exec --package="my-package@1.0.0" -- my-js-bin` ???
+```
 
 ## Cache
 
