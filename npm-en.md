@@ -200,6 +200,16 @@ npm logout # logout from the registry
 
 ### Publishing packages
 
+The `name` field in `package.json` is used to identify the package in the npm registry and must be globally unique in case of publishing:
+
+```javascript
+{
+  "name": "my-package"
+}
+```
+
+Useful commands / Workflow:
+
 ```bash
 npm adduser # create a new npm account (if you don't have one yet)
 
