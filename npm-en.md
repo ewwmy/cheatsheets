@@ -188,32 +188,37 @@ my-package # executes `index.js`
 - `npm exec` — a double-hyphen `--` flag can be used to suppress npm's parsing of switches and options that should be sent to the executed command.
 
 ```bash
-npm exec my-js-bin # run the javascript binary `my-js-bin` of a package (globally installed or in the package directory), or run the main (default) javascript binary of the remote package `my-js-bin`
-npx my-js-bin # same as `npm exec my-js-bin`
+npm exec <identifier> # run a javascript binary, where `<identifier>` is:
+  # 1) the name of the binary if the current directory contains a local package
+  # 2) the path to the local package (default or firstly defined binary will be run)
+  # 3) the name of the package:
+    # 3.1) local package in the current directory if its name matches to `<identifier>` (default or firstly defined binary will be run)
+    # 3.2) remote package with the name `<identifier>` (default or firstly defined binary will be run)
+npx <identifier> # same as `npm exec <identifier>`
 
-npm exec my-js-bin -- --arg="value" -t -a # same as `npm exec my-js-bin` but plus passing positional arguments to `my-js-bin`
-npx my-js-bin --arg="value" -t -a # same as `npm exec my-js-bin -- --arg="value" -t -a`
+npm exec <identifier> -- --arg="value" -t -a # same as `npm exec <identifier>` but plus passing positional arguments to `<identifier>`
+npx <identifier> --arg="value" -t -a # same as `npm exec <identifier> -- --arg="value" -t -a`
 
-npm exec -c 'my-js-bin' # run the javascript binary `my-js-bin` of a package (globally installed or in the package directory)
+npm exec -c 'my-js-bin' # run the javascript binary `my-js-bin` of a globally installed package
 npm exec -c 'my-js-bin --arg="value" -t -a' # same as `npm exec -c 'my-js-bin'` but plus passing positional arguments to `my-js-bin`
 
-npm exec -- my-package # run the main (default) javascript binary of the remote package `my-package`
+npm exec -- my-package # run the main (default or firstly defined in `bin`) javascript binary of the remote package `my-package` from the default npm registry (or of the local package in the current directory if its name matches to `my-package`)
 npm exec -- my-package --arg="value" -t -a # same as `npm exec -- my-package` but plus passing positional arguments to the main (default) javascript binary of the package
-npm exec -- my-package@1.0.0 # same as `npm exec -- my-package` but for version `1.0.0` of the package `my-package`
+npm exec -- my-package@1.0.0 # same as `npm exec -- my-package` but for exact version `1.0.0` of the remote package `my-package`
 
-npm exec --package="../my-package" -- my-js-bin # run a javascript binary `my-js-bin` from the local package placed in `../my-package`
+npm exec --package="../my-package" -- my-js-bin # run the javascript binary `my-js-bin` of the local package placed in `../my-package`
 npm exec --package="../my-package" -- my-js-bin --arg="value" -t -a # same as `npm exec --package="../my-package" -- my-js-bin` but plus passing positional arguments to `my-js-bin`
 
-npm exec --package="../my-package" -c 'my-js-bin' # TODO: same as `npm exec --package="../my-package" -- my-js-bin` ???
-npm exec --package="../my-package" -c 'my-js-bin --arg="value" -t -a' # TODO: same as `npm exec --package="../my-package" -- my-js-bin --arg="value" -t -a` ???
+npm exec --package="../my-package" -c 'my-js-bin' # same as `npm exec --package="../my-package" -- my-js-bin`
+npm exec --package="../my-package" -c 'my-js-bin --arg="value" -t -a' # same as `npm exec --package="../my-package" -- my-js-bin --arg="value" -t -a`
 
-npm exec --package="my-package" -- my-js-bin # run a javascript binary `my-js-bin` from the remote package `my-package`
+npm exec --package="my-package" -- my-js-bin # run the javascript binary `my-js-bin` of the remote package `my-package` from the default npm registry (or of the local package in the current directory if its name matches to `my-package`)
 npm exec --package="my-package" -- my-js-bin --arg="value" -t -a # same as `npm exec --package="my-package" -- my-js-bin` but plus passing positional arguments to `my-js-bin`
-npm exec --package="my-package@1.0.0" -- my-js-bin # same as `npm exec --package="my-package" -- my-js-bin` but for version `1.0.0` of the package `my-package`
+npm exec --package="my-package@1.0.0" -- my-js-bin # same as `npm exec --package="my-package" -- my-js-bin` but for exact version `1.0.0` of the remote package `my-package`
 
-npm exec --package="my-package" -c 'my-js-bin' # TODO: same as `npm exec --package="my-package" -- my-js-bin` ???
-npm exec --package="my-package" -c 'my-js-bin --arg="value" -t -a' # TODO: same as `npm exec --package="my-package" -- my-js-bin --arg="value" -t -a` ???
-npm exec --package="my-package@1.0.0" -c 'my-js-bin' # TODO: same as `npm exec --package="my-package@1.0.0" -- my-js-bin` ???
+npm exec --package="my-package" -c 'my-js-bin' # same as `npm exec --package="my-package" -- my-js-bin`
+npm exec --package="my-package" -c 'my-js-bin --arg="value" -t -a' # same as `npm exec --package="my-package" -- my-js-bin --arg="value" -t -a`
+npm exec --package="my-package@1.0.0" -c 'my-js-bin' # same as `npm exec --package="my-package@1.0.0" -- my-js-bin`
 ```
 
 ## Cache
