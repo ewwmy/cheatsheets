@@ -37,13 +37,16 @@ npm i # same as `npm install`
 
 npm ci # install (restore) all the packages with their exact versions from the existing `package-lock.json`
 
-npm install <packages> # install (or update) specific packages even if they're not listed in `package.json` and lock their updated versions in `package-lock.json` (will add new dependencies to the `dependencies` section in `package.json`)
+npm install <packages> # install (or update) specific packages even if they're not listed in `package.json` and lock their installed (updated) versions in `package-lock.json`; adds new dependencies to the `dependencies` section in `package.json`
 npm i <packages> # same as `npm install <packages>`
 
-npm i <package@version> # install (or upgrade/downgrade to) specific version of the package and lock its updated version in `package-lock.json` (will also add or update the dependency in `package.json` according to the exact updated version)
+npm i <package@version> # install (or upgrade/downgrade to) specific version of the package and lock its installed (updated) version in `package-lock.json`; sets the dependency in `package.json` according to the exact updated version
 
-npm i -D <packages> # install (or update) specific packages as "dev" dependencies and lock their versions in `package-lock.json` (will add new dependencies to the `devDependencies` section in `package.json`)
+npm i -D <packages> # install (or update) specific packages as "dev" dependencies and lock their versions in `package-lock.json`; adds new dependencies to the `devDependencies` section in `package.json`
 npm i --save-dev <packages> # same as `npm i -D <packages>`
+npm i --save <packages> # same as `npm i <packages>` (deprecated since npm@5, no longer needed)
+npm i -S <packages> # same as `npm i <packages>` (deprecated since npm@5, no longer needed)
+npm i --no-save <packages> # install (or update) specific packages and lock their installed (updated) versions in `package-lock.json`; prevents saving dependencies to the `dependencies` section in `package.json`
 
 npm i -g <packages> # install (or update) specific packages globally (binaries will be available everywhere if present)
 npm i --global <packages> # same as `npm i -g <packages>`

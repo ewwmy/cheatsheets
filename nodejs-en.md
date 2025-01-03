@@ -1072,3 +1072,117 @@ MY_VAR="some_value" ANOTHER_VAR="another_value" node ./app.js # only for this co
 echo 'export MY_VAR="persistent_value"' >> ~/.bashrc
 source ~/.bashrc # apply changes to the current session
 ```
+
+## `http`
+
+### Create HTTP server
+
+#### `server.mjs`
+
+```javascript
+import http from 'node:http'
+
+const hostname = 'localhost'
+const port = 8000
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200
+  res.setHeader('Content-Type', 'application/json')
+  res.end(
+    JSON.stringify({
+      data: 'Hello World!',
+    })
+  )
+})
+
+server.listen(port, hostname, () => {
+  console.log(`Server is running on ${hostname}:${port}...`)
+})
+```
+
+#### Run
+
+```bash
+node server.mjs &
+
+# Server is running on localhost:8000...
+```
+
+#### Test
+
+```bash
+http get localhost:8000
+
+# HTTP/1.1 200 OK
+# Connection: keep-alive
+# Content-Length: 23
+# Content-Type: application/json
+# Date: Fri, 03 Jan 2025 18:13:05 GMT
+# Keep-Alive: timeout=5
+
+# {
+#     "data": "Hello World!"
+# }
+```
+
+#### Stop
+
+```bash
+fg
+^C
+```
+
+### Perform HTTP requests
+
+#### `client.mjs`
+
+```javascript
+import * as http from 'node:http'
+
+const hostname = 'localhost'
+const port = 8000
+
+// http.get(options[, callback])
+// http.get(url[, options][, callback])
+http.get(
+  {
+    hostname,
+    port,
+    path: '/',
+  },
+  res => {
+    let rawData
+    console.log(`HTTP/${res.httpVersion}`, res.statusCode, res.statusMessage)
+    console.log(res.headers)
+    res.on('data', chunk => {
+      rawData += chunk
+    })
+    res.on('end', () => {
+      console.log(rawData)
+    })
+  }
+)
+```
+
+#### Run
+
+```bash
+node client.mjs
+```
+
+## Express
+
+```javascript
+import express from 'express'
+
+const port = 3000
+const app = express()
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
+```
