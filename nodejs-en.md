@@ -1211,7 +1211,7 @@ const anotherMiddleware = (req, res, next) => {
   console.log('Second root middleware')
 }
 
-// use another middleware from the predefined function
+// use middleware from a predefined function
 app.use(anotherMiddleware)
 
 // use middleware on `/hello` url
@@ -1225,12 +1225,17 @@ app.get('/hello', (req, res) => {
   console.log('Hello!')
 })
 
-// use user router on the `/user` url
+// use a router on the `/user` url
 app.use('/user', userRouter)
+
+// throw error in a handler
+app.get('/error', (req, res) => {
+  throw new Error('Something went wrong')
+})
 
 // error handler middleware; must be defined after all other handlers
 app.use((err, req, res, next) => {
-  console.log(err.message)
+  console.error(err.message)
   res.status(500).send(err.message)
 })
 
