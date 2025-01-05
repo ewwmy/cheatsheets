@@ -1214,6 +1214,12 @@ const anotherMiddleware = (req, res, next) => {
 // use another middleware from the predefined function
 app.use(anotherMiddleware)
 
+// use middleware on `/hello` url
+app.use('/hello', (req, res, next) => {
+  console.log('Hello middleware')
+  next()
+})
+
 // `/hello` handler on GET request
 app.get('/hello', (req, res) => {
   console.log('Hello!')
