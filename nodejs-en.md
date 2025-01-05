@@ -1183,6 +1183,78 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Server is running on port ${port}`)
 })
+```
+
+## Express Router and Middleware
+
+### `index.js`
+
+```javascript
+import express from 'express'
+import { userRouter } from './routes/user.js'
+
+const port = 8000
+const app = express()
+
+// order of defining handlers (by calling `.get()`, `.post()`, etc.) is important
+
+// use custom middleware
+app.use((req, res, next) => {
+  console.log('First root middleware')
+  next()
+})
+
+// of course, handlers can be defined separately
+const anotherMiddleware = (req, res, next) => {
+  console.log('Second root middleware')
+}
+
+// use another middleware from the predefined function
+app.use(anotherMiddleware)
+
+// `/hello` handler on GET request
+app.get('/hello', (req, res) => {
+  console.log('Hello!')
+})
+
+// use user router on the `/user` url
+app.use('/user', userRouter)
+
+// error handler middleware; must be defined after all other handlers
+app.use((err, req, res, next) => {
+  console.log(err.message)
+  res.status(500).send(err.message)
+})
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`)
+})
+```
+
+### `routes/user.js`
+
+```javascript
+import express from 'express'
+
+const userRouter = express.Router()
+
+// use custom middleware only for the current router
+userRouter.use((req, res, next) => {
+  console.log('User middleware')
+  next()
+})
+
+// `/user/login` handler on POST request
+userRouter.post('/login', (req, res) => {
+  res.send('Login')
+})
+
+// `/user/register` on POST request
+userRouter.post('/register', (req, res) => {
+  res.send('Register')
+})
+
+export { userRouter }
 ```
