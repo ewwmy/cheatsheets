@@ -1295,3 +1295,12 @@ Response <────╂─────┤  Exception Filter  │<────�
               ╎                        D a t a b a s e                      ╎      Database Layer
               └-------------------------------------------------------------┘
 ```
+
+Good for:
+
+- small to medium API applications
+- microservices.
+
+Not suitable for:
+
+- large monolithic API applications (Domain-Driven Design is usually a better choice in such cases).
