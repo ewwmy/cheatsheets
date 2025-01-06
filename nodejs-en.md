@@ -1413,6 +1413,71 @@ An **IoC Container** is a framework/tool that handles the lifecycle and dependen
 
 [InversifyJS](https://github.com/inversify/InversifyJS) is one of the popular implementations of an **IoC Container**.
 
+#### InversifyJS Example
+
+```typescript
+import 'reflect-metadata'
+import { Container, injectable, inject } from 'inversify'
+
+interface IEngine {
+  start(): void
+}
+
+interface ICar {
+  drive(): void
+}
+
+@injectable()
+class Engine implements IEngine {
+  start() {
+    console.log('Engine started...')
+  }
+}
+
+@injectable()
+class Car implements ICar {
+  constructor(@inject('IEngine') private engine: IEngine) {}
+
+  drive() {
+    this.engine.start()
+    console.log('Car is driving...')
+  }
+}
+
+// create a container
+const container = new Container()
+
+// bind interfaces to their concrete implementations
+container.bind<IEngine>('IEngine').to(Engine)
+container.bind<ICar>('ICar').to(Car)
+
+// resolve dependencies
+const car = container.get<ICar>('ICar')
+car.drive()
+```
+
+##### Explanation
+
+1. **Interfaces (`IEngine` and `ICar`):**
+
+- define a contract that classes are required to follow
+- this allows implementations to be easily swapped without modifying the `Car` class itself.
+
+2. **Container:**
+
+- uses string identifiers (`'IEngine'`, `'ICar'`) to map interfaces to their implementations
+  - this is especially useful when multiple implementations of the same interface are available.
+
+3. **Dependency Injection:**
+
+- the `Car` class does not care about which specific implementation of `IEngine` is provided — this decision is delegated to the container.
+
+##### Benefits
+
+- **Flexibility**: Easily replace `Engine` with another implementation, such as `ElectricEngine`
+- **Testability**: In tests, a mock object can be provided instead of the real `Engine`
+- This is a more mature and universal approach that adheres to the SOLID principles.
+
 ### Service Locator
 
 The **Service Locator** pattern is a **design pattern** used to provide a centralized registry (or locator) that can be queried to retrieve services or dependencies. It is an alternative approach to Dependency Injection (DI), where instead of injecting dependencies into objects explicitly, the objects fetch their dependencies from the service locator at runtime.
