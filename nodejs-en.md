@@ -1526,7 +1526,7 @@ class ConsoleLogger implements ILogger {
 class Application {
   constructor(private logger: ILogger) {} // dependency is injected via the constructor
   run() {
-    this.logger.log('Application is running.')
+    this.logger.log('Application is running...')
   }
 }
 
