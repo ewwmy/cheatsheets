@@ -1304,3 +1304,151 @@ Good for:
 Not suitable for:
 
 - large monolithic API applications (Domain-Driven Design is usually a better choice in such cases).
+
+## DIP, IoC, DI, IoC Container
+
+### DIP (Dependency Inversion Principle)
+
+The **Dependency Inversion Principle** is one of the **SOLID** principles. It states that high-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details. Details should depend on abstractions.
+
+### IoC (Inversion of Control)
+
+**Inversion of Control** is a **principle** in software design where control of object creation and dependency management is transferred from the application code to a framework or container.
+
+### DI (Dependency Injection)
+
+**Dependency Injection** is a **design pattern** used to provide dependencies (e.g., services, objects) to a class rather than the class instantiating them directly.
+
+#### Through a constructor
+
+```typescript
+class Logger {
+  public info(...args: unknown[]): void {
+    console.log(...args)
+  }
+}
+
+class Application {
+  public constructor(private logger: Logger) {}
+
+  public something(): void {
+    this.logger.info('something')
+  }
+}
+
+const logger = new Logger()
+const app = new Application(logger)
+app.something()
+```
+
+#### Through a method
+
+```typescript
+class Logger {
+  public info(...args: unknown[]): void {
+    console.log(...args)
+  }
+}
+
+class Application {
+  public something(logger: Logger): void {
+    logger.info('something')
+  }
+}
+
+const logger = new Logger()
+const app = new Application()
+app.something(logger)
+```
+
+#### Improved DI by using interfaces
+
+```typescript
+interface ILogger {
+  info(...args: unknown[]): void
+}
+
+class Logger implements ILogger {
+  public info(...args: unknown[]): void {
+    console.log(...args)
+  }
+}
+
+class Application {
+  public constructor(private logger: ILogger) {}
+
+  public something(): void {
+    this.logger.info('something')
+  }
+}
+
+const logger = new Logger()
+const app = new Application(logger)
+app.something()
+```
+
+### Composition Root
+
+**Composition Root** is a **design pattern** and a key concept in **Dependency Injection (DI)**. It is the central location in your application where all the components and their dependencies are assembled. This is where the dependency graph is constructed and all objects are configured and wired together before the application is run.
+
+In simpler terms, the Composition Root is the place in your code where:
+
+- you register and configure all the dependencies
+- you assemble and wire together the components of your system
+- it acts as the entry point for creating and initializing the application.
+
+```typescript
+const main = async () => {
+  const logger = new Logger()
+  const app = new Application(logger, new UserController(logger))
+  await app.init()
+}
+
+main()
+```
+
+### IoC Container (Inversion of Control Container)
+
+An **IoC Container** is a framework/tool that handles the lifecycle and dependency resolution of objects, often using configuration or annotations. It simplifies managing dependencies and promotes decoupling.
+
+[InversifyJS](https://github.com/inversify/InversifyJS) is one of the popular implementations of an **IoC Container**.
+
+### Service Locator
+
+The **Service Locator** pattern is a **design pattern** used to provide a centralized registry (or locator) that can be queried to retrieve services or dependencies. It is an alternative approach to Dependency Injection (DI), where instead of injecting dependencies into objects explicitly, the objects fetch their dependencies from the service locator at runtime.
+
+### Code example
+
+```typescript
+// DIP (Dependency Inversion Principle):
+// The high-level module (Application) depends on an abstraction (ILogger)
+// rather than a concrete implementation (ConsoleLogger).
+interface ILogger {
+  log(message: string): void
+}
+
+// Concrete implementation of the ILogger abstraction.
+// This is a low-level module.
+class ConsoleLogger implements ILogger {
+  log(message: string): void {
+    console.log(message)
+  }
+}
+
+// DI (Dependency Injection):
+// The dependency (ILogger) is injected through the constructor,
+// instead of being created inside the class.
+class Application {
+  constructor(private logger: ILogger) {} // dependency is injected via the constructor
+  run() {
+    this.logger.log('Application is running.')
+  }
+}
+
+// IoC (Inversion of Control):
+// The control of object creation is transferred to external code.
+// Here, the external code creates and provides the dependency.
+const logger = new ConsoleLogger() // external code manages the creation of the dependency
+const app = new Application(logger) // external code manages the injection of the dependency
+app.run()
+```
