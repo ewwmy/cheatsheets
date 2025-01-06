@@ -1481,13 +1481,17 @@ car.drive()
 #### InversifyJS Example with `ContainerModule`
 
 ```typescript
+// create a module and bind interfaces to their concrete implementations there
 const carModule = new ContainerModule(bind => {
   bind<IEngine>('IEngine').to(Engine)
   bind<ICar>('ICar').to(Car)
 })
 
+// create a container
 const container = new Container()
-container.load(carModule) // load the module into the container
+
+// load the module into the container
+container.load(carModule)
 
 // resolve dependencies
 const car = container.get<ICar>('ICar')
