@@ -1718,3 +1718,31 @@ module.exports = [
   }
 }
 ```
+
+### `nodemon` and `ts-node`
+
+- `nodemon` is a tool that automatically restarts the application when file changes are detected
+- `ts-node` is an on-the-fly executor for TypeScript files without pre-building.
+
+```bash
+npm i -D nodemon ts-node
+```
+
+> `ts-node` respects `tsconfig.json`, so no additional config needed.
+
+`nodemon.json`:
+
+```json
+{
+  "watch": ["src"],
+  "ext": "ts,json",
+  "ignore": ["src/**/*.spec.ts"],
+  "exec": "ts-node ./src/main.ts"
+}
+```
+
+Run:
+
+```bash
+nodemon
+```
