@@ -2569,7 +2569,7 @@ ResetPrice(LogPrice(new Product())).getPrice() // Price: 1000
 ### Class Decorators
 
 ```typescript
-@Test
+@Log
 class User {
   public id: number = 0
   public updateId(id: number): void {
@@ -2577,7 +2577,7 @@ class User {
   }
 }
 
-function Test(target: Function) {
+function Log(target: Function) {
   console.log(target.name) // "User"
 }
 ```
