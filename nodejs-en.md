@@ -1478,6 +1478,22 @@ car.drive()
 - **Testability**: In tests, a mock object can be provided instead of the real `Engine`
 - This is a more mature and universal approach that adheres to the SOLID principles.
 
+#### InversifyJS Example with `ContainerModule`
+
+```typescript
+const carModule = new ContainerModule(bind => {
+  bind<IEngine>('IEngine').to(Engine)
+  bind<ICar>('ICar').to(Car)
+})
+
+const container = new Container()
+container.load(carModule) // load the module into the container
+
+// resolve dependencies
+const car = container.get<ICar>('ICar')
+car.drive()
+```
+
 ### Service Locator
 
 The **Service Locator** pattern is a **design pattern** used to provide a centralized registry (or locator) that can be queried to retrieve services or dependencies. It is an alternative approach to Dependency Injection (DI), where instead of injecting dependencies into objects explicitly, the objects fetch their dependencies from the service locator at runtime.
