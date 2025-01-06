@@ -2568,6 +2568,20 @@ ResetPrice(LogPrice(new Product())).getPrice() // Price: 1000
 
 ### Class Decorators
 
+```typescript
+@Test
+class User {
+  public id: number = 0
+  public updateId(id: number): void {
+    this.id = id
+  }
+}
+
+function Test(target: Function) {
+  console.log(target.name) // "User"
+}
+```
+
 #### Implementation Order
 
 > Class decorators initialize in direct order but run in back order.
