@@ -1537,3 +1537,184 @@ const logger = new ConsoleLogger() // external code manages the creation of the 
 const app = new Application(logger) // external code manages the injection of the dependency
 app.run()
 ```
+
+## Developer tools
+
+### ESLint and Prettier
+
+#### Installation
+
+```bash
+npm i -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin prettier eslint-config-prettier eslint-plugin-prettier typescript
+touch .prettierrc
+touch eslint.config.js # `.eslintrc.js` or `.eslintrc` for old ESLint versions
+mkdir .vscode
+touch .vscode/settings.json
+```
+
+#### Prettier Config
+
+```json
+{
+  "semi": false,
+  "tabWidth": 2,
+  "useTabs": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 80,
+  "arrowParens": "avoid",
+  "bracketSpacing": true,
+  "endOfLine": "lf"
+}
+```
+
+#### ESLint Config
+
+```javascript
+module.exports = [
+  {
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+      project: 'tsconfig.json',
+      tsconfigRootDir: __dirname,
+      sourceType: 'module',
+    },
+    plugins: ['@typescript-eslint/eslint-plugin'],
+    extends: [
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ],
+    root: true,
+    env: {
+      node: true,
+      jest: true,
+    },
+    ignorePatterns: ['eslint.config.js', '.eslintrc.js', '.eslintrc'],
+    rules: {
+      '@typescript-eslint/interface-name-prefix': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      'prettier/prettier': [
+        'error',
+        {
+          semi: false,
+          tabWidth: 2,
+          useTabs: false,
+          singleQuote: true,
+          trailingComma: 'all',
+          printWidth: 80,
+          arrowParens: 'avoid',
+          bracketSpacing: true,
+          endOfLine: 'lf',
+        },
+      ],
+    },
+  },
+]
+```
+
+##### Autoload `.prettierrc` settings
+
+```javascript
+const fs = require('fs')
+
+function getPrettierConfig() {
+  const configPath = `${__dirname}/.prettierrc`
+  const fileContent = fs.readFileSync(configPath, 'utf8')
+  return JSON.parse(fileContent)
+}
+
+const prettierConfig = getPrettierConfig()
+
+module.exports = [
+  {
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+      project: 'tsconfig.json',
+      tsconfigRootDir: __dirname,
+      sourceType: 'module',
+    },
+    plugins: ['@typescript-eslint/eslint-plugin'],
+    extends: [
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ],
+    root: true,
+    env: {
+      node: true,
+      jest: true,
+    },
+    ignorePatterns: ['eslint.config.js', '.eslintrc.js', '.eslintrc'],
+    rules: {
+      '@typescript-eslint/interface-name-prefix': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      'prettier/prettier': ['error', prettierConfig],
+    },
+  },
+]
+```
+
+##### Default ESLint rules from NestJS setup
+
+```javascript
+{
+  '@typescript-eslint/interface-name-prefix': 'off',
+  '@typescript-eslint/explicit-function-return-type': 'off',
+  '@typescript-eslint/explicit-module-boundary-types': 'off',
+  '@typescript-eslint/no-explicit-any': 'off',
+},
+```
+
+#### VS Code Settings
+
+##### Using Prettier VS Code plugin
+
+```json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.requireConfig": true
+}
+```
+
+##### Using ESLint VS Code plugin
+
+```json
+{
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+}
+```
+
+#### ESLint `package.json` scripts
+
+##### General
+
+```json
+{
+  "scripts": {
+    "lint": "eslint \"./src/**\"",
+    "lint:fix": "eslint \"./src/**\" --fix"
+  }
+}
+```
+
+##### NestJS default + Prettier
+
+```json
+{
+  "scripts": {
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+  }
+}
+```
