@@ -1548,7 +1548,7 @@ app.run()
 npm i -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin prettier eslint-config-prettier eslint-plugin-prettier typescript
 touch .prettierrc
 touch eslint.config.js # `.eslintrc.js` or `.eslintrc` for old ESLint versions
-mkdir .vscode
+mkdir -p .vscode
 touch .vscode/settings.json
 ```
 
@@ -1746,3 +1746,65 @@ Run:
 ```bash
 nodemon
 ```
+
+### Debug
+
+#### Configuration with `nodemon` for VS Code
+
+```bash
+mkdir -p .vscode
+touch .vscode/launch.json # profile configuration for debug in VS Code
+```
+
+##### `.vscode/launch.json`
+
+Create a Debug profile for VS Code in `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug (nodemon)",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/nodemon/bin/nodemon.js",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
+```
+
+- `"type": "node"` — use Node.js
+- `"request": "launch"` — launch the debugger (also available `attach`)
+- `"name": "Debug (nodemon)"` — profile name (to select in VS Code)
+- `"runtimeExecutable": "..."` — what to execute to run the application
+- `"restart": true` — restart the debugger if the application is restarted
+- `"console": "integratedTerminal"` — use the built-in terminal in VS Code
+- `"internalConsoleOptions": "neverOpen"` — no need to open the debug console automatically.
+
+##### `tsconfig.json`
+
+If you're using TypeScript, enable `sourceMap` option in `tsconfig.json` to bind code lines between the TypeScript source files and the built JavaScript files:
+
+```json
+{
+  "compilerOptions": {
+    "sourceMap": true /* Create source map files for emitted JavaScript files. */
+  }
+}
+```
+
+##### Start Debugging
+
+1. Set breakpoints
+2. Press `F5` (or use the section **Run and Debug** in VS Code, select a profile, e.g., **Debug (nodemon)**, and press **Start Debugging**).
+
+Now you can:
+
+- walk between breakpoints, enabling or disabling them
+- use the debug console
+- watch current variables
+- check the call stack, and more.
