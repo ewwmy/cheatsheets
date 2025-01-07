@@ -1763,7 +1763,7 @@ For production monitoring, use tools like **[PM2](https://pm2.keymetrics.io/)** 
 
 If debug is essential in production, make sure you restrict access to the debug port with firewalls or IP whitelisting.
 
-#### Configuration with `nodemon` for VS Code
+#### Debug in VS Code with `nodemon`
 
 ```bash
 mkdir -p .vscode
@@ -1852,3 +1852,30 @@ Structure of Chrome DevTools for Node.js:
 - **Sources** — the source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
 - **Performance** — record the application activity to analyze the timeline of functions and methods in the call stack
 - **Memory** — watch how much memory each object uses, by making memory snapshots and comparing them (e.g., **Objects allocated between Snapshot N and Snapshot M**).
+
+#### Diagnose performance issues with **Clinic.js Doctor**
+
+```bash
+npm i -g clinic
+```
+
+> Add `.clinic` directory to the `.gitignore` to avoid saving the reports in Git.
+
+You can use `autocannon` to generate sufficient load.
+
+```bash
+npm i -g autocannon
+```
+
+Example:
+
+```bash
+clinic doctor --on-port 'autocannon -m POST localhost:3000/endpoint/to/check' -- node dist/main.js
+```
+
+Autocannon performs a lot of requests and Clinic Doctor collects the metrics. After the command's been executed, you can learn the reports which contain:
+
+- CPU Usage
+- Event Loop Delay
+- Memory Usage
+- Active Handlers.
