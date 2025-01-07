@@ -1759,7 +1759,7 @@ Never run Node.js with `inspect` (debug) mode in production! Use debug mode only
 - **Security**: Opens a debug port (e.g., `9229`) that can expose sensitive data.
 - **Risk**: Debug tools may leak internal app state.
 
-For production monitoring, use tools like **PM2**, **New Relic**, or **AppDynamics**.
+For production monitoring, use tools like **[PM2](https://pm2.keymetrics.io/)** or **[Clinic.js](https://clinicjs.org/)**.
 
 If debug is essential in production, make sure you restrict access to the debug port with firewalls or IP whitelisting.
 
