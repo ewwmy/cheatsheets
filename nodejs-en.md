@@ -1808,3 +1808,33 @@ Now you can:
 - use the debug console
 - watch current variables
 - check the call stack, and more.
+
+#### Chrome DevTools for Node.js to detect memory leaks
+
+> You can use any external debugger, e.g. **Chrome DevTools for Node.js**. It's especially useful for memory profiling.
+
+To use **Chrome DevTools for Node.js**, open [Inspect](chrome://inspect/#devices) and press on **Open dedicated DevTools for Node**.
+
+Run the application in debug mode with `nodemon` and `ts-node`:
+
+```bash
+nodemon -e ts,json --exec node --inspect=localhost:9222 -r ts-node/register src/main.ts
+```
+
+or add an npm-script to run it with `npm run start:debug`:
+
+```json
+{
+  "scripts": {
+    "start:debug": "nodemon -e ts,json --exec node --inspect=localhost:9222 -r ts-node/register src/main.ts"
+  }
+}
+```
+
+Structure of Chrome DevTools for Node.js:
+
+- **Connection** — setup the connections to the debugging applications
+- **Console** — ordinary console, where any output of the application appears and any JS-command can be run in the application context
+- **Sources** — source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
+- **Performance** — recording the application activity to watch the timeline of the functions and methods in the call stack
+- **Memory** — watch how much memory each object use, by making memory snapshots and comparing them (e.g. **Objects allocated between Snapshot N and Snapshot M**)
