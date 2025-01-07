@@ -1837,4 +1837,4 @@ Structure of Chrome DevTools for Node.js:
 - **Console** — ordinary console, where any output of the application appears and any JS-command can be run in the application context
 - **Sources** — source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
 - **Performance** — recording the application activity to watch the timeline of the functions and methods in the call stack
-- **Memory** — watch how much memory each object use, by making memory snapshots and comparing them (e.g. **Objects allocated between Snapshot N and Snapshot M**)
+- **Memory** — watch how much memory each object use, by making memory snapshots and comparing them (e.g. **Objects allocated between Snapshot N and Snapshot M**).
