@@ -1749,6 +1749,18 @@ nodemon
 
 ### Debug
 
+#### Security note
+
+Never run Node.js with `inspect` (debug) mode in production! Use debug mode only in development.
+
+- **Performance**: Debug mode adds significant overhead.
+- **Security**: Opens a debug port (e.g., `9229`) that can expose sensitive data.
+- **Risk**: Debug tools may leak internal app state.
+
+For production monitoring, use tools like **PM2**, **New Relic**, or **AppDynamics**.
+
+If debug is essential in production, make sure you restrict access to the debug port with firewalls or IP whitelisting.
+
 #### Configuration with `nodemon` for VS Code
 
 ```bash
@@ -1833,8 +1845,8 @@ or add an npm-script to run it with `npm run start:debug`:
 
 Structure of Chrome DevTools for Node.js:
 
-- **Connection** — setup the connections to the debugging applications
-- **Console** — ordinary console, where any output of the application appears and any JS-command can be run in the application context
-- **Sources** — source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
-- **Performance** — recording the application activity to watch the timeline of the functions and methods in the call stack
-- **Memory** — watch how much memory each object use, by making memory snapshots and comparing them (e.g. **Objects allocated between Snapshot N and Snapshot M**).
+- **Connection** — set up connections to the debugging applications
+- **Console** — a standard console, where any output of the application appears and any JS-command can be run in the application context
+- **Sources** — the source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
+- **Performance** — record the application activity to analyze the timeline of functions and methods in the call stack
+- **Memory** — watch how much memory each object uses, by making memory snapshots and comparing them (e.g., **Objects allocated between Snapshot N and Snapshot M**).
