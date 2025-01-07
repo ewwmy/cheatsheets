@@ -148,6 +148,8 @@ new Qux()
 
 ##### Async import
 
+> Async (dynamic) imports can be declared anywhere in the code, unlike regular `import` statements, which must be placed only at the top of the source file.
+
 ```javascript
 ;(async function () {
   const { a, b } = await import('./foo.js')
@@ -1038,9 +1040,9 @@ relative('/a/b/c', '/a/b/file.txt') // relative path between two passed: '../fil
 isAbsolute('/a/b') // check if the path is absolute: true
 isAbsolute('a/b') // check if the path is absolute: false
 
-resolve('/a/b/c') // make absolute path: '/a/b/c'
-
 // current dir: '/home/user/tests':
+resolve('/a/b') // make absolute path: '/a/b'
+resolve('a/b') // make absolute path: '/home/user/tests/a/b'
 resolve('a/b/..') // make absolute path: '/home/user/tests/a'
 resolve('../..') // make absolute path: '/home'
 
