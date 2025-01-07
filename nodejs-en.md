@@ -1537,3 +1537,304 @@ const logger = new ConsoleLogger() // external code manages the creation of the 
 const app = new Application(logger) // external code manages the injection of the dependency
 app.run()
 ```
+
+## Developer tools
+
+### ESLint and Prettier
+
+#### Installation
+
+```bash
+npm i -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin prettier eslint-config-prettier eslint-plugin-prettier typescript
+touch .prettierrc
+touch eslint.config.js # `.eslintrc.js` or `.eslintrc` for old ESLint versions
+mkdir -p .vscode
+touch .vscode/settings.json
+```
+
+#### Prettier Config
+
+```json
+{
+  "semi": false,
+  "tabWidth": 2,
+  "useTabs": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 80,
+  "arrowParens": "avoid",
+  "bracketSpacing": true,
+  "endOfLine": "lf"
+}
+```
+
+#### ESLint Config
+
+```javascript
+module.exports = [
+  {
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+      project: 'tsconfig.json',
+      tsconfigRootDir: __dirname,
+      sourceType: 'module',
+    },
+    plugins: ['@typescript-eslint/eslint-plugin'],
+    extends: [
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ],
+    root: true,
+    env: {
+      node: true,
+      jest: true,
+    },
+    ignorePatterns: ['eslint.config.js', '.eslintrc.js', '.eslintrc'],
+    rules: {
+      '@typescript-eslint/interface-name-prefix': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      'prettier/prettier': [
+        'error',
+        {
+          semi: false,
+          tabWidth: 2,
+          useTabs: false,
+          singleQuote: true,
+          trailingComma: 'all',
+          printWidth: 80,
+          arrowParens: 'avoid',
+          bracketSpacing: true,
+          endOfLine: 'lf',
+        },
+      ],
+    },
+  },
+]
+```
+
+##### Autoload `.prettierrc` settings
+
+```javascript
+const fs = require('fs')
+
+function getPrettierConfig() {
+  const configPath = `${__dirname}/.prettierrc`
+  const fileContent = fs.readFileSync(configPath, 'utf8')
+  return JSON.parse(fileContent)
+}
+
+const prettierConfig = getPrettierConfig()
+
+module.exports = [
+  {
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+      project: 'tsconfig.json',
+      tsconfigRootDir: __dirname,
+      sourceType: 'module',
+    },
+    plugins: ['@typescript-eslint/eslint-plugin'],
+    extends: [
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ],
+    root: true,
+    env: {
+      node: true,
+      jest: true,
+    },
+    ignorePatterns: ['eslint.config.js', '.eslintrc.js', '.eslintrc'],
+    rules: {
+      '@typescript-eslint/interface-name-prefix': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      'prettier/prettier': ['error', prettierConfig],
+    },
+  },
+]
+```
+
+##### Default ESLint rules from NestJS setup
+
+```javascript
+{
+  '@typescript-eslint/interface-name-prefix': 'off',
+  '@typescript-eslint/explicit-function-return-type': 'off',
+  '@typescript-eslint/explicit-module-boundary-types': 'off',
+  '@typescript-eslint/no-explicit-any': 'off',
+},
+```
+
+#### VS Code Settings
+
+##### Using Prettier VS Code plugin
+
+```json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.requireConfig": true
+}
+```
+
+##### Using ESLint VS Code plugin
+
+```json
+{
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
+}
+```
+
+#### ESLint `package.json` scripts
+
+##### General
+
+```json
+{
+  "scripts": {
+    "lint": "eslint \"./src/**\"",
+    "lint:fix": "eslint \"./src/**\" --fix"
+  }
+}
+```
+
+##### NestJS default + Prettier
+
+```json
+{
+  "scripts": {
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+  }
+}
+```
+
+### `nodemon` and `ts-node`
+
+- `nodemon` is a tool that automatically restarts the application when file changes are detected
+- `ts-node` is an on-the-fly executor for TypeScript files without pre-building.
+
+```bash
+npm i -D nodemon ts-node
+```
+
+> `ts-node` respects `tsconfig.json`, so no additional config needed.
+
+`nodemon.json`:
+
+```json
+{
+  "watch": ["src"],
+  "ext": "ts,json",
+  "ignore": ["src/**/*.spec.ts"],
+  "exec": "ts-node ./src/main.ts"
+}
+```
+
+Run:
+
+```bash
+nodemon
+```
+
+### Debug
+
+#### Configuration with `nodemon` for VS Code
+
+```bash
+mkdir -p .vscode
+touch .vscode/launch.json # profile configuration for debug in VS Code
+```
+
+##### `.vscode/launch.json`
+
+Create a Debug profile for VS Code in `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug (nodemon)",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/nodemon/bin/nodemon.js",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
+```
+
+- `"type": "node"` — use Node.js
+- `"request": "launch"` — launch the debugger (also available `attach`)
+- `"name": "Debug (nodemon)"` — profile name (to select in VS Code)
+- `"runtimeExecutable": "..."` — what to execute to run the application
+- `"restart": true` — restart the debugger if the application is restarted
+- `"console": "integratedTerminal"` — use the built-in terminal in VS Code
+- `"internalConsoleOptions": "neverOpen"` — no need to open the debug console automatically.
+
+##### `tsconfig.json`
+
+If you're using TypeScript, enable `sourceMap` option in `tsconfig.json` to bind code lines between the TypeScript source files and the built JavaScript files:
+
+```json
+{
+  "compilerOptions": {
+    "sourceMap": true /* Create source map files for emitted JavaScript files. */
+  }
+}
+```
+
+##### Start Debugging
+
+1. Set breakpoints
+2. Press `F5` (or use the section **Run and Debug** in VS Code, select a profile, e.g., **Debug (nodemon)**, and press **Start Debugging**).
+
+Now you can:
+
+- walk between breakpoints, enabling or disabling them
+- use the debug console
+- watch current variables
+- check the call stack, and more.
+
+#### Chrome DevTools for Node.js to detect memory leaks
+
+> You can use any external debugger, e.g. **Chrome DevTools for Node.js**. It's especially useful for memory profiling.
+
+To use **Chrome DevTools for Node.js**, open [Inspect](chrome://inspect/#devices) and press on **Open dedicated DevTools for Node**.
+
+Run the application in debug mode with `nodemon` and `ts-node`:
+
+```bash
+nodemon -e ts,json --exec node --inspect=localhost:9222 -r ts-node/register src/main.ts
+```
+
+or add an npm-script to run it with `npm run start:debug`:
+
+```json
+{
+  "scripts": {
+    "start:debug": "nodemon -e ts,json --exec node --inspect=localhost:9222 -r ts-node/register src/main.ts"
+  }
+}
+```
+
+Structure of Chrome DevTools for Node.js:
+
+- **Connection** — setup the connections to the debugging applications
+- **Console** — ordinary console, where any output of the application appears and any JS-command can be run in the application context
+- **Sources** — source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
+- **Performance** — recording the application activity to watch the timeline of the functions and methods in the call stack
+- **Memory** — watch how much memory each object use, by making memory snapshots and comparing them (e.g. **Objects allocated between Snapshot N and Snapshot M**)
