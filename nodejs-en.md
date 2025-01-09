@@ -1853,29 +1853,29 @@ Structure of Chrome DevTools for Node.js:
 - **Performance** — record the application activity to analyze the timeline of functions and methods in the call stack
 - **Memory** — watch how much memory each object uses, by making memory snapshots and comparing them (e.g., **Objects allocated between Snapshot N and Snapshot M**).
 
-#### Diagnose performance issues with **Clinic.js Doctor**
+#### Detect performance issues with **Clinic.js Doctor** and **Autocannon**
+
+**Clinic.js Doctor** is an instrument to collect and show the performance information while the application is running:
+
+- Detected potential problems (e.g., memory leaks or event loop issues)
+  - Recommendations on how to solve them
+- CPU Usage
+- Memory Usage
+- Event Loop Delay
+- Active Handlers.
+
+**Autocannon** is a tool to generate multiple HTTP requests to the application in order to provide sufficient load and collect the basic metrics.
+
+Installation:
 
 ```bash
-npm i -g clinic
+npm i -g clinic autocannon
 ```
 
 > Add `.clinic` directory to the `.gitignore` to avoid saving the reports in Git.
-
-You can use `autocannon` to generate sufficient load.
-
-```bash
-npm i -g autocannon
-```
 
 Example:
 
 ```bash
 clinic doctor --on-port 'autocannon -m POST localhost:3000/endpoint/to/check' -- node dist/main.js
 ```
-
-Autocannon performs a lot of requests and Clinic Doctor collects the metrics. After the command's been executed, you can learn the reports which contain:
-
-- CPU Usage
-- Event Loop Delay
-- Memory Usage
-- Active Handlers.
