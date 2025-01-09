@@ -1536,8 +1536,9 @@ console.log(logger === sameLogger) // true
 ```typescript
 // create a module and bind interfaces to their concrete implementations there
 const carModule = new ContainerModule(bind => {
-  bind<IEngine>('IEngine').to(Engine)
-  bind<ICar>('ICar').to(Car)
+  bind<IEngine>('engine').to(Engine)
+  bind<ICar>('car').to(Car)
+  bind<ILogger>('logger').to(Logger).inSingletonScope()
 })
 
 // create a container
@@ -1547,7 +1548,7 @@ const container = new Container()
 container.load(carModule)
 
 // resolve dependencies
-const car = container.get<ICar>('ICar')
+const car = container.get<ICar>('car')
 car.drive()
 ```
 
