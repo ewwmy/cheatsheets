@@ -1049,7 +1049,9 @@ resolve('../..') // make absolute path: '/home'
 sep // path separator for the current OS: '/'
 ```
 
-## Environment variables in Linux
+## Environment variables
+
+> The examples below are valid for Linux.
 
 ```bash
 # create a session-only variable
@@ -1073,6 +1075,16 @@ MY_VAR="some_value" ANOTHER_VAR="another_value" node ./app.js # only for this co
 # persist a variable across sessions (add to ~/.bashrc or ~/.bash_profile)
 echo 'export MY_VAR="persistent_value"' >> ~/.bashrc
 source ~/.bashrc # apply changes to the current session
+```
+
+### `dotenv`
+
+> `dotenv` reads .env files automatically, parses, and puts the read variables into the `process.env` property in Node.js application.
+
+Installation:
+
+```bash
+npm i dotenv
 ```
 
 ## `http`
@@ -1429,20 +1441,40 @@ interface ICar {
   drive(): void
 }
 
+interface ILogger {
+  log(data: string): void
+}
+
 @injectable()
 class Engine implements IEngine {
+  constructor(@inject('logger') private logger: ILogger) {}
+
   start() {
-    console.log('Engine started...')
+    this.logger.log('[Engine] Started...')
   }
 }
 
 @injectable()
 class Car implements ICar {
-  constructor(@inject('IEngine') private engine: IEngine) {}
+  constructor(
+    @inject('engine') private engine: IEngine,
+    @inject('logger') private logger: ILogger
+  ) {}
 
   drive() {
     this.engine.start()
-    console.log('Car is driving...')
+    this.logger.log('[Car] Driving...')
+  }
+}
+
+@injectable()
+class Logger implements ILogger {
+  constructor() {
+    this.log('[Logger] Initialized...')
+  }
+
+  log(data: string) {
+    console.log(data)
   }
 }
 
@@ -1450,12 +1482,25 @@ class Car implements ICar {
 const container = new Container()
 
 // bind interfaces to their concrete implementations
-container.bind<IEngine>('IEngine').to(Engine)
-container.bind<ICar>('ICar').to(Car)
+container.bind<IEngine>('engine').to(Engine) // transient (default) scope
+container.bind<ICar>('car').to(Car) // transient (default) scope
+container.bind<ILogger>('logger').to(Logger).inSingletonScope() // singleton scope: ensures that only one instance of the dependency exists in the container
 
 // resolve dependencies
-const car = container.get<ICar>('ICar')
+const car = container.get<ICar>('car')
 car.drive()
+// [Logger] Initialized...
+// [Engine] Started...
+// [Car] Driving...
+
+// demonstrate transient dependency
+const anotherCar = container.get<ICar>('car')
+console.log(car === anotherCar) // false
+
+// demonstrate singleton dependency
+const logger = container.get<ILogger>('logger')
+const sameLogger = container.get<ILogger>('logger')
+console.log(logger === sameLogger) // true
 ```
 
 ##### Explanation
@@ -1473,6 +1518,12 @@ car.drive()
 3. **Dependency Injection:**
 
 - the `Car` class does not care about which specific implementation of `IEngine` is provided — this decision is delegated to the container.
+
+4. **Singleton Scope:**
+
+- dependencies bound with `.inSingletonScope()` are instantiated only once, and the same instance is reused across all classes that inject it
+- in this example, `Logger` is defined as a singleton; even though it is injected into both the `Engine` and `Car` classes, **only one instance** of `Logger` is created and shared
+- this is evident from the `Logger` constructor logging `[Logger] Initialized...` **only once**, regardless of how many times it is injected or retrieved from the container.
 
 ##### Benefits
 
@@ -1853,7 +1904,7 @@ Structure of Chrome DevTools for Node.js:
 - **Performance** — record the application activity to analyze the timeline of functions and methods in the call stack
 - **Memory** — watch how much memory each object uses, by making memory snapshots and comparing them (e.g., **Objects allocated between Snapshot N and Snapshot M**).
 
-#### Detect performance issues with **Clinic.js Doctor** and **Autocannon**
+### Detect performance issues with **Clinic.js Doctor** and **Autocannon**
 
 **Clinic.js Doctor** is an instrument to collect and show the performance information while the application is running:
 
