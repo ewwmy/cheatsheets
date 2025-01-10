@@ -2274,6 +2274,28 @@ main()
 
 ### Testing Pyramid
 
+```
+      ------------------------------------------------------------
+     ╱   E2E   ╲        API tests, the entire system
+    --------------------------------------------------------------
+   ╱ Integration ╲      Two or more components together
+  ----------------------------------------------------------------
+ ╱      Unit       ╲    Isolated functions, components, modules
+------------------------------------------------------------------
+```
+
+Frontend libraries:
+
+- **Cypress** (high-level E2E testing framework)
+- **Protractor** (E2E testing library for Angular)
+- **Puppeteer** (high-level API to control Chrome or Firefox over the DevTools Protocol or WebDriver BiDi).
+
+Backend (Common) libraries:
+
+- **Jest** (TypeScript-compatible JavaScript Testing Framework)
+- **Mocha** (JavaScript test framework running on Node.js and in the browser)
+- **Chai** (BDD / TDD assertion library for node and the browser).
+
 ### Unit Testing
 
 ### E2E Testing
