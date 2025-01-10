@@ -2013,3 +2013,64 @@ validate(user).then(errors => {
   }
 })
 ```
+
+## Authentication
+
+### `bcrypt`
+
+> `bcrypt` is a library used to hash passwords securely and compare them during authentication.
+
+#### Installation
+
+```bash
+npm i bcrypt
+```
+
+#### Hashing and Verifying a Password
+
+```javascript
+import bcrypt from 'bcrypt'
+
+// determines the complexity of the hash
+const saltRounds = 10
+const plainPassword = 'my-secure-password'
+
+// hashing a password
+const hashedPassword = await bcrypt.hash(plainPassword, saltRounds)
+console.log('Hashed Password:', hashedPassword) // Hashed Password: $2b$10$...
+
+// password entered by the user
+const enteredPassword = 'my-secure-password'
+// password hash retrieved from the database
+const savedHash = hashedPassword
+
+// verifying a password
+const isMatch = await bcrypt.compare(enteredPassword, savedHash)
+
+if (isMatch) {
+  console.log('OK: Password is correct')
+} else {
+  console.log('Error: Wrong password')
+}
+// OK: Password is correct
+```
+
+#### Notes
+
+- `saltRounds`: higher values increase security but slow down hash generation
+- store only the hashed password in your database, never the plain password
+- use `async` methods (`hash` and `compare`) to prevent blocking the event loop.
+
+### JWT
+
+## Authorization
+
+### Guards
+
+## Testing
+
+### Testing Pyramid
+
+### Unit Testing
+
+### E2E Testing
