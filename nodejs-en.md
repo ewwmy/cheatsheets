@@ -1978,12 +1978,12 @@ npm i class-validator class-transformer
 
 ### Usage
 
-`user.model.ts`:
+`user.dto.ts`:
 
 ```typescript
 import { IsString, IsInt, MinLength } from 'class-validator'
 
-class User {
+export class UserDto {
   @IsString()
   @MinLength(3)
   name: string
@@ -1999,11 +1999,11 @@ class User {
 import 'reflect-metadata'
 import { plainToInstance } from 'class-transformer'
 import { validate } from 'class-validator'
-import { User } from './user.model'
+import { UserDto } from './user.dto'
 
 const plainObject = { name: 'Alex', age: 25 }
 
-const user = plainToInstance(User, plainObject)
+const user = plainToInstance(UserDto, plainObject)
 
 validate(user).then(errors => {
   if (errors.length > 0) {
