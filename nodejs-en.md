@@ -148,6 +148,8 @@ new Qux()
 
 ##### Async import
 
+> Async (dynamic) imports can be declared anywhere in the code, unlike regular `import` statements, which must be placed only at the top of the source file.
+
 ```javascript
 ;(async function () {
   const { a, b } = await import('./foo.js')
@@ -1038,16 +1040,18 @@ relative('/a/b/c', '/a/b/file.txt') // relative path between two passed: '../fil
 isAbsolute('/a/b') // check if the path is absolute: true
 isAbsolute('a/b') // check if the path is absolute: false
 
-resolve('/a/b/c') // make absolute path: '/a/b/c'
-
 // current dir: '/home/user/tests':
+resolve('/a/b') // make absolute path: '/a/b'
+resolve('a/b') // make absolute path: '/home/user/tests/a/b'
 resolve('a/b/..') // make absolute path: '/home/user/tests/a'
 resolve('../..') // make absolute path: '/home'
 
 sep // path separator for the current OS: '/'
 ```
 
-## Environment variables in Linux
+## Environment variables
+
+> The examples below are valid for Linux.
 
 ```bash
 # create a session-only variable
@@ -1071,6 +1075,49 @@ MY_VAR="some_value" ANOTHER_VAR="another_value" node ./app.js # only for this co
 # persist a variable across sessions (add to ~/.bashrc or ~/.bash_profile)
 echo 'export MY_VAR="persistent_value"' >> ~/.bashrc
 source ~/.bashrc # apply changes to the current session
+```
+
+### `dotenv`
+
+> `dotenv` automatically reads `.env` files, parses their content, and loads the variables into the `process.env` object in a Node.js application.
+
+#### Security note
+
+> Real `.env` files (not the example ones) must always be added to `.gitignore` to prevent sensitive data from leaking.
+
+#### Installation
+
+```bash
+npm i dotenv
+```
+
+#### Usage
+
+`.env`:
+
+```
+APP_NAME="my-awesome-app"
+```
+
+`.env.production`:
+
+```
+APP_NAME="my-awesome-app (production)"
+```
+
+`index.js`:
+
+```javascript
+import 'dotenv/config' // this automatically loads the `.env` file without additional configuration
+console.log(process.env.APP_NAME) // my-awesome-app
+```
+
+`advanced.js`:
+
+```javascript
+import dotenv from 'dotenv'
+dotenv.config({ path: './.env.production' })
+console.log(process.env.APP_NAME) // my-awesome-app (production)
 ```
 
 ## `http`
@@ -1275,22 +1322,22 @@ export { userRouter }
 ```
                                         Application
               ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-              ┃                                ┌────────────────┐     ┌───┐ ┃
-Request ──────╂───────────────────────────────>│   Middleware   │     │   │ ┃
-              ┃                                └────────────────┘     │   │ ┃
-              ┃                                        v              │   │ ┃      Presentation Layer
+              ┃           ┌─────────┐          ┌────────────────┐     ┌───┐ ┃
+Request ──────╂──────────>│   DTO   ├─────────>│   Middleware   │     │   │ ┃
+              ┃           └─────────┘          └────────────────┘     │   │ ┃
+              ┃                                        ↓              │   │ ┃      Presentation Layer
               ┃     ┌────────────────────┐     ┌────────────────┐     │   │ ┃
-Response <────╂─────┤  Exception Filter  │<────┤   Controller   │<─┐  │ L │ ┃
-              ┃     └────────────────────┘     └────────────────┘  │  │ o │ ┃
-              ┃                                        v           │  │ g │ ┃   -------------------------------------------
-              ┃                                ┌────────────────┐  │  │ g │ ┃
-              ┃                             ┌─>│    Service     ├──┘  │ e │ ┃      Business Logic Layer
-              ┃                             │  └────────────────┘     │ r │ ┃
-              ┃                             │          v              │   │ ┃   -------------------------------------------
-              ┃                             │  ┌────────────────┐     │   │ ┃
-              ┃                             └──┤   Repository   │     │   │ ┃      Data Access Layer (Persistence Layer)
-              ┃                                └────────────────┘     └───┘ ┃
-              ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛   -------------------------------------------
+Response <────╂─────┤ Exception Handler  │<────┤   Controller   │     │ L │ ┃
+              ┃     └────────────────────┘     └────────────────┘     │ o │ ┃
+              ┃                                        ↓↑             │ g │ ┃   -------------------------------------------
+              ┃         ┌─────────────┐        ┌────────────────┐     │ g │ ┃
+              ┃         │   Entity    │<──────>│    Service     │     │ e │ ┃      Business Logic Layer
+              ┃         └─────────────┘        └────────────────┘     │ r │ ┃
+              ┃                                        ↓↑             │   │ ┃   -------------------------------------------
+              ┃         ┌─────────────┐        ┌────────────────┐     │   │ ┃
+              ┃         │    Model    │<──────>│   Repository   │     │   │ ┃      Data Access Layer (Persistence Layer)
+              ┃         └─────────────┘        └────────────────┘     └───┘ ┃
+              ┗━━━━━━━━━━━━━━━↓↑━━━━━━━━━━━━━━━━━━━━━━━↓↑━━━━━━━━━━━━━━━━━━━┛   -------------------------------------------
               ┌-------------------------------------------------------------┐
               ╎                        D a t a b a s e                      ╎      Database Layer
               └-------------------------------------------------------------┘
@@ -1427,20 +1474,40 @@ interface ICar {
   drive(): void
 }
 
+interface ILogger {
+  log(data: string): void
+}
+
 @injectable()
 class Engine implements IEngine {
+  constructor(@inject('logger') private logger: ILogger) {}
+
   start() {
-    console.log('Engine started...')
+    this.logger.log('[Engine] Started...')
   }
 }
 
 @injectable()
 class Car implements ICar {
-  constructor(@inject('IEngine') private engine: IEngine) {}
+  constructor(
+    @inject('engine') private engine: IEngine,
+    @inject('logger') private logger: ILogger
+  ) {}
 
   drive() {
     this.engine.start()
-    console.log('Car is driving...')
+    this.logger.log('[Car] Driving...')
+  }
+}
+
+@injectable()
+class Logger implements ILogger {
+  constructor() {
+    this.log('[Logger] Initialized...')
+  }
+
+  log(data: string) {
+    console.log(data)
   }
 }
 
@@ -1448,12 +1515,25 @@ class Car implements ICar {
 const container = new Container()
 
 // bind interfaces to their concrete implementations
-container.bind<IEngine>('IEngine').to(Engine)
-container.bind<ICar>('ICar').to(Car)
+container.bind<IEngine>('engine').to(Engine) // transient (default) scope
+container.bind<ICar>('car').to(Car) // transient (default) scope
+container.bind<ILogger>('logger').to(Logger).inSingletonScope() // singleton scope: ensures that only one instance of the dependency exists in the container
 
 // resolve dependencies
-const car = container.get<ICar>('ICar')
+const car = container.get<ICar>('car')
 car.drive()
+// [Logger] Initialized...
+// [Engine] Started...
+// [Car] Driving...
+
+// demonstrate transient dependency
+const anotherCar = container.get<ICar>('car')
+console.log(car === anotherCar) // false
+
+// demonstrate singleton dependency
+const logger = container.get<ILogger>('logger')
+const sameLogger = container.get<ILogger>('logger')
+console.log(logger === sameLogger) // true
 ```
 
 ##### Explanation
@@ -1472,6 +1552,12 @@ car.drive()
 
 - the `Car` class does not care about which specific implementation of `IEngine` is provided — this decision is delegated to the container.
 
+4. **Singleton Scope:**
+
+- dependencies bound with `.inSingletonScope()` are instantiated only once, and the same instance is reused across all classes that inject it
+- in this example, `Logger` is defined as a singleton; even though it is injected into both the `Engine` and `Car` classes, **only one instance** of `Logger` is created and shared
+- this is evident from the `Logger` constructor logging `[Logger] Initialized...` **only once**, regardless of how many times it is injected or retrieved from the container.
+
 ##### Benefits
 
 - **Flexibility**: Easily replace `Engine` with another implementation, such as `ElectricEngine`
@@ -1483,8 +1569,9 @@ car.drive()
 ```typescript
 // create a module and bind interfaces to their concrete implementations there
 const carModule = new ContainerModule(bind => {
-  bind<IEngine>('IEngine').to(Engine)
-  bind<ICar>('ICar').to(Car)
+  bind<IEngine>('engine').to(Engine)
+  bind<ICar>('car').to(Car)
+  bind<ILogger>('logger').to(Logger).inSingletonScope()
 })
 
 // create a container
@@ -1494,7 +1581,7 @@ const container = new Container()
 container.load(carModule)
 
 // resolve dependencies
-const car = container.get<ICar>('ICar')
+const car = container.get<ICar>('car')
 car.drive()
 ```
 
@@ -1749,7 +1836,19 @@ nodemon
 
 ### Debug
 
-#### Configuration with `nodemon` for VS Code
+#### Security note
+
+Never run Node.js with `inspect` (debug) mode in production! Use debug mode only in development.
+
+- **Performance**: Debug mode adds significant overhead.
+- **Security**: Opens a debug port (e.g., `9229`) that can expose sensitive data.
+- **Risk**: Debug tools may leak internal app state.
+
+For production monitoring, use tools like **[PM2](https://pm2.keymetrics.io/)** or **[Clinic.js](https://clinicjs.org/)**.
+
+If debug is essential in production, make sure you restrict access to the debug port with firewalls or IP whitelisting.
+
+#### Debug in VS Code with `nodemon`
 
 ```bash
 mkdir -p .vscode
@@ -1833,8 +1932,370 @@ or add an npm-script to run it with `npm run start:debug`:
 
 Structure of Chrome DevTools for Node.js:
 
-- **Connection** — setup the connections to the debugging applications
-- **Console** — ordinary console, where any output of the application appears and any JS-command can be run in the application context
-- **Sources** — source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
-- **Performance** — recording the application activity to watch the timeline of the functions and methods in the call stack
-- **Memory** — watch how much memory each object use, by making memory snapshots and comparing them (e.g. **Objects allocated between Snapshot N and Snapshot M**)
+- **Connection** — set up connections to the debugging applications
+- **Console** — a standard console, where any output of the application appears and any JS-command can be run in the application context
+- **Sources** — the source code can be viewed here (you need to enable `sourceMap` option in `tsconfig.json` to be able to view the source TypeScript files)
+- **Performance** — record the application activity to analyze the timeline of functions and methods in the call stack
+- **Memory** — watch how much memory each object uses, by making memory snapshots and comparing them (e.g., **Objects allocated between Snapshot N and Snapshot M**).
+
+### Detect performance issues with **Clinic.js Doctor** and **Autocannon**
+
+**Clinic.js Doctor** is an instrument to collect and show the performance information while the application is running:
+
+- Detected potential problems (e.g., memory leaks or event loop issues)
+  - Recommendations on how to solve them
+- CPU Usage
+- Memory Usage
+- Event Loop Delay
+- Active Handlers.
+
+**Autocannon** is a tool to generate multiple HTTP requests to the application in order to provide sufficient load and collect the basic metrics.
+
+Installation:
+
+```bash
+npm i -g clinic autocannon
+```
+
+> Add `.clinic` directory to the `.gitignore` to avoid saving the reports in Git.
+
+Example:
+
+```bash
+clinic doctor --on-port 'autocannon -m POST localhost:3000/endpoint/to/check' -- node dist/main.js
+```
+
+## Validation with `class-validator` and `class-transformer`
+
+- `class-validator` is a library for object validation in TypeScript; it helps to enforce rules and constraints on class properties (e.g., string length, integer range)
+- `class-transformer` is used to transform plain objects (e.g., received from an API) into class instances (to use methods and properties defined in the class) and vice versa.
+
+### Installation
+
+```bash
+npm i class-validator class-transformer
+```
+
+### Usage
+
+`user.dto.ts`:
+
+```typescript
+import { IsString, IsInt, MinLength } from 'class-validator'
+
+export class UserDto {
+  @IsString()
+  @MinLength(3)
+  name: string
+
+  @IsInt()
+  age: number
+}
+```
+
+`index.ts`:
+
+```typescript
+import 'reflect-metadata'
+import { plainToInstance } from 'class-transformer'
+import { validate } from 'class-validator'
+import { UserDto } from './user.dto'
+
+const plainObject = { name: 'Alex', age: 25 }
+
+const user = plainToInstance(UserDto, plainObject)
+
+validate(user).then(errors => {
+  if (errors.length > 0) {
+    console.log('Validation failed:', errors)
+  } else {
+    console.log('Validation succeeded')
+  }
+})
+```
+
+## Authentication and Authorization
+
+> **Authentication** is the process of verifying the identity of a user, ensuring they are who they claim to be. It answers the question: "Who are you?" (e.g., via username and password, biometrics, or a token).
+
+> **Authorization** is the process of granting or denying a user access to resources or actions based on their permissions or roles. It answers the question: "What can you do?" (e.g., access to certain APIs, files, or functionalities in the system).
+
+### `bcrypt`
+
+> `bcrypt` is a library used to hash passwords securely and compare them during authentication.
+
+#### Installation
+
+```bash
+npm i bcrypt
+```
+
+#### Hashing and Verifying a Password
+
+```javascript
+import bcrypt from 'bcrypt'
+
+// determines the complexity of the hash
+const saltRounds = 10
+const plainPassword = 'my-secure-password'
+
+// hashing a password
+const hashedPassword = await bcrypt.hash(plainPassword, saltRounds)
+console.log('Hashed Password:', hashedPassword) // Hashed Password: $2b$10$...
+
+// password entered by the user
+const enteredPassword = 'my-secure-password'
+// password hash retrieved from the database
+const savedHash = hashedPassword
+
+// verifying a password
+const isMatch = await bcrypt.compare(enteredPassword, savedHash)
+
+if (isMatch) {
+  console.log('OK: Password is correct')
+} else {
+  console.log('Error: Wrong password')
+}
+// OK: Password is correct
+```
+
+#### Notes
+
+- `saltRounds`: higher values increase security but slow down hash generation
+- store only the hashed password in your database, never the plain password
+- use `async` methods (`hash` and `compare`) to prevent blocking the event loop.
+
+### JWT
+
+> JWT (JSON Web Token) is a compact, URL-safe token format used to securely transmit information between participants as a JSON object. It is stateless, meaning it eliminates the need for server-side session storage, and is typically used for authentication and authorization.
+
+> JWT guarantees that the token data hasn't been altered during transmission, as long as the token's signature is valid.
+
+#### Structure
+
+```
+header.payload.signature
+```
+
+##### Header
+
+> Converted to `base64Url`.
+
+Object structure:
+
+- `alg` (algorithm): `HS256` `HS384` `HS512` `RS256` `RS384` `RS512` `ES256` `ES384` `ES512` `PS256` `PS384` `PS512`
+- `typ` (token type): `JWT`.
+
+Example:
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+##### Payload
+
+> Converted to `base64Url`.
+
+Object structure:
+
+- Registered claims (optional):
+  - `iss` (issuer)
+  - `exp` (expiration time)
+  - `sub` (subject)
+  - `aud` (audience)
+  - and [others](https://tools.ietf.org/html/rfc7519#section-4.1).
+- Public claims (optional)
+- Private claims (optional)
+  - any custom data:
+    - `id`: `123`
+    - `role`: `"user"`
+    - and more.
+
+Example:
+
+```json
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022
+}
+```
+
+> The data in `payload` is not encrypted, so you should never pass any sensitive or secret information here.
+
+##### Verify Signature
+
+> Generated using the algorithm specified in `header.alg` and converted to `base64Url`.
+
+Example for `HS256`:
+
+```javascript
+base64UrlEncode(
+  HMACSHA256(
+    base64UrlEncode(header) + '.' + base64UrlEncode(payload),
+    secretToBase64 ? base64UrlEncode(secret) : secret
+  )
+)
+```
+
+Example for `RS512`:
+
+```javascript
+base64UrlEncode(
+  RSASHA512(
+    base64UrlEncode(header) + '.' + base64UrlEncode(payload),
+    publickey,
+    privatekey
+  )
+)
+```
+
+#### How JWT Works
+
+##### 1. User Authentication
+
+When a user logs in successfully, the server generates and returns a JSON Web Token (JWT). This token acts as the user's credential.
+
+##### 2. Token Usage
+
+The client (e.g., browser) sends the JWT in the `Authorization` header of API requests using the `Bearer` scheme:
+
+```
+Authorization: Bearer <token>
+```
+
+##### 3. Server Validation
+
+The server checks the JWT's validity (whether the `payload` data matches the data signed in the `signature`). If valid, the user is granted access to protected resources.
+
+Additionally, server can check the `payload` data (e.g., `iat`, `exp`, `role`, etc.) to determine whether the sender is authorized to access the requested resource.
+
+##### Stateless Mechanism
+
+JWT eliminates the need for server-side session storage, as all required information is contained in the token itself.
+
+##### CORS-Friendly
+
+If the token is sent in the `Authorization` header, Cross-Origin Resource Sharing (CORS) won't be an issue as it doesn't use cookies.
+
+##### Security Notes
+
+- do not store sensitive data in JWT; they are visible to anyone
+- avoid storing tokens in browser storage due to limited security
+- keep tokens small; large tokens can exceed server header size limits.
+
+#### Work with JWT in Node.js
+
+##### Installation
+
+```bash
+npm i jsonwebtoken
+```
+
+Additionally:
+
+```bash
+npm i -D @types/jsonwebtoken
+```
+
+##### Usage
+
+```javascript
+import jwt from 'jsonwebtoken'
+
+// secret key to sign the token with the HS256 algorithm
+const SECRET_KEY = 'your-very-secure-secret'
+
+// function to create (sign) a token
+export async function createToken(payload, expiresIn = '1h') {
+  return new Promise((resolve, reject) => {
+    jwt.sign(
+      payload,
+      SECRET_KEY,
+      { expiresIn, algorithm: 'HS256' }, // `algorithm` defaults to `'HS256'`; `iat` defaults to `Math.floor(Date.now() / 1000)`
+      (err, token) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(token)
+        }
+      }
+    )
+  })
+}
+
+// function to verify a token
+export async function verifyToken(token) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(decoded)
+      }
+    })
+  })
+}
+
+// usage
+async function main() {
+  try {
+    // create the token
+    const payload = { userId: 123, username: 'exampleUser' }
+    const token = await createToken(payload)
+    console.log('Generated token:', token)
+
+    // verify and decode the token
+    const decodedPayload = await verifyToken(token)
+    console.log('Decoded payload:', decodedPayload)
+  } catch (error) {
+    console.error('Error:', error.message)
+  }
+}
+
+main()
+// Generated token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEyMywidXNlcm5hbWUiOiJleGFtcGxlVXNlciIsImlhdCI6MTczNjU0NjcwMSwiZXhwIjoxNzM2NTUwMzAxfQ.rrfYbhr9o9l2-qVBH0WytUGIWPiMmTTPW4vemqnKfes
+// Decoded payload: {
+//   userId: 123,
+//   username: 'exampleUser',
+//   iat: 1736546701,
+//   exp: 1736550301
+// }
+```
+
+### Guards
+
+> A guard is typically a middleware to validate user credentials, such as a JWT token. If the token is invalid or the user lacks proper permissions, the guard blocks further request processing and returns an error.
+
+## Testing
+
+### Testing Pyramid
+
+```
+      ------------------------------------------------------------
+     ╱   E2E   ╲        API tests, the entire system
+    --------------------------------------------------------------
+   ╱ Integration ╲      Two or more components together
+  ----------------------------------------------------------------
+ ╱      Unit       ╲    Isolated functions, components, modules
+------------------------------------------------------------------
+```
+
+Frontend libraries:
+
+- **Cypress** (high-level E2E testing framework)
+- **Protractor** (E2E testing library for Angular)
+- **Puppeteer** (high-level API to control Chrome or Firefox over the DevTools Protocol or WebDriver BiDi).
+
+Backend (Common) libraries:
+
+- **Jest** (TypeScript-compatible JavaScript Testing Framework)
+- **Mocha** (JavaScript test framework running on Node.js and in the browser)
+- **Chai** (BDD / TDD assertion library for node and the browser).
+
+### Unit Testing
+
+### E2E Testing

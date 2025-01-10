@@ -1577,6 +1577,22 @@ console.log(a1 === a2) // true
 console.log(a2 === a3) // true
 ```
 
+### Readonly Properties in Classes
+
+```typescript
+class User {
+  private readonly name: string = '' // ✅
+
+  constructor(name: string) {
+    this.name = name // ✅
+  }
+
+  public setName(value: string): void {
+    this.name = value // ❌
+  }
+}
+```
+
 ### `static`
 
 ```typescript
