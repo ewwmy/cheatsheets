@@ -2187,7 +2187,88 @@ If the token is sent in the `Authorization` header, Cross-Origin Resource Sharin
 - avoid storing tokens in browser storage due to limited security
 - keep tokens small; large tokens can exceed server header size limits.
 
+#### Work with JWT in Node.js
+
+##### Installation
+
+```bash
+npm i jsonwebtoken
+```
+
+Additionally:
+
+```bash
+npm i -D @types/jsonwebtoken
+```
+
+##### Usage
+
+```javascript
+import jwt from 'jsonwebtoken'
+
+// secret key to sign the token with the HS256 algorithm
+const SECRET_KEY = 'your-very-secure-secret'
+
+// function to create (sign) a token
+export async function createToken(payload, expiresIn = '1h') {
+  return new Promise((resolve, reject) => {
+    jwt.sign(
+      payload,
+      SECRET_KEY,
+      { expiresIn, algorithm: 'HS256' }, // `algorithm` defaults to `'HS256'`; `iat` defaults to `Math.floor(Date.now() / 1000)`
+      (err, token) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(token)
+        }
+      }
+    )
+  })
+}
+
+// function to verify a token
+export async function verifyToken(token) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(decoded)
+      }
+    })
+  })
+}
+
+// usage
+async function main() {
+  try {
+    // create the token
+    const payload = { userId: 123, username: 'exampleUser' }
+    const token = await createToken(payload)
+    console.log('Generated token:', token)
+
+    // verify and decode the token
+    const decodedPayload = await verifyToken(token)
+    console.log('Decoded payload:', decodedPayload)
+  } catch (error) {
+    console.error('Error:', error.message)
+  }
+}
+
+main()
+// Generated token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEyMywidXNlcm5hbWUiOiJleGFtcGxlVXNlciIsImlhdCI6MTczNjU0NjcwMSwiZXhwIjoxNzM2NTUwMzAxfQ.rrfYbhr9o9l2-qVBH0WytUGIWPiMmTTPW4vemqnKfes
+// Decoded payload: {
+//   userId: 123,
+//   username: 'exampleUser',
+//   iat: 1736546701,
+//   exp: 1736550301
+// }
+```
+
 ### Guards
+
+> A guard is typically a middleware to validate user credentials, such as a JWT token. If the token is invalid or the user lacks proper permissions, the guard blocks further request processing and returns an error.
 
 ## Testing
 
