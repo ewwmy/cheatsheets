@@ -2171,7 +2171,7 @@ Authorization: Bearer <token>
 
 The server checks the JWT's validity (whether the `payload` data matches the data signed in the `signature`). If valid, the user is granted access to protected resources.
 
-Additionally, server can check the `payload` data (e.g., `exp` or `role`) to determine whether the sender is authorized to access the requested resource.
+Additionally, server can check the `payload` data (e.g., `iat`, `exp`, `role`, etc.) to determine whether the sender is authorized to access the requested resource.
 
 ##### Stateless Mechanism
 
