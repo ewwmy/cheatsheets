@@ -1081,6 +1081,10 @@ source ~/.bashrc # apply changes to the current session
 
 > `dotenv` automatically reads `.env` files, parses their content, and loads the variables into the `process.env` object in a Node.js application.
 
+#### Security note
+
+> `.env` files must always be added to `.gitignore` to prevent sensitive data from leaking.
+
 #### Installation
 
 ```bash
