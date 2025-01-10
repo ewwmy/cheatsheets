@@ -1083,7 +1083,7 @@ source ~/.bashrc # apply changes to the current session
 
 #### Security note
 
-> `.env` files must always be added to `.gitignore` to prevent sensitive data from leaking.
+> Real `.env` files (not the example ones) must always be added to `.gitignore` to prevent sensitive data from leaking.
 
 #### Installation
 
