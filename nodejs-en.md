@@ -1960,3 +1960,52 @@ Example:
 ```bash
 clinic doctor --on-port 'autocannon -m POST localhost:3000/endpoint/to/check' -- node dist/main.js
 ```
+
+## Validation with `class-validator` and `class-transformer`
+
+- `class-validator` is a library for object validation in TypeScript; it helps to enforce rules and constraints on class properties (e.g., string length, integer range)
+- `class-transformer` is used to transform plain objects (e.g., received from an API) into class instances (to use methods and properties defined in the class) and vice versa.
+
+### Installation
+
+```bash
+npm i class-validator class-transformer
+```
+
+### Usage
+
+`user.model.ts`:
+
+```typescript
+import { IsString, IsInt, MinLength } from 'class-validator'
+
+class User {
+  @IsString()
+  @MinLength(3)
+  name: string
+
+  @IsInt()
+  age: number
+}
+```
+
+`index.ts`:
+
+```typescript
+import 'reflect-metadata'
+import { plainToInstance } from 'class-transformer'
+import { validate } from 'class-validator'
+import { User } from './user.model'
+
+const plainObject = { name: 'Alex', age: 25 }
+
+const user = plainToInstance(User, plainObject)
+
+validate(user).then(errors => {
+  if (errors.length > 0) {
+    console.log('Validation failed:', errors)
+  } else {
+    console.log('Validation succeeded')
+  }
+})
+```
