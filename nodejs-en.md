@@ -1079,12 +1079,41 @@ source ~/.bashrc # apply changes to the current session
 
 ### `dotenv`
 
-> `dotenv` reads .env files automatically, parses, and puts the read variables into the `process.env` property in Node.js application.
+> `dotenv` automatically reads `.env` files, parses their content, and loads the variables into the `process.env` object in a Node.js application.
 
-Installation:
+#### Installation
 
 ```bash
 npm i dotenv
+```
+
+#### Usage
+
+`.env`:
+
+```
+APP_NAME="my-awesome-app"
+```
+
+`.env.production`:
+
+```
+APP_NAME="my-awesome-app (production)"
+```
+
+`index.js`:
+
+```javascript
+import 'dotenv/config' // this automatically loads the `.env` file without additional configuration
+console.log(process.env.APP_NAME) // my-awesome-app
+```
+
+`advanced.js`:
+
+```javascript
+import dotenv from 'dotenv'
+dotenv.config({ path: './.env.production' })
+console.log(process.env.APP_NAME) // my-awesome-app (production)
 ```
 
 ## `http`
