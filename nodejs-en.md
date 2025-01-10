@@ -2014,7 +2014,11 @@ validate(user).then(errors => {
 })
 ```
 
-## Authentication
+## Authentication and Authorization
+
+> **Authentication** is the process of verifying the identity of a user, ensuring they are who they claim to be. It answers the question: "Who are you?" (e.g., via username and password, biometrics, or a token).
+
+> **Authorization** is the process of granting or denying a user access to resources or actions based on their permissions or roles. It answers the question: "What can you do?" (e.g., access to certain APIs, files, or functionalities in the system).
 
 ### `bcrypt`
 
@@ -2063,7 +2067,125 @@ if (isMatch) {
 
 ### JWT
 
-## Authorization
+> JWT (JSON Web Token) is a compact, URL-safe token format used to securely transmit information between participants as a JSON object. It is stateless, meaning it eliminates the need for server-side session storage, and is typically used for authentication and authorization.
+
+> JWT guarantees that the token data hasn't been altered during transmission, as long as the token's signature is valid.
+
+#### Structure
+
+```
+header.payload.signature
+```
+
+##### Header
+
+> Converted to `base64Url`.
+
+Object structure:
+
+- `alg` (algorithm): `HS256` `HS384` `HS512` `RS256` `RS384` `RS512` `ES256` `ES384` `ES512` `PS256` `PS384` `PS512`
+- `typ` (token type): `JWT`.
+
+Example:
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+##### Payload
+
+> Converted to `base64Url`.
+
+Object structure:
+
+- Registered claims (optional):
+  - `iss` (issuer)
+  - `exp` (expiration time)
+  - `sub` (subject)
+  - `aud` (audience)
+  - and [others](https://tools.ietf.org/html/rfc7519#section-4.1).
+- Public claims (optional)
+- Private claims (optional)
+  - any custom data:
+    - `id`: `123`
+    - `role`: `"user"`
+    - and more.
+
+Example:
+
+```json
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022
+}
+```
+
+> The data in `payload` is not encrypted, so you should never pass any sensitive or secret information here.
+
+##### Verify Signature
+
+> Generated using the algorithm specified in `header.alg` and converted to `base64Url`.
+
+Example for `HS256`:
+
+```javascript
+base64UrlEncode(
+  HMACSHA256(
+    base64UrlEncode(header) + '.' + base64UrlEncode(payload),
+    secretToBase64 ? base64UrlEncode(secret) : secret
+  )
+)
+```
+
+Example for `RS512`:
+
+```javascript
+base64UrlEncode(
+  RSASHA512(
+    base64UrlEncode(header) + '.' + base64UrlEncode(payload),
+    publickey,
+    privatekey
+  )
+)
+```
+
+#### How JWT Works
+
+##### 1. User Authentication
+
+When a user logs in successfully, the server generates and returns a JSON Web Token (JWT). This token acts as the user's credential.
+
+##### 2. Token Usage
+
+The client (e.g., browser) sends the JWT in the `Authorization` header of API requests using the `Bearer` scheme:
+
+```
+Authorization: Bearer <token>
+```
+
+##### 3. Server Validation
+
+The server checks the JWT's validity (whether the `payload` data matches the data signed in the `signature`). If valid, the user is granted access to protected resources.
+
+Additionally, server can check the `payload` data (e.g., `exp` or `role`) to determine whether the sender is authorized to access the requested resource.
+
+##### Stateless Mechanism
+
+JWT eliminates the need for server-side session storage, as all required information is contained in the token itself.
+
+##### CORS-Friendly
+
+If the token is sent in the `Authorization` header, Cross-Origin Resource Sharing (CORS) won't be an issue as it doesn't use cookies.
+
+##### Security Notes
+
+- do not store sensitive data in JWT; they are visible to anyone
+- avoid storing tokens in browser storage due to limited security
+- keep tokens small; large tokens can exceed server header size limits.
 
 ### Guards
 
