@@ -2411,7 +2411,7 @@ let createdUser: UserModel | null
 // test suite for `UserService`
 describe('UserService', () => {
   // test case for the `createUser` method
-  it('createUser should create a user with hashed password and return it', async () => {
+  it('createUser — Creates a user with hashed password and returns it', async () => {
     // mock the value returned by `configService.get`
     configService.get = jest
       .fn()
@@ -2442,7 +2442,7 @@ describe('UserService', () => {
   })
 
   // test case for the `validateUser` method with correct data
-  it('validateUser should return true on the correct password', async () => {
+  it('validateUser — Correct password', async () => {
     usersRepository.find = jest.fn().mockReturnValueOnce(createdUser)
     const res = await usersService.validateUser({
       email: MockDictionary.user.email,
@@ -2452,7 +2452,7 @@ describe('UserService', () => {
   })
 
   // test case for the `validateUser` method with wrong data
-  it('validateUser should return false on the wrong password', async () => {
+  it('validateUser — Wrong password', async () => {
     usersRepository.find = jest.fn().mockReturnValueOnce(createdUser)
     const res = await usersService.validateUser({
       email: MockDictionary.user.email,
@@ -2549,7 +2549,7 @@ beforeAll(async () => {
 // test suit for the users e2e
 describe('Users E2E', () => {
   // test case for the `POST /users/register` method
-  it('Registration method should return 422 if user already exists', async () => {
+  it('Registration — User already exists', async () => {
     const res = await request(application.app) // `application.app` is the instance of Express
       .post('/users/register')
       .send({
@@ -2564,6 +2564,40 @@ describe('Users E2E', () => {
     expect(res.body).toEqual({
       error: 'User already exists',
     })
+  })
+
+  it('Login — Correct data', async () => {
+    const res = await request(application.app).post('/users/login').send({
+      email: MockDictionary.existingUser.email,
+      password: MockDictionary.existingUser.password,
+    })
+    expect(res.body.jwt).not.toBeUndefined()
+  })
+
+  it('Login — Wrong data', async () => {
+    const res = await request(application.app).post('/users/login').send({
+      email: MockDictionary.existingUser.email,
+      password: MockDictionary.existingUser.wrongPassword,
+    })
+    expect(res.statusCode).toBe(401)
+  })
+
+  it('Info — JWT token is valid', async () => {
+    const login = await request(application.app).post('/users/login').send({
+      email: MockDictionary.existingUser.email,
+      password: MockDictionary.existingUser.password,
+    })
+    const res = await request(application.app)
+      .get('/users/info')
+      .set('Authorization', `Bearer ${login.body.jwt}`)
+    expect(res.body.email).toBe(MockDictionary.existingUser.email)
+  })
+
+  it('Info — JWT token is not valid', async () => {
+    const res = await request(application.app)
+      .get('/users/info')
+      .set('Authorization', `Bearer 1`)
+    expect(res.statusCode).toBe(401)
   })
 })
 
