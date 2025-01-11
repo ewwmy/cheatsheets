@@ -2464,3 +2464,112 @@ describe('UserService', () => {
 ```
 
 ### E2E Testing
+
+> For E2E testing it's highly recommended to use different environment, e.g. creating different instance of the database.
+
+#### Jest
+
+##### Installation
+
+> `supertest` is a library to perform HTTP requests using Express.
+
+```bash
+npm i -D jest supertest
+```
+
+Additionally, if TypeScript support is needed:
+
+```bash
+npm i -D @types/jest @types/supertest ts-jest
+```
+
+##### Configuration
+
+```bash
+mkdir -p ./tests
+```
+
+`jest.e2e.config.ts`:
+
+```typescript
+import type { Config } from '@jest/types'
+
+const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest',
+  rootDir: './tests',
+  testRegex: '.e2e-spec.ts$',
+}
+
+export default config
+```
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "test:e2e": "jest --config jest.e2e.config.ts"
+  }
+}
+```
+
+Run:
+
+```bash
+npm run test:e2e
+```
+
+##### Usage
+
+`./tests/users.e2e-spec.ts`:
+
+```typescript
+import request from 'supertest'
+/* other imports */
+
+// mock data for tests
+const MockDictionary = {
+  existingUser: {
+    email: 'test@example.com',
+    password: 'qwerty',
+    wrongPassword: 'abc',
+  },
+}
+
+// declare an instance of the application class
+let application: App
+
+// run the application before all tests
+beforeAll(async () => {
+  application = await bootstrap()
+  /* here we can connect to the test database and create all necessary test data */
+})
+
+// test suit for the users e2e
+describe('Users E2E', () => {
+  // test case for the `POST /users/register` method
+  it('Registration method should return 422 if user already exists', async () => {
+    const res = await request(application.app) // `application.app` is the instance of Express
+      .post('/users/register')
+      .send({
+        email: MockDictionary.existingUser.email,
+        password: MockDictionary.existingUser.password,
+      })
+
+    // assert the status code is `422`
+    expect(res.statusCode).toBe(422)
+
+    // assert the response body has the expected error message
+    expect(res.body).toEqual({
+      error: 'User already exists',
+    })
+  })
+})
+
+// close the application after all tests
+afterAll(async () => {
+  /* here we can delete all the test data we created, disconnect from the database, and stop other services */
+  await application.close() // gracefully stop the application to ensure all connections and handlers are closed, allowing the tests to finish properly
+})
+```
