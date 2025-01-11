@@ -2195,7 +2195,7 @@ If the token is sent in the `Authorization` header, Cross-Origin Resource Sharin
 npm i jsonwebtoken
 ```
 
-Additionally:
+Additionally, if TypeScript support is needed:
 
 ```bash
 npm i -D @types/jsonwebtoken
@@ -2298,4 +2298,353 @@ Backend (Common) libraries:
 
 ### Unit Testing
 
+#### Jest
+
+##### Installation
+
+```bash
+npm i -D jest
+```
+
+Additionally, if TypeScript support is needed:
+
+```bash
+npm i -D @types/jest ts-jest
+```
+
+##### Configuration
+
+`jest.config.ts`:
+
+```typescript
+import type { Config } from '@jest/types'
+
+const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest',
+}
+
+export default config
+```
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "jest"
+  }
+}
+```
+
+Run:
+
+```bash
+npm run test
+```
+
+##### Usage
+
+`user.service.spec.ts`:
+
+```typescript
+import 'reflect-metadata'
+/* other imports */
+
+// mocking service to be injected
+const ConfigServiceMock: IConfigService = {
+  get: jest.fn(),
+}
+
+// mocking service to be injected
+const UsersRepositoryMock: IUsersRepository = {
+  find: jest.fn(),
+  create: jest.fn(),
+}
+
+// mock data for tests
+const MockDictionary = {
+  user: {
+    id: 1,
+    name: 'Test User',
+    email: 'test@example.com',
+    password: 'qwerty',
+    wrongPassword: 'abc',
+  },
+  config: {
+    salt: '10',
+  },
+}
+
+// create IoC container as usual
+const container = new Container()
+
+// define dependencies
+let configService: IConfigService
+let usersRepository: IUsersRepository
+let usersService: IUserService
+
+// hook to run before all tests
+beforeAll(() => {
+  // bind the real service that we want to test (current service)
+  container.bind<IUserService>(TYPES.UserService).to(UserService)
+
+  // bind mocked service that the tested service depends on
+  container
+    .bind<IConfigService>(TYPES.ConfigService)
+    .toConstantValue(ConfigServiceMock)
+
+  // bind mocked service that the tested service depends on
+  container
+    .bind<IUsersRepository>(TYPES.UsersRepository)
+    .toConstantValue(UsersRepositoryMock)
+
+  // instantiate all needed dependencies from the container
+  configService = container.get<IConfigService>(TYPES.ConfigService)
+  usersRepository = container.get<IUsersRepository>(TYPES.UsersRepository)
+  usersService = container.get<IUserService>(TYPES.UserService)
+})
+
+// define a user model object outside the tests to be able to use it in other tests (avoid dependency between tests, but this can be useful in sequential testing)
+let createdUser: UserModel | null
+
+// test suite for `UserService`
+describe('UserService', () => {
+  // test case for the `createUser` method
+  it('createUser — Creates a user with hashed password and returns it', async () => {
+    // mock the value returned by `configService.get`
+    configService.get = jest
+      .fn()
+      .mockReturnValueOnce(MockDictionary.config.salt)
+
+    // mock the implementation of `usersRepository.create`
+    usersRepository.create = jest.fn().mockImplementationOnce(
+      (user: User): UserModel => ({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        id: MockDictionary.user.id,
+      })
+    )
+
+    // call the method to be tested
+    createdUser = await usersService.createUser({
+      email: MockDictionary.user.email,
+      name: MockDictionary.user.name,
+      password: MockDictionary.user.password,
+    })
+
+    // assert the returned user has the expected id
+    expect(createdUser?.id).toEqual(MockDictionary.user.id)
+
+    // assert the password is hashed (not equal to the original)
+    expect(createdUser?.password).not.toEqual(MockDictionary.user.password)
+  })
+
+  // test case for the `validateUser` method with correct data
+  it('validateUser — Correct password', async () => {
+    usersRepository.find = jest.fn().mockReturnValueOnce(createdUser)
+    const res = await usersService.validateUser({
+      email: MockDictionary.user.email,
+      password: MockDictionary.user.password,
+    })
+    expect(res).toBeTruthy()
+  })
+
+  // test case for the `validateUser` method with wrong data
+  it('validateUser — Wrong password', async () => {
+    usersRepository.find = jest.fn().mockReturnValueOnce(createdUser)
+    const res = await usersService.validateUser({
+      email: MockDictionary.user.email,
+      password: MockDictionary.user.wrongPassword,
+    })
+    expect(res).toBeFalsy()
+  })
+})
+```
+
 ### E2E Testing
+
+> For E2E testing it's highly recommended to use different environment, e.g. creating different instance of the database.
+
+#### Jest
+
+##### Installation
+
+> `supertest` is a library to perform HTTP requests using Express.
+
+```bash
+npm i -D jest supertest
+```
+
+Additionally, if TypeScript support is needed:
+
+```bash
+npm i -D @types/jest @types/supertest ts-jest
+```
+
+##### Configuration
+
+```bash
+mkdir -p ./tests
+```
+
+`jest.e2e.config.ts`:
+
+```typescript
+import type { Config } from '@jest/types'
+
+const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest',
+  rootDir: './tests',
+  testRegex: '.e2e-spec.ts$',
+}
+
+export default config
+```
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "test:e2e": "jest --config jest.e2e.config.ts"
+  }
+}
+```
+
+Run:
+
+```bash
+npm run test:e2e
+```
+
+##### Usage
+
+`./tests/users.e2e-spec.ts`:
+
+```typescript
+import request from 'supertest'
+/* other imports */
+
+// mock data for tests
+const MockDictionary = {
+  existingUser: {
+    email: 'test@example.com',
+    password: 'qwerty',
+    wrongPassword: 'abc',
+  },
+}
+
+// declare an instance of the application class
+let application: App
+
+// run the application before all tests
+beforeAll(async () => {
+  application = await bootstrap()
+  /* here we can connect to the test database and create all necessary test data */
+})
+
+// test suit for the users e2e
+describe('Users E2E', () => {
+  // test case for the `POST /users/register` method
+  it('Registration — User already exists', async () => {
+    const res = await request(application.app) // `application.app` is the instance of Express
+      .post('/users/register')
+      .send({
+        email: MockDictionary.existingUser.email,
+        password: MockDictionary.existingUser.password,
+      })
+
+    // assert the status code is `422`
+    expect(res.statusCode).toBe(422)
+
+    // assert the response body has the expected error message
+    expect(res.body).toEqual({
+      error: 'User already exists',
+    })
+  })
+
+  it('Login — Correct data', async () => {
+    const res = await request(application.app).post('/users/login').send({
+      email: MockDictionary.existingUser.email,
+      password: MockDictionary.existingUser.password,
+    })
+    expect(res.body.jwt).not.toBeUndefined()
+  })
+
+  it('Login — Wrong data', async () => {
+    const res = await request(application.app).post('/users/login').send({
+      email: MockDictionary.existingUser.email,
+      password: MockDictionary.existingUser.wrongPassword,
+    })
+    expect(res.statusCode).toBe(401)
+  })
+
+  it('Info — JWT token is valid', async () => {
+    const login = await request(application.app).post('/users/login').send({
+      email: MockDictionary.existingUser.email,
+      password: MockDictionary.existingUser.password,
+    })
+    const res = await request(application.app)
+      .get('/users/info')
+      .set('Authorization', `Bearer ${login.body.jwt}`)
+    expect(res.body.email).toBe(MockDictionary.existingUser.email)
+  })
+
+  it('Info — JWT token is not valid', async () => {
+    const res = await request(application.app)
+      .get('/users/info')
+      .set('Authorization', `Bearer 1`)
+    expect(res.statusCode).toBe(401)
+  })
+})
+
+// close the application after all tests
+afterAll(async () => {
+  /* here we can delete all the test data we created, disconnect from the database, and stop other services */
+  await application.close() // gracefully stop the application to ensure all connections and handlers are closed, allowing the tests to finish properly
+})
+```
+
+### Coverage
+
+#### Jest
+
+If you use a specific directory for tests via the `rootDir` option (e.g., for e2e tests), ensure this option is removed or set to the root of the source files to calculate coverage properly across all source files:
+
+```typescript
+const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest',
+  testRegex: '.e2e-spec.ts$',
+}
+```
+
+Alternatively, consider auto-collecting coverage data by using configuration options such as `collectCoverage` and `collectCoverageFrom`.
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "test:coverage": "jest --coverage",
+    "test:e2e:coverage": "jest --config jest.e2e.config.ts --coverage"
+  }
+}
+```
+
+Run:
+
+```bash
+npm run test:coverage # for unit-tests
+npm run test:e2e:coverage # for e2e-tests
+```
+
+or
+
+```bash
+jest --coverage # for unit-tests
+jest --config jest.e2e.config.ts --coverage # for e2e-tests
+```
