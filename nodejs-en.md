@@ -2607,3 +2607,44 @@ afterAll(async () => {
   await application.close() // gracefully stop the application to ensure all connections and handlers are closed, allowing the tests to finish properly
 })
 ```
+
+### Coverage
+
+#### Jest
+
+If you use a specific directory for tests via the `rootDir` option (e.g., for e2e tests), ensure this option is removed or set to the root of the source files to calculate coverage properly across all source files:
+
+```typescript
+const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest',
+  testRegex: '.e2e-spec.ts$',
+}
+```
+
+Alternatively, consider auto-collecting coverage data by using configuration options such as `collectCoverage` and `collectCoverageFrom`.
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "test:coverage": "jest --coverage",
+    "test:e2e:coverage": "jest --config jest.e2e.config.ts --coverage"
+  }
+}
+```
+
+Run:
+
+```bash
+npm run test:coverage # for unit-tests
+npm run test:e2e:coverage # for e2e-tests
+```
+
+or
+
+```bash
+jest --coverage # for unit-tests
+jest --config jest.e2e.config.ts --coverage # for e2e-tests
+```
