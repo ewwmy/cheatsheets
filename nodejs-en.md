@@ -2369,6 +2369,7 @@ const MockDictionary = {
     name: 'Test User',
     email: 'test@example.com',
     password: 'qwerty',
+    wrongPassword: 'abc',
   },
   config: {
     salt: '10',
@@ -2438,6 +2439,26 @@ describe('UserService', () => {
 
     // assert the password is hashed (not equal to the original)
     expect(createdUser?.password).not.toEqual(MockDictionary.user.password)
+  })
+
+  // test case for the `validateUser` method with correct data
+  it('validateUser should return true on the correct password', async () => {
+    usersRepository.find = jest.fn().mockReturnValueOnce(createdUser)
+    const res = await usersService.validateUser({
+      email: MockDictionary.user.email,
+      password: MockDictionary.user.password,
+    })
+    expect(res).toBeTruthy()
+  })
+
+  // test case for the `validateUser` method with wrong data
+  it('validateUser should return false on the wrong password', async () => {
+    usersRepository.find = jest.fn().mockReturnValueOnce(createdUser)
+    const res = await usersService.validateUser({
+      email: MockDictionary.user.email,
+      password: MockDictionary.user.wrongPassword,
+    })
+    expect(res).toBeFalsy()
   })
 })
 ```
