@@ -2195,7 +2195,7 @@ If the token is sent in the `Authorization` header, Cross-Origin Resource Sharin
 npm i jsonwebtoken
 ```
 
-Additionally:
+Additionally, if TypeScript support is needed:
 
 ```bash
 npm i -D @types/jsonwebtoken
@@ -2297,5 +2297,149 @@ Backend (Common) libraries:
 - **Chai** (BDD / TDD assertion library for node and the browser).
 
 ### Unit Testing
+
+#### Jest
+
+##### Installation
+
+```bash
+npm i -D jest
+```
+
+Additionally, if TypeScript support is needed:
+
+```bash
+npm i -D @types/jest ts-jest
+```
+
+##### Configuration
+
+`jest.config.ts`:
+
+```typescript
+import type { Config } from '@jest/types'
+
+const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest',
+}
+
+export default config
+```
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "jest"
+  }
+}
+```
+
+Run:
+
+```bash
+npm run test
+```
+
+##### Usage
+
+`user.service.spec.ts`:
+
+```typescript
+import 'reflect-metadata'
+/* other imports */
+
+// mocking service to be injected
+const ConfigServiceMock: IConfigService = {
+  get: jest.fn(),
+}
+
+// mocking service to be injected
+const UsersRepositoryMock: IUsersRepository = {
+  find: jest.fn(),
+  create: jest.fn(),
+}
+
+// mock data for tests
+const MockDictionary = {
+  user: {
+    id: 1,
+    name: 'Test User',
+    email: 'test@example.com',
+    password: 'qwerty',
+  },
+  config: {
+    salt: '10',
+  },
+}
+
+// create IoC container as usual
+const container = new Container()
+
+// define dependencies
+let configService: IConfigService
+let usersRepository: IUsersRepository
+let usersService: IUserService
+
+// hook to run before all tests
+beforeAll(() => {
+  // bind the real service that we want to test (current service)
+  container.bind<IUserService>(TYPES.UserService).to(UserService)
+
+  // bind mocked service that the tested service depends on
+  container
+    .bind<IConfigService>(TYPES.ConfigService)
+    .toConstantValue(ConfigServiceMock)
+
+  // bind mocked service that the tested service depends on
+  container
+    .bind<IUsersRepository>(TYPES.UsersRepository)
+    .toConstantValue(UsersRepositoryMock)
+
+  // instantiate all needed dependencies from the container
+  configService = container.get<IConfigService>(TYPES.ConfigService)
+  usersRepository = container.get<IUsersRepository>(TYPES.UsersRepository)
+  usersService = container.get<IUserService>(TYPES.UserService)
+})
+
+// define a user model object outside the tests to be able to use it in other tests (avoid dependency between tests, but this can be useful in sequential testing)
+let createdUser: UserModel | null
+
+// test suite for `UserService`
+describe('UserService', () => {
+  // test case for the `createUser` method
+  it('createUser should create a user with hashed password and return it', async () => {
+    // mock the value returned by `configService.get`
+    configService.get = jest
+      .fn()
+      .mockReturnValueOnce(MockDictionary.config.salt)
+
+    // mock the implementation of `usersRepository.create`
+    usersRepository.create = jest.fn().mockImplementationOnce(
+      (user: User): UserModel => ({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        id: MockDictionary.user.id,
+      })
+    )
+
+    // call the method to be tested
+    createdUser = await usersService.createUser({
+      email: MockDictionary.user.email,
+      name: MockDictionary.user.name,
+      password: MockDictionary.user.password,
+    })
+
+    // assert the returned user has the expected id
+    expect(createdUser?.id).toEqual(MockDictionary.user.id)
+
+    // assert the password is hashed (not equal to the original)
+    expect(createdUser?.password).not.toEqual(MockDictionary.user.password)
+  })
+})
+```
 
 ### E2E Testing
