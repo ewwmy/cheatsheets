@@ -2469,6 +2469,37 @@ type UserMappedRoles = MapToBoolean<UserRoles>
 // }
 ```
 
+#### Usage `enum` values as the keys of an object
+
+> Allows to restrict an object type with the values of an `enum`.
+
+```typescript
+enum Direction {
+  Up,
+  Right,
+  Down,
+  Left,
+}
+
+type DirectionMap = Record<Direction, string>
+
+const directionMap: DirectionMap = {
+  0: '/up', // ✅
+  1: '/right', // ✅
+  2: '/down', // ✅
+  3: '/left', // ✅
+  // 4: '/wrong-direction', // ❌
+}
+
+console.log(directionMap)
+// {
+//   "0": "/up",
+//   "1": "/right",
+//   "2": "/down",
+//   "3": "/left"
+// }
+```
+
 ### Template Literal Types
 
 ```typescript
