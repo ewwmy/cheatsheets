@@ -1222,7 +1222,7 @@ obj.name = 'Alex' // now we are sure that `obj` is `User` and has the property `
 
 ```typescript
 class User {
-  name: string // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
+  name: string // `"strictPropertyInitialization": false` in `tsconfig.json`
 
   constructor(name: string) {
     this.name = name
@@ -1281,7 +1281,7 @@ Constructor overload:
 
 ```typescript
 class User {
-  // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
+  // `"strictPropertyInitialization": false` in `tsconfig.json`
   name: string
   age: number
 
@@ -1842,6 +1842,8 @@ b.c() // a
   },
 }
 ```
+
+> By default, `strictPropertyInitialization` is set to `true` (and this is generally recommended). However, when using classes as contracts (e.g., in conjunction with decorators for input data validation), it is necessary to disable `strictPropertyInitialization` by setting it to `false`, as this is a common and accepted practice in such cases.
 
 #### Additional options
 
