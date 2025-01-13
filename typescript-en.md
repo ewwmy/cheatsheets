@@ -1222,7 +1222,7 @@ obj.name = 'Alex' // now we are sure that `obj` is `User` and has the property `
 
 ```typescript
 class User {
-  name: string // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
+  name: string // `"strictPropertyInitialization": false` in `tsconfig.json`
 
   constructor(name: string) {
     this.name = name
@@ -1281,7 +1281,7 @@ Constructor overload:
 
 ```typescript
 class User {
-  // `"strictPropertyInitialization": false` in `tsconfig.json` (not recommended by default)
+  // `"strictPropertyInitialization": false` in `tsconfig.json`
   name: string
   age: number
 
@@ -1843,6 +1843,8 @@ b.c() // a
 }
 ```
 
+> By default, `strictPropertyInitialization` is set to `true` (and this is generally recommended). However, when using classes as contracts (e.g., in conjunction with decorators for input data validation), it is necessary to disable `strictPropertyInitialization` by setting it to `false`, as this is a common and accepted practice in such cases.
+
 #### Additional options
 
 ```javascript
@@ -2041,6 +2043,65 @@ const SwimmableAnimal = Swimmer(Animal)
 const duck = new SwimmableAnimal('Duck')
 duck.move() // Duck is moving
 duck.swim() // Duck is swimming
+```
+
+Mixin `class A extends B(C) {}`:
+
+```typescript
+// base class
+class BaseClass {
+  constructor() {}
+
+  baseMethod() {
+    console.log(`Hello from BaseClass`)
+  }
+}
+
+// mixin a
+function MixinA<T extends new (...args: any[]) => {}>(Base: T) {
+  return class extends Base {
+    mixinMethod() {
+      console.log('Method in MixinA')
+    }
+  }
+}
+
+// extended class
+class FinalClass extends MixinA(BaseClass) {
+  finalMethod() {
+    console.log('Method in FinalClass')
+  }
+}
+
+// usage
+const instance = new FinalClass()
+
+instance.baseMethod() // Hello from BaseClass
+instance.mixinMethod() // Method in MixinA
+instance.finalMethod() // Method in FinalClass
+```
+
+Mixin `class A extends B('c') {}`:
+
+```typescript
+function B(param: string) {
+  return class {
+    param: string = param
+    greet() {
+      console.log(`Hello from B["${this.param}"]`)
+    }
+  }
+}
+
+class A extends B('c') {
+  customMethod() {
+    console.log(`Custom method in A["${this.param}"]`)
+  }
+}
+
+const instance = new A()
+instance.greet() // Hello from B["c"]
+instance.customMethod() // Custom method in A["c"]
 ```
 
 ##### Composition
