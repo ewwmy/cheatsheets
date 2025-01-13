@@ -2081,6 +2081,29 @@ instance.mixinMethod() // Method in MixinA
 instance.finalMethod() // Method in FinalClass
 ```
 
+Mixin `class A extends B('c') {}`:
+
+```typescript
+function B(param: string) {
+  return class {
+    param: string = param
+    greet() {
+      console.log(`Hello from B["${this.param}"]`)
+    }
+  }
+}
+
+class A extends B('c') {
+  customMethod() {
+    console.log(`Custom method in A["${this.param}"]`)
+  }
+}
+
+const instance = new A()
+instance.greet() // Hello from B["c"]
+instance.customMethod() // Custom method in A["c"]
+```
+
 ##### Composition
 
 ```typescript
