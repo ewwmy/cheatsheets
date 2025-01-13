@@ -2045,6 +2045,42 @@ duck.move() // Duck is moving
 duck.swim() // Duck is swimming
 ```
 
+Mixin `class A extends B(C) {}`:
+
+```typescript
+// base class
+class BaseClass {
+  constructor() {}
+
+  baseMethod() {
+    console.log(`Hello from BaseClass`)
+  }
+}
+
+// mixin a
+function MixinA<T extends new (...args: any[]) => {}>(Base: T) {
+  return class extends Base {
+    mixinMethod() {
+      console.log('Method in MixinA')
+    }
+  }
+}
+
+// extended class
+class FinalClass extends MixinA(BaseClass) {
+  finalMethod() {
+    console.log('Method in FinalClass')
+  }
+}
+
+// usage
+const instance = new FinalClass()
+
+instance.baseMethod() // Hello from BaseClass
+instance.mixinMethod() // Method in MixinA
+instance.finalMethod() // Method in FinalClass
+```
+
 ##### Composition
 
 ```typescript
