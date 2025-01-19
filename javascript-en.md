@@ -93,6 +93,67 @@ class AnotherError extends Error {
 }
 ```
 
+### Rethrow
+
+```javascript
+function doSomething() {
+  // inner error handler
+  try {
+    throw new Error('Something went wrong in here')
+  } catch (err) {
+    // modify the existing error message and rethrow the same error object
+    err.message = `Wrapped error: ${err.message}`
+    throw err
+    // or throw a new instance like `throw new Error('...')` or with other error class
+  }
+}
+
+// outer error handler
+try {
+  doSomething()
+} catch (err) {
+  // handle the modified error at a higher level
+  console.error('Caught at higher level:', err.message)
+}
+```
+
+### Advanced Usage
+
+```javascript
+// custom error class with additional properties
+class CustomError extends Error {
+  constructor(message, errorCode = null) {
+    super(message)
+    this.name = this.constructor.name // set the error name (CustomError)
+    if (errorCode !== null) {
+      this.code = errorCode
+    }
+  }
+}
+
+function doSomething() {
+  // inner error handler
+  try {
+    throw new Error('Something went wrong in here')
+  } catch (err) {
+    // wrap the error in a custom error class and add context
+    throw new CustomError(`Wrapped error: ${err.message}`, 'OPERATION_FAILED')
+  }
+}
+
+// outer error handler
+try {
+  doSomething()
+} catch (err) {
+  // handle errors based on their type or custom properties
+  if (err instanceof CustomError) {
+    console.error(`Caught custom error: ${err.message}\nCode: ${err.code}`)
+  } else {
+    console.error(`Caught unexpected error: ${err.message}`)
+  }
+}
+```
+
 ## Import/Export
 
 ### CommonJS
