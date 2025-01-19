@@ -41,7 +41,7 @@ try {
 ```javascript
 function divide(x, y) {
   if (y === 0) {
-    throw new Error("Division by zero is not allowed.")
+    throw new Error('Division by zero is not allowed.')
   }
   return x / y
 }
@@ -64,13 +64,12 @@ try {
   }
 } catch (err) {
   if (err instanceof TypeError) {
-    console.log("A TypeError occurred.");
+    console.log('A TypeError occurred.')
   } else {
-    console.log("An unknown error occurred.");
+    console.log('An unknown error occurred.')
   }
 }
 ```
-
 
 ### Custom Error Class
 
@@ -78,43 +77,20 @@ try {
 class CustomError extends Error {
   constructor(message) {
     super(message)
-    this.name = this.constructor.name // CustomError
-    // For example, remove call stack information:
-    this.stack = undefined
-  }
-}
-```
-
-### Another Example
-
-```javascript
-class MyErrRoot extends Error {
-  constructor(msg) {
-    super(msg + '_PARENT')
-    this.name = this.constructor.name
+    this.name = this.constructor.name // set the error name (CustomError)
+    this.stack = undefined // remove call stack information
   }
 }
 
-class MyErr extends MyErrRoot {
-  constructor(msg) {
-    super()
-    this.name = this.constructor.name
-    this.message = msg + '_CHILD'
+class AnotherError extends Error {
+  constructor(message, errorCode = null) {
+    super(message)
+    this.name = this.constructor.name // set the error name (AnotherError)
+    if (errorCode !== null) {
+      this.code = errorCode // set custom property
+    }
   }
 }
-
-throw new MyErrRoot('foo')
-// Uncaught MyErrRoot: foo_PARENT
-//     MyErrRoot debugger eval code:1
-//     <anonymous> debugger eval code:1
-// debugger eval code:1:7
-
-throw new MyErr('foo')
-// Uncaught MyErr: foo_CHILD
-//     MyErrRoot debugger eval code:1
-//     MyErr debugger eval code:1
-//     <anonymous> debugger eval code:1
-// debugger eval code:1:7
 ```
 
 ## Import/Export
@@ -175,7 +151,6 @@ import customAdd from './mathUtils.js'
 
 const result = customAdd(7, 2)
 console.log(result) // Output: 9
-
 ```
 
 ### Named imports/exports
@@ -228,10 +203,9 @@ console.log(foo) // Output: Hello, world!
 
 ```javascript
 // import.js
-import('./export.js')
-  .then(module => {
-    console.log(module.foo) // Output: Hello, world!
-  })
+import('./export.js').then(module => {
+  console.log(module.foo) // Output: Hello, world!
+})
 ```
 
 ```javascript
@@ -288,10 +262,10 @@ reject(error) // Rejects the promise with an error
 
 ```javascript
 promise
-  .then((value) => {
+  .then(value => {
     // Handle resolved value
   })
-  .catch((error) => {
+  .catch(error => {
     // Handle rejected error
   })
 ```
@@ -300,14 +274,14 @@ promise
 
 ```javascript
 promise
-  .then((value) => {
+  .then(value => {
     // Handle resolved value
     return transformedValue
   })
-  .then((transformedValue) => {
+  .then(transformedValue => {
     // Handle transformed value
   })
-  .catch((error) => {
+  .catch(error => {
     // Handle rejected error
   })
 ```
@@ -319,7 +293,7 @@ Promise.all([promise1, promise2, promise3])
   .then(([result1, result2, result3]) => {
     // Handle results of all promises
   })
-  .catch((error) => {
+  .catch(error => {
     // Handle any error from any promise
   })
 ```
@@ -328,10 +302,10 @@ Promise.all([promise1, promise2, promise3])
 
 ```javascript
 Promise.race([promise1, promise2, promise3])
-  .then((firstResult) => {
+  .then(firstResult => {
     // Handle result of the first resolved promise
   })
-  .catch((error) => {
+  .catch(error => {
     // Handle any error from any promise
   })
 ```
@@ -439,7 +413,7 @@ const op = new Proxy(person, {
     console.log(`Getting property "${prop}"...`)
     return target[prop]
   },
-  
+
   set(target, prop, value) {
     if (prop in target) {
       target[prop] = value
@@ -447,11 +421,11 @@ const op = new Proxy(person, {
       throw new Error(`Unknown property "${prop}"...`)
     }
   },
-  
+
   has(target, prop) {
     return ['name', 'age'].includes(prop)
   },
-  
+
   deleteProperty(target, prop) {
     console.log(`Deleting property "${prop}"...`)
     delete target[prop]
@@ -462,11 +436,10 @@ const op = new Proxy(person, {
 console.log(op) // Proxy { <target>: {…}, <handler>: {…} }
 console.log(op.name) // Getting property "name"... Tom
 console.log(op.job) // Getting property "job"... UX/UI Designer
-console.log(op.age = 45) // 45
+console.log((op.age = 45)) // 45
 console.log('name' in op) // true
 console.log('job' in op) // false
 console.log(delete op.job) // Deleting property "job"... true
-
 ```
 
 ### Functions
@@ -500,22 +473,22 @@ const PersonProxy = new Proxy(Person, {
     console.log('Preson constructor called...')
     return new target(...args)
   },
-  
+
   get(target, prop) {
     console.log('Getting property...')
-  	return target[prop]
-	},
+    return target[prop]
+  },
 })
 
 const PersonProxyExtended = new Proxy(Person, {
   construct(target, args) {
     console.log('Preson constructor called...')
-        
+
     return new Proxy(new target(...args), {
       get(t, prop) {
         console.log('Getting property...')
         return t[prop]
-      }
+      },
     })
   },
 })
@@ -550,7 +523,7 @@ myFunc() // foo
 function makeCounter() {
   let count = 0
 
-  return function() {
+  return function () {
     return count++
   }
 }
@@ -571,54 +544,42 @@ function foo(outerArg) {
 }
 
 const bar = foo(5)
- 
-console.log(
-  bar(4)
-) // 9
 
-console.log(
-  bar(3)
-) // 8
+console.log(bar(4)) // 9
+
+console.log(bar(3)) // 8
 ```
 
 ```javascript
 function sum(a) {
-  return function(b) {
+  return function (b) {
     return a + b
   }
 }
 
-console.log(
-  sum(1)(2)
-) // 3
+console.log(sum(1)(2)) // 3
 
-console.log(
-  sum(5)(-1)
-) // 4
+console.log(sum(5)(-1)) // 4
 ```
 
 ```javascript
 const arr = [1, 2, 3, 4, 5, 6, 7]
 
 function inBetween(a, b) {
-  return function(item) {
+  return function (item) {
     return item >= a && item <= b
   }
 }
 
 function inArray(arr) {
-  return function(item) {
+  return function (item) {
     return arr.includes(item)
   }
 }
 
-console.log(
-  arr.filter(inBetween(3, 6))
-) // Array(4) [ 3, 4, 5, 6 ]
+console.log(arr.filter(inBetween(3, 6))) // Array(4) [ 3, 4, 5, 6 ]
 
-console.log(
-  arr.filter(inArray([1, 2, 10]))
-) // Array [ 1, 2 ]
+console.log(arr.filter(inArray([1, 2, 10]))) // Array [ 1, 2 ]
 ```
 
 ```javascript
@@ -629,18 +590,14 @@ const users = [
 ]
 
 function byField(fieldName) {
-  return function(a, b) {
+  return function (a, b) {
     return a[fieldName] > b[fieldName] ? 1 : -1
   }
 }
 
-console.log(
-  users.toSorted(byField('name'))
-) // [ { name: "Ann", ... }, { name: "John", ... }, { name: "Pete", ... } ]
+console.log(users.toSorted(byField('name'))) // [ { name: "Ann", ... }, { name: "John", ... }, { name: "Pete", ... } ]
 
-console.log(
-  users.toSorted(byField('age'))
-) // [ { age: 18, ... }, { age: 23, ... }, { age: 25, ... } ]
+console.log(users.toSorted(byField('age'))) // [ { age: 18, ... }, { age: 23, ... }, { age: 25, ... } ]
 ```
 
 ## Symbols
@@ -686,8 +643,12 @@ JSON.stringify({ [Symbol('foo')]: 'foo' })
 
 ```javascript
 // declaration
-function* myFunc() { /* ... */ }
-const myFunc = function* () { /* ... */ }
+function* myFunc() {
+  /* ... */
+}
+const myFunc = function* () {
+  /* ... */
+}
 ```
 
 ```javascript
@@ -796,12 +757,14 @@ for (const value of myIterable()) {
 
 ```javascript
 function func1(a, b) {} // regular function
-const func2 = function(a, b) {} // function expression
-const func31 = (a, b) => { // arrow function
+const func2 = function (a, b) {} // function expression
+const func31 = (a, b) => {
+  // arrow function
   return a + b
 }
 const func32 = (a, b) => a + b // same as { return a + b }
-const func33 = (a, b) => ({ // return object
+const func33 = (a, b) => ({
+  // return object
   a: 1,
   b: 2,
 }) // return object
@@ -811,11 +774,12 @@ const func4 = new Function('a', 'b', 'return a + b') // function constructor
 ### Function can return an anonymous class
 
 ```javascript
-const f = () => class {
-  constructor(name) {
-    this.name = name
+const f = () =>
+  class {
+    constructor(name) {
+      this.name = name
+    }
   }
-}
 
 const c1 = f()
 const c2 = f()
@@ -851,7 +815,7 @@ this.prop = 53
 const test = {
   prop: 42,
   // has its own `this` context
-  func: function() {
+  func: function () {
     return this.prop
   },
   // doesn't have its own `this` context
@@ -865,7 +829,7 @@ const test = {
   // setter
   set someProp(value) {
     this.prop = value
-  }
+  },
 }
 
 console.log(test.func()) // 42
@@ -882,7 +846,7 @@ function hello1() {
   agg.call(this)
 }
 
-const hello2 = function() {
+const hello2 = function () {
   // passing `this` context of hello2() to agg()
   agg.call(this)
 }
@@ -918,7 +882,7 @@ function hello1() {
   agg.call(this)
 }
 
-const hello2 = function() {
+const hello2 = function () {
   // passing `this` context of hello2() to agg()
   agg.call(this)
 }
@@ -947,15 +911,15 @@ const bar = {
   f8() {
     console.log(this) // has context of its object
   },
-  f9: function() {
+  f9: function () {
     console.log(this) // has context of its object
   },
   f10: () => {
     console.log(this) // has no own context due to this is arrow function
-  }
+  },
 }
 
-agg()    // Hello > Window (or global object in Node.js)
+agg() // Hello > Window (or global object in Node.js)
 hello1() // Hello > Window (or global object in Node.js)
 hello2() // Hello > Window (or global object in Node.js)
 hello3() // Hello > Window (or global object in Node.js)
@@ -973,19 +937,19 @@ bar.f10() // Hello > Window (or global object in Node.js)
 
 ```javascript
 function Foo() {
-	return this.a
+  return this.a
 }
 
 function Bar() {
   this.a = 'a'
-  return this.a  
+  return this.a
 }
 
 function Baz() {
   return this.a
 }
 
-const Zab1 = function() {
+const Zab1 = function () {
   return this.a
 }
 
@@ -1000,21 +964,21 @@ const Zab3 = () => {
 
 class MySuperClass {
   a = 1
-  
+
   f1() {
     return this.a
   }
-  
-  f2 = function() {
+
+  f2 = function () {
     return this.a
   }
-    
+
   f3 = () => this.a
-  
+
   f4 = Foo
   f5 = Bar
   f6 = Baz
-  
+
   f7 = Zab1
   f8 = Zab2
   f9 = Zab3
@@ -1040,7 +1004,7 @@ console.log(obj.a) // a
 class Shape {
   _name = null
   _title = null
-  
+
   constructor(name, title = 'Shape') {
     this._name = name
     this._title = title
@@ -1054,12 +1018,12 @@ class Rectangle extends Shape {
 
   // private field, only accessible within the class
   #privateField = 'Private field'
-  
+
   static info = 'This is a static field'
 
   // private static field, only accessible within the class
   static #privateStatic = 'Private static field'
-  
+
   static foo() {
     return `Static info:
       [Public static field]: ${this.info}
@@ -1082,22 +1046,22 @@ class Rectangle extends Shape {
     let a = "That's a static field (changed in a static block)"
     this.info = a
   }
-  
+
   constructor(width, height) {
     super('rectangle', 'Rectangle')
-    
+
     this.width = width
     this.height = height
   }
-  
+
   get area() {
     return this.width * this.height
   }
-  
+
   get title() {
     return `Title: ${this._title}`
   }
-  
+
   set title(value) {
     this._title = value
     this.modified = true
@@ -1107,7 +1071,7 @@ class Rectangle extends Shape {
   #getSecret() {
     return 'Private method'
   }
-  
+
   info() {
     return `Full info:
     ${this._title} [${this._name}]:
@@ -1156,10 +1120,12 @@ class User {
 
   getInfo() {
     return `User info:
-      Name: ${this.name || '[We don\'t know yet]'}
-      Birthdate: ${this.birthdate ?
-        Intl.DateTimeFormat('ru-RU').format(this.birthdate) :
-        '[We don\'t know yet]'}`
+      Name: ${this.name || "[We don't know yet]"}
+      Birthdate: ${
+        this.birthdate
+          ? Intl.DateTimeFormat('ru-RU').format(this.birthdate)
+          : "[We don't know yet]"
+      }`
   }
 }
 
@@ -1262,15 +1228,15 @@ console.log(bar.prop) // 2
 ##### Old-style inheritance (ES5)
 
 ```javascript
-const Vehicle = function(wheels) {
+const Vehicle = function (wheels) {
   this.wheels = wheels
 }
 
-Vehicle.prototype.foo = function() {
+Vehicle.prototype.foo = function () {
   console.log('foo')
 }
 
-const Car = function(name, color) {
+const Car = function (name, color) {
   Vehicle.call(this, 4) // 4 — wheels
   this.name = name
   this.color = color
@@ -1279,7 +1245,7 @@ const Car = function(name, color) {
 Car.prototype = Object.create(Vehicle.prototype)
 Car.prototype.constructor = Car
 
-Car.prototype.info = function() {
+Car.prototype.info = function () {
   console.log(`
     [Car info]:
       Wheels: ${this.wheels}
@@ -1396,11 +1362,11 @@ console.log(car.info())
 class MySuperClass {
   a = 1
   static a = 2
-  
+
   b() {
     return this.a
   }
-  
+
   static b() {
     return this.a
   }
@@ -1420,8 +1386,8 @@ console.log(MySuperClass.b()) // 2
 ```javascript
 class MySuperClass {
   a = 1
-  
-  f = function() {
+
+  f = function () {
     return this.a
   }
 }
@@ -1429,10 +1395,10 @@ class MySuperClass {
 const A = MySuperClass
 const B = MySuperClass
 
-console.log( new A().a ) // 1
-console.log( new B().a ) // 1
-console.log( new A().f() ) // 1
-console.log( new B().f() ) // 1
+console.log(new A().a) // 1
+console.log(new B().a) // 1
+console.log(new A().f()) // 1
+console.log(new B().f()) // 1
 ```
 
 ### Constructors and Prototypes
@@ -1448,7 +1414,7 @@ const person1 = new Person('John', 25)
 const person2 = new Person('Jane', 30)
 
 // prototype
-Person.prototype.greet = function() {
+Person.prototype.greet = function () {
   console.log(`Hello, my name is ${this.name}`)
 }
 
@@ -1465,7 +1431,7 @@ Employee.prototype = Object.create(Person.prototype)
 Employee.prototype.constructor = Employee
 
 const employee = new Employee('Bob', 35, 'Manager')
-employee.greet(); // Output: Hello, my name is Bob
+employee.greet() // Output: Hello, my name is Bob
 console.log(employee.position) // Output: Manager
 ```
 
@@ -1491,7 +1457,7 @@ console.log(Foo.prototype.prototype) // undefined
 
 console.log(Bar.prototype) // Object { ... }
 console.log(Bar.prototype.constructor) // function Bar(a, b)
-console.log(Bar.prototype.prototype) // undefined 
+console.log(Bar.prototype.prototype) // undefined
 
 console.log(foo.constructor) // class Foo {}
 console.log(foo.constructor.name) // 'Foo'
@@ -1525,7 +1491,7 @@ console.log(Bar.constructor === Bar.constructor.prototype.constructor) // true
 #### `.prototype`
 
 ```javascript
-Object.prototype.sayHello = function() {
+Object.prototype.sayHello = function () {
   console.log('Hi!')
 }
 
@@ -1536,7 +1502,7 @@ const alex = {
   greet1() {
     console.log(`Hello, ${this.name}!`)
   },
-  greet2: function() {
+  greet2: function () {
     console.log(`Hello, ${this.name}!`)
   },
   greet3: () => {
@@ -1549,12 +1515,11 @@ alex.greet2() // Hello, Alex!
 alex.greet3() // Hello, !
 alex.sayHello() // Hi!
 
-
 // identical way to define objects
 const bob = new Object({
   name: 'Bob',
   age: 29,
-  greet: function() {
+  greet: function () {
     console.log(`Hello, ${this.name}!`)
   },
 })
@@ -1579,7 +1544,9 @@ sveta.sayHello() // Hi!
 const foo = {
   a: 1,
   b: 2,
-  f() { return this.a + this.b + this.c },
+  f() {
+    return this.a + this.b + this.c
+  },
 }
 
 console.log(foo.a, foo.b, foo.c) // 1 2 undefined
@@ -1598,7 +1565,7 @@ Extending functionality of built-in classes:
 ```javascript
 const arr = [1, 2, 3, 4, 5]
 
-Array.prototype.multBy = function(n) {
+Array.prototype.multBy = function (n) {
   return this.map(item => item * n)
 }
 
@@ -1613,7 +1580,7 @@ function Foo(a, b) {
 }
 
 // extending prototype
-Foo.prototype.f = function() {
+Foo.prototype.f = function () {
   return this.a * this.b
 }
 
@@ -1653,7 +1620,7 @@ const bob = {
       console.log(`Salary of ${this.name} is ${salary}`)
     }
     console.groupEnd()
-  }
+  },
 }
 
 const lena = {
@@ -1676,7 +1643,6 @@ bob.info.call(lena, 'Frontend Developer', 2500)
 
 // apply (same as call but arguments should be passed as array)
 bob.info.apply(lena, ['Frontend Developer', 2500])
-
 ```
 
 Extended example:
@@ -1695,7 +1661,7 @@ const bob = {
       console.log(`Salary of ${this.name} is ${salary}`)
     }
     console.groupEnd()
-  }
+  },
 }
 
 const lena = {
@@ -1750,17 +1716,17 @@ const foo = {
   f1(val) {
     return this.a + this.b + val
   },
-  f2: function(val) {
+  f2: function (val) {
     return this.a + this.b + val
   },
-  f3: (val) => {
+  f3: val => {
     return this.a + this.b + val
-  }
+  },
 }
 
 const bar = {
   a: 'rst',
-  b: 'uvw'
+  b: 'uvw',
 }
 
 console.log(foo.f1(7)) // lmnopq7
@@ -1792,13 +1758,13 @@ bind(thisArg, arg1, arg2, /* …, */ argN)
 ```javascript
 const module = {
   x: 42,
-  getX: function() {
+  getX: function () {
     return this.x
   },
-};
+}
 
 const unboundGetX = module.getX
- // The function gets invoked at the global scope
+// The function gets invoked at the global scope
 console.log(unboundGetX()) // undefined
 
 const boundGetX = unboundGetX.bind(module)
@@ -1808,9 +1774,9 @@ console.log(boundGetX()) // 42
 ```javascript
 const person = {
   name: 'John',
-  greet: function() {
+  greet: function () {
     console.log(`Hello, my name is ${this.name}`)
-  }
+  },
 }
 
 const greet = person.greet.bind(person)
@@ -1864,9 +1830,9 @@ console.log(new Food('cheese', 5).name) // cheese
 ```javascript
 const person = {
   name: 'Jane',
-  greet: function(city) {
+  greet: function (city) {
     console.log(`Hello, my name is ${this.name} and I live in ${city}`)
-  }
+  },
 }
 
 person.greet.call(person, 'New York')
@@ -1875,15 +1841,15 @@ person.greet.call(person, 'New York')
 
 ```javascript
 function greet() {
-  console.log(this.animal, "typically sleep between", this.sleepDuration);
+  console.log(this.animal, 'typically sleep between', this.sleepDuration)
 }
 
 const obj = {
-  animal: "cats",
-  sleepDuration: "12 and 16 hours",
-};
+  animal: 'cats',
+  sleepDuration: '12 and 16 hours',
+}
 
-greet.call(obj); // cats typically sleep between 12 and 16 hours
+greet.call(obj) // cats typically sleep between 12 and 16 hours
 ```
 
 ## Rest and Spread
@@ -1905,7 +1871,7 @@ console.log(rest) // Output: [3, 4, 5]
 const arr1 = [1, 2, 3]
 const arr2 = [4, 5, 6]
 const combined = [...arr1, ...arr2]
-console.log(combined); // Output: [1, 2, 3, 4, 5, 6]
+console.log(combined) // Output: [1, 2, 3, 4, 5, 6]
 ```
 
 ### Objects
@@ -1917,7 +1883,7 @@ const { name, age, ...rest } = {
   name: 'John',
   age: 25,
   city: 'New York',
-  country: 'USA'
+  country: 'USA',
 }
 console.log(name) // Output: John
 console.log(age) // Output: 25
@@ -1929,11 +1895,11 @@ console.log(rest) // Output: { city: 'New York', country: 'USA' }
 ```javascript
 const obj1 = {
   name: 'John',
-  age: 25
+  age: 25,
 }
 const obj2 = {
   city: 'New York',
-  country: 'USA'
+  country: 'USA',
 }
 const merged = { ...obj1, ...obj2 }
 console.log(merged) // Output: { name: 'John', age: 25, city: 'New York', country: 'USA' }
