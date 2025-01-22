@@ -2648,3 +2648,52 @@ or
 jest --coverage # for unit-tests
 jest --config jest.e2e.config.ts --coverage # for e2e-tests
 ```
+
+## Essential NPM Packages
+
+> Mostly for backend.
+
+```bash
+### Main
+dotenv                    # a zero-dependency module that loads environment variables from a `.env` file into `process.env`
+dotenv-expand             # extends `dotenv` so that it allows using variables as values in env files
+cross-env                 # run scripts that set and use environment variables across platforms (`cross-env FIRST_ENV=one SECOND_ENV=two node ./my-program`)
+config                    # organizes hierarchical configurations for your app deployments (json, env, etc.)
+yargs                     # build interactive command line tools, by parsing arguments and generating an elegant user interface
+inquirer                  # a collection of common interactive command line user interfaces (legacy, maintenance)
+@inquirer/prompts         # a collection of common interactive command line user interfaces (new versions)
+bcrypt                    # a library to help you hash passwords
+bcryptjs                  # optimized bcrypt in JavaScript with zero dependencies; compatible to the C++ bcrypt binding on Node.js and also working in the browser
+app-root-path             # helps you access your application's root path from anywhere in the application without resorting to relative paths like `require("../../path")`
+inversify                 # a powerful and lightweight inversion of control container for JavaScript & Node.js apps powered by TypeScript
+validator                 # a library of string validators and sanitizers
+class-validator           # allows use of decorator and non-decorator based validation; internally uses validator.js to perform validation
+class-transformer         # allows you to transform plain object to some instance of class and versa
+date-fns                  # provides the most comprehensive, yet simple and consistent toolset for manipulating JavaScript dates in a browser & Node.js
+fs-extra                  # adds file system methods that aren't included in the native `fs` module and adds promise support to the `fs` methods
+body-parser               # Node.js body parsing middleware
+jsonwebtoken              # a library to sign and validate a JWT
+passport                  # `express`-compatible authentication middleware for Node.js; authenticates requests with the help of an extensible set of plugins known as strategies
+passport-jwt              # a passport strategy for authenticating with a JWT
+reflect-metadata          # allows adding metadata to JavaScript objects in TypeScript that is available at runtime
+rxjs                      # reactive extensions library for JavaScript
+sharp                     # a high speed module to convert images in common formats to smaller, web-friendly JPEG, PNG, WebP, GIF and AVIF images of varying dimensions
+telegraf                  # modern Telegram Bot API framework for Node.js
+xml2js                    # simple XML to JavaScript object converter; it supports bi-directional conversion; uses `sax-js` and `xmlbuilder-js`
+supertest                 # a high-level abstraction for testing HTTP (e.g., E2E testing)
+autocannon                # an HTTP/1.1 benchmarking tool written in node, greatly inspired by wrk and wrk2, with support for HTTP pipelining and HTTPS
+clinic                    # an Open Source Node.js performance profiling suite originally developed by NearForm
+nodemon                   # a tool that helps develop Node.js based applications by automatically restarting the node application when file changes in the directory are detected
+jest                      # a comprehensive JavaScript testing solution; works out of the box for most JavaScript projects
+ts-jest                   # a Jest transformer with source map support that lets you use Jest to test projects written in TypeScript
+ts-node                   # TypeScript execution and REPL for Node.js, with source map and native ESM support
+nodemailer                # send emails from Node.js
+tslog                     # powerful, fast and expressive logging for TypeScript and JavaScript
+
+### Special
+@types/<package-name>     # TypeScript support for a library (if present)
+@types/node               # contains type definitions for Node.js
+
+### ESLint + Prettier
+eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin prettier eslint-config-prettier eslint-plugin-prettier
+```
