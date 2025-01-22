@@ -812,6 +812,44 @@ for (const value of myIterable()) {
 }
 ```
 
+### Object with an Iterator
+
+```javascript
+const obj = {
+  a: 1,
+  b: 2,
+  c: 3,
+  [Symbol.iterator]: function () {
+    const props = Object.keys(this)
+    let index = 0
+
+    return {
+      next: () => {
+        if (index < props.length) {
+          const value = [props[index], this[props[index]]]
+          index++
+          return {
+            value,
+            done: false,
+          }
+        }
+        return {
+          done: true,
+        }
+      },
+    }
+  },
+}
+
+for (const val of obj) {
+  console.log(val)
+}
+
+// Array [ "a", 1 ]
+// Array [ "b", 2 ]
+// Array [ "c", 3 ]
+```
+
 ## Functions
 
 ### Syntax
