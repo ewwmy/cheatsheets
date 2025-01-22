@@ -416,6 +416,46 @@ async function processArray(arr) {
 }
 ```
 
+#### `Promise.all` to run async operations in parallel and wait for all of them
+
+```javascript
+const obj = {
+  a: 1,
+  b: 2,
+  c: 3,
+}
+
+const double = async x =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(x * 2)
+    }, 3000)
+  })
+
+const keys = Object.keys(obj)
+const values = Object.values(obj)
+
+;(async () => {
+  console.log('start for')
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = await double(obj[key])
+      console.log(value)
+    }
+  }
+  console.log('end for')
+
+  console.log('start Promise.all')
+  await Promise.all(
+    Object.keys(obj).map(async key => {
+      const value = await double(obj[key])
+      console.log(value)
+    })
+  )
+  console.log('end Promise.all')
+})()
+```
+
 ## `Set`
 
 ```javascript
