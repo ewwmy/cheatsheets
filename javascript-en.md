@@ -453,6 +453,24 @@ const values = Object.values(obj)
     })
   )
   console.log('end Promise.all')
+
+  console.log('start Promise.all + map values')
+  const values1 = await Promise.all(
+    Object.keys(obj).map(async key => {
+      const value = await double(obj[key])
+      console.log(value)
+      return value
+    })
+  )
+  console.log(values1)
+  console.log('end Promise.all + map values')
+
+  console.log('start Promise.all + map promises')
+  const values2 = await Promise.all(
+    Object.keys(obj).map(key => double(obj[key]))
+  )
+  console.log(values2)
+  console.log('end Promise.all + map promises')
 })()
 ```
 
