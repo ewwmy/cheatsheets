@@ -416,6 +416,64 @@ async function processArray(arr) {
 }
 ```
 
+#### `Promise.all` to run async operations in parallel and wait for all of them
+
+```javascript
+const obj = {
+  a: 1,
+  b: 2,
+  c: 3,
+}
+
+const double = async x =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(x * 2)
+    }, 3000)
+  })
+
+const keys = Object.keys(obj)
+const values = Object.values(obj)
+
+;(async () => {
+  console.log('start for')
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = await double(obj[key])
+      console.log(value)
+    }
+  }
+  console.log('end for')
+
+  console.log('start Promise.all')
+  await Promise.all(
+    Object.keys(obj).map(async key => {
+      const value = await double(obj[key])
+      console.log(value)
+    })
+  )
+  console.log('end Promise.all')
+
+  console.log('start Promise.all + map values')
+  const values1 = await Promise.all(
+    Object.keys(obj).map(async key => {
+      const value = await double(obj[key])
+      console.log(value)
+      return value
+    })
+  )
+  console.log(values1)
+  console.log('end Promise.all + map values')
+
+  console.log('start Promise.all + map promises')
+  const values2 = await Promise.all(
+    Object.keys(obj).map(key => double(obj[key]))
+  )
+  console.log(values2)
+  console.log('end Promise.all + map promises')
+})()
+```
+
 ## `Set`
 
 ```javascript
@@ -810,6 +868,44 @@ function* myIterable() {
 for (const value of myIterable()) {
   console.log(value) // 1 2 3 4 5
 }
+```
+
+### Object with an Iterator
+
+```javascript
+const obj = {
+  a: 1,
+  b: 2,
+  c: 3,
+  [Symbol.iterator]: function () {
+    const props = Object.keys(this)
+    let index = 0
+
+    return {
+      next: () => {
+        if (index < props.length) {
+          const value = [props[index], this[props[index]]]
+          index++
+          return {
+            value,
+            done: false,
+          }
+        }
+        return {
+          done: true,
+        }
+      },
+    }
+  },
+}
+
+for (const val of obj) {
+  console.log(val)
+}
+
+// Array [ "a", 1 ]
+// Array [ "b", 2 ]
+// Array [ "c", 3 ]
 ```
 
 ## Functions
