@@ -2690,6 +2690,11 @@ ts-node                   # TypeScript execution and REPL for Node.js, with sour
 nodemailer                # send emails from Node.js
 tslog                     # powerful, fast and expressive logging for TypeScript and JavaScript
 
+### Error monitoring
+rollbar                   # proactively discover, predict, and resolve errors in real-time with Rollbar’s error monitoring platform
+@sentry/node              # application monitoring software (official Sentry SDK for Node.js)
+@sentry/browser           # application monitoring software (official Sentry SDK for Browsers)
+
 ### Special
 @types/<package-name>     # TypeScript support for a library (if present)
 @types/node               # contains type definitions for Node.js
