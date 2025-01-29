@@ -282,6 +282,8 @@ npm adduser # create a new npm account (if you don't have one yet)
 npm login # log in to the npm registry (if you're not logged in yet)
 npm whoami # display the current username (to verify you're logged in with the correct account)
 
+npm pkg fix # auto-fix `package.json` issues and apply NPM recommendations
+
 npm pack # create a tarball archive of the package in the current directory; typically used to make sure it contains everything you want and doesn't contain anything you don't want; use .npmignore to exclude undesired files and folders (`node_modules`, `.git` and some others are excluded by default)
 npm pack <package> # create a tarball archive of the package by the specified path or package name
 npm pack --dry-run # shows how `npm pack` will work on the current environment without applying any changes or writing any files
