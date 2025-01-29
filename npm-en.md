@@ -282,16 +282,23 @@ npm adduser # create a new npm account (if you don't have one yet)
 npm login # log in to the npm registry (if you're not logged in yet)
 npm whoami # display the current username (to verify you're logged in with the correct account)
 
-npm pack # create a tarball archive of the package to make sure it contains everything you want and doesn't contain anything you don't want; use .npmignore to exclude undesired files and folders (`node_modules`, `.git` and some others are excluded by default)
+npm pack # create a tarball archive of the package in the current directory; typically used to make sure it contains everything you want and doesn't contain anything you don't want; use .npmignore to exclude undesired files and folders (`node_modules`, `.git` and some others are excluded by default)
+npm pack <package> # create a tarball archive of the package by the specified path or package name
+npm pack --dry-run # shows how `npm pack` will work on the current environment without applying any changes or writing any files
+npm pack --pack-destination /path/to/archive # specifies the archive destination for `npm pack`
 
 npm install . -g # install the local package globally; ensure it installs and works as expected
-npm ls -g # list globally installed packages to confirm it's installed
+npm list -g # list globally installed packages to confirm it's installed
+npm ls -g # same as `npm list -g`
 
 cd ../some-other-folder # go to the folder outside the package directory
 npm install ../my-package  # install the local package locally; ensure it installs and works as expected
-npm ls # list locally installed packages to confirm it's installed
+npm list # list locally installed packages to confirm it's installed
+npm ls # same as `npm list`
 
 npm publish # publish the package to the npm registry
+npm publish --dry-run # shows how `npm publish` will actually work without applying anything
+npm publish --access=public # publish the package to the npm registry with public access; run the first time you publish a scoped package
 npm unpublish # remove the package from the npm registry; consider using the `deprecate` command instead, if your intent is to encourage users to upgrade, or if you no longer want to maintain the package
 ```
 
