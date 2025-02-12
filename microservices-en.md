@@ -99,15 +99,23 @@ DTO means a class or other data structure that represents the transferring data.
 
 ```
 ╭───────────────╮
-│ CreateUserDTO │
+│ CreateUserDto │
 ╰───────────────╯
+```
+
+Additionally, a type can be specified besides the name (e.g., `Event`, `Query`, `Command`):
+
+```
+╭───────────────────────╮
+│ CreateUserDto   Query │
+╰───────────────────────╯
 ```
 
 Example:
 
 ```
 ┌─────────────────────────┐     ╭───────────────╮     ┌──────────────────────┐
-│   **UsersController**   ├─────┤ CreateUserDTO ├────>│   **UsersService**   │
+│   **UsersController**   ├─────┤ CreateUserDto ├────>│   **UsersService**   │
 └─────────────────────────┘     ╰───────────────╯     └──────────────────────┘
 ```
 
