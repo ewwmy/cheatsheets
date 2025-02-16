@@ -441,3 +441,32 @@ Therefore, as the result, we have the following **Services**:
 - **Email**.
 
 > Note: These 4 steps might not the final representation of the architecture. It can change as the development goes.
+
+## Monorepo
+
+A **monorepo** is a software-development strategy in which the code for a number of projects is stored in the same repository.
+
+### Pros
+
+- Ease of code reuse
+- Convenient usage of contracts
+- Simplified (often centralized) dependency management
+- Atomic commits (no need to sync applications between repositories)
+- Large-scale code refactoring
+- Collaboration across teams.
+
+### Cons
+
+- Loss of version information (loss of version segregation)
+- Lack of per-project access control
+- More storage needed by default
+- Slower work of IDE (in case of lots of projects)
+- Often limited by use of only one programming language.
+
+### Monorepo for JavaScript / TypeScript projects
+
+- **Nx**: easy to use, convenient tooling, only TypeScript
+- **Lerna**: multiple dependencies, custom builders, able to use JavaScript
+- NPM (in case of scope usage)
+- Turborepo
+- Rush.
