@@ -332,3 +332,112 @@ Scaling vertically (up/down) means adding resources to (or removing resources fr
 ##### Team related Decomposition
 
 Each team can create microservices that are responsible for the team proficiency (typically by business tasks).
+
+### Decomposition algorithm
+
+1. Determine **User Stories** and list used **Nouns**.
+2. According to the listed **Nouns** from **User Stories** determine functional **Blocks** and relations between them.
+3. Group functional **Blocks** into **Services** based on their **Domains**. Ideally, one **Service** should reflect one **Domain**.
+4. Revise **Services** (e.g., group small related **Services** together into one **Service** to avoid redundancy).
+
+#### 1. Determine User Stories
+
+Template of a User Story:
+
+> I am ..., want ..., (to ...).
+
+or
+
+> As a ... I want ... (to ...).
+
+Example:
+
+- As a **Student** I want to:
+
+  - register and buy a desired **Course**
+  - watch **Videos**, pass **Tests**, and watch the **Progress**
+  - leave **Reviews** about passed courses
+  - subscribe to **Newsletters** about new courses.
+
+- As a **Teacher** I want to:
+
+  - create **Courses**, **Tests**, and upload **Table of contents** of the courses
+  - upload **Images** and **Videos** for **Lessons**
+  - add new **Posts** to the **Blog** and send **Newsletters**
+  - take **Payments** for **Courses**
+  - send **Email Notifications**.
+
+At this step it's important to determine the nouns:
+
+- Student
+- Payment (as a student wants to buy a course and a teacher needs to get the money, we need to proceed payments)
+- Course
+- Test
+- Progress
+- Video
+- Review
+- Subscription (to newsletters).
+- Teacher
+- Table of contents (for a course)
+- Image
+- Blog
+- Notification.
+
+#### 2. Determine functional Blocks and relations between them
+
+```
+              Authentication
+                    │
+        ┌───────────┴───────────┐
+        │                       │
+Student Profile            Teacher Profile
+        │                       │
+        └───────────┬───────────┘
+                    │
+        ┌───────────┴───────────┐
+        │                       │
+     Payment                  Course
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+                  Lesson                 Review
+
+Post ────── Subscription
+
+File   Newsletter
+```
+
+> Links between blocks mean closely related entities but not necessarily imply real relations in terms of software development or database development.
+
+#### DDD
+
+**Domain-Driven Design (DDD)** is a software development approach based on modeling the domain. A domain is a specific area of knowledge and processes that the software reflects. Each domain has clear boundaries, which are called a **Bounded Context**.
+
+#### 3. Group functional Blocks into Services based on their Domains
+
+- Student Profile + Authentication → **Users**
+- Teacher Profile + Authentication → **Teachers**
+- Payment → **Payments**
+- File → **Files**
+- Course + Lesson → **Course**
+- Review → **Review**
+- Post + Subscription → **Blog**
+- Newsletter → **Email**.
+
+#### 4. Revise Services
+
+- **Users** + **Teachers** → **Accounts** (the only difference is a flag)
+- **Course** + **Review** → **Course** (reviews are only for courses, therefore it's a part of a course)
+- **Blog** - Subscription → **Blog** (subscription is more likely related to the newsletters)
+- **Email** + Subscription → **Email**.
+
+Therefore, as the result, we have the following **Services**:
+
+- **Accounts**
+- **Payments**
+- **Files**
+- **Course**
+- **Blog**
+- **Email**.
+
+> Note: These 4 steps might not the final representation of the architecture. It can change as the development goes.
