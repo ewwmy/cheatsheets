@@ -135,16 +135,6 @@ Can be used to provide any list-based information, e.g., table structure, object
 
 ## Getting into Microservices
 
-### Scalability
-
-#### Horizontal (scale out)
-
-Scaling horizontally (out/in) means adding or removing nodes, such as adding a new computer to a distributed software application. An example might involve scaling out from one web server to three.
-
-#### Vertical (scale up)
-
-Scaling vertically (up/down) means adding resources to (or removing resources from) a single node, typically involving the addition of CPUs, memory or storage to a single computer.
-
 ### Monolithic Architecture
 
 #### Pros
@@ -196,3 +186,112 @@ Scaling vertically (up/down) means adding resources to (or removing resources fr
 - Sophisicated project with clear requirements, ready to scale
 - Strong team
 - Educational purpose / Practicing microservices.
+
+### Scalability
+
+#### Horizontal (scale out)
+
+Scaling horizontally (out/in) means adding or removing nodes, such as adding a new computer to a distributed software application. An example might involve scaling out from one web server to three.
+
+#### Vertical (scale up)
+
+Scaling vertically (up/down) means adding resources to (or removing resources from) a single node, typically involving the addition of CPUs, memory or storage to a single computer.
+
+### Scaling Monolithic
+
+#### Simple Load Balancer
+
+```
+                              │
+                              │ Request
+                              V
+                        Load Balancer
+                              │ *
+        ┌─────────────────────┼──────────────────────────┐
+        │                     │                          │
+        V                     V                          V
+┌────────────────┐   ┌─────────────────┐         ┌────────────────┐
+│   Monolith 1   │   │   Monolith 2    │   ...   │   Monolith N   │   Instances of the same app
+└────────────────┘   └─────────────────┘         └────────────────┘
+        │                     │                          │
+        └─────────────────────┼──────────────────────────┘
+                              │
+                              V
+                      ┌──────────────┐
+                      │   Database   │
+                      └──────────────┘
+```
+
+#### Content Balancer
+
+```
+                              │
+                              │ Request
+                              V
+                        Load Balancer
+                              │
+        ┌─────────────────────┼──────────────────────────┐
+        │ /a/*                │ /b/*                     │ /z/*
+        V                     V                          V
+┌────────────────┐   ┌─────────────────┐         ┌────────────────┐
+│   Monolith 1   │   │   Monolith 2    │   ...   │   Monolith N   │   Instances of the same app
+└────────────────┘   └─────────────────┘         └────────────────┘
+        │                     │                          │
+        └─────────────────────┼──────────────────────────┘
+                              │
+                              V
+                      ┌──────────────┐
+                      │   Database   │
+                      └──────────────┘
+```
+
+### Scaling Microservices
+
+#### Functional scaling
+
+```
+                              │
+                              │ Request
+                              V
+                            Router
+                              │
+        ┌─────────────────────┼──────────────────────────┐
+        │ /a/*                │ /b/*                     │ /z/*
+        V                     V                          V
+┌────────────────┐   ┌─────────────────┐         ┌────────────────┐
+│     App 1      │   │      App 2      │   ...   │     App N      │
+└────────────────┘   └─────────────────┘         └────────────────┘
+        │                     │                          │
+        └─────────────────────┼──────────────────────────┘
+                              │
+                              V
+                      ┌──────────────┐
+                      │   Database   │
+                      └──────────────┘
+```
+
+#### Mixed (Functional / Load) scaling
+
+```
+                              │
+                              │ Request
+                              V
+                            Router
+                              │
+        ┌─────────────────────┼───────────────────────────┐
+        │ /a/*                │ /b/*                      │ /z/*
+        V                     V                           V
+┌────────────────┐   ┌─────────────────┐         ┌───────┐ ┌───────┐
+│                │   │                 │         │ App N │ │ App N │
+│     App 1      │   │      App 2      │   ...   └───────┘ └───────┘
+│                │   │                 │         ┌───────┐ ┌───────┐
+└────────────────┘   └─────────────────┘         │ App N │ │ App N │
+        │                     │                  └───────┘ └───────┘
+        │                     │                           │
+        └─────────────────────┼───────────────────────────┘
+                              │
+                              V
+                      ┌──────────────┐
+                      │   Database   │
+                      └──────────────┘
+```
