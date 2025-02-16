@@ -295,3 +295,40 @@ Scaling vertically (up/down) means adding resources to (or removing resources fr
                       │   Database   │
                       └──────────────┘
 ```
+
+### Decomposition
+
+#### Service
+
+**Service** (**Microservice**) is a separable application which is a part of the main application that is responsible for a certain task (or set of tasks) and can function independently.
+
+#### Properties of a Service
+
+- Least coupling with other services
+- Adequate size
+  - Avoid too small microservices that are responsible for just an inadequately tiny task (e.g., **Users**, **Roles**, **UserSync**, **UserAccessRules**) as well as too large microservices (e.g., god-like microservice)
+- Not changing contracts with other services.
+
+#### Interactions with a Service
+
+##### Input
+
+- **Command**: a request that **changes** the state of the service (e.g., create post)
+- **Query**: a request that does **not** change the state of the service (e.g., get last 10 posts).
+
+##### Output
+
+- **Event**: a message that informs other services of the state change.
+
+> Input and Output of a Service can be considered as public API (or contract) of the service.
+
+#### How to Decompose?
+
+##### Non-team related Decomposition
+
+- Business tasks (e.g., **Calculations**, **Users**)
+- Domain (e.g., **Payments**, **Incomes**, **Buyers**, **Sellers**).
+
+##### Team related Decomposition
+
+Each team can create microservices that are responsible for the team proficiency (typically by business tasks).
