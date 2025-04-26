@@ -483,13 +483,85 @@ A **monorepo** is a software-development strategy in which the code for a number
 
 - Easy to use
 - Convenient CLI tools
-- Plugins for lots of frameworks
+- Presets (plugins) for lots of frameworks
 - Ready for use configuration
 
 ##### Cons
 
 - Centralized dependencies (single `package.json` through all projects)
 - Build through **webpack** only
+
+##### Structure of Nx project
+
+```
+📂 apps
+  📂 project1                     Project root
+    📂 src                        Source files of a project
+      📂 app                      Application root (e.g., NestJS app root)
+      📂 assets                   Application assets (if needed, e.g., email templates)
+      📂 environments             ENV-files (default TS-files are not recommennded to use)
+      📄 main.ts                  Main file (e.g., NestJS bootstrap file)
+    📄 project.json               Project configuration (build, serve, lint, test, proxy, replace path, etc.)
+    📄 tsconfig.app.json          Project-specific TSConfig files
+    📄 tsconfig.json              Project-specific TSConfig files
+  📂 project2                     Project root
+  📂 project3                     Project root
+📂 dist                           Built files (📂 dist + 📂 node_modules → Docker)
+  📂 apps
+    📂 project1                   Built files of a project
+      📂 assets
+      📄 main.js
+      📄 main.js.map
+    📂 project2                   Built files of a project
+    📂 project3                   Built files of a project
+📂 libs                           Shared libraries, interfaces, contracts
+📂 node_modules
+📂 tools                          Nx Tools
+  📂 generators
+  📄 tsconfig.tools.json
+📄 nx.json                        Nx Configuration
+📄 package-lock.json
+📄 package.json
+📄 tsconfig.base.json             Base TSConfig for all project-specific TSConfigs
+📄 workspace.json                 Projects and their folders
+```
+
+##### Create new shared library for interfaces (NestJS)
+
+```bash
+# Generate new shared module
+nx g @nrwl/nest:lib interfaces
+
+# Delete unnecessary module file and remove its export from index.ts
+rm libs/interfaces/src/lib/interfaces.module.ts
+echo "" > libs/interfaces/src/index.ts
+
+# Manually create necessary interface
+cat <<EOF > libs/interfaces/src/lib/user.interface.ts
+export interface IUser {
+  name: string
+}
+EOF
+
+# Add exports from index.ts
+cat <<EOF > libs/interfaces/src/index.ts
+export * from './lib/user.interface'
+EOF
+```
+
+Later in any place:
+
+```typescript
+import { IUser } from '@scope-name/interfaces' // This path alias is automatically defined in tsconfig.base.json
+```
+
+##### Generate new NestJS modules, services, controllers
+
+```bash
+nx g module app/user --project=project1
+nx g service app/user --project=project1
+nx g controller app/user --project=project1
+```
 
 #### Lerna
 
