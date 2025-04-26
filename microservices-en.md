@@ -444,29 +444,60 @@ Therefore, as the result, we have the following **Services**:
 
 ## Monorepo
 
-A **monorepo** is a software-development strategy in which the code for a number of projects is stored in the same repository.
+A **monorepo** is a software-development strategy in which the code for a number of projects (services) is stored in the same repository.
 
 ### Pros
 
-- Ease of code reuse
-- Convenient usage of contracts
-- Simplified (often centralized) dependency management
-- Atomic commits (no need to sync applications between repositories)
+- Easier code reuse
+- Shared contracts between projects without the need to publish them as separate NPM packages
+- Shared libraries
+- Centralized dependency management (can be a disadvantage in some cases)
+- Centralized CI/CD pipelines (can be a disadvantage in some cases)
 - Large-scale code refactoring
 - Collaboration across teams.
 
 ### Cons
 
-- Loss of version information (loss of version segregation)
+- Loss of version segregation
+- Slower performance of IDE and VCS
 - Lack of per-project access control
-- More storage needed by default
-- Slower work of IDE (in case of lots of projects)
-- Often limited by use of only one programming language.
+- Often limited to only one programming language.
 
-### Monorepo for JavaScript / TypeScript projects
+### When to use monorepo
 
-- **Nx**: easy to use, convenient tooling, only TypeScript
-- **Lerna**: multiple dependencies, custom builders, able to use JavaScript
-- NPM (in case of scope usage)
+- 5-10 projects
+- Shared contracts / libraries are needed
+- A single programming language / framework across projects.
+
+### Monorepo tools for Node.js projects
+
+- **Nx**
+- **Lerna**: multiple dependencies, custom builders
+- NPM / Yarn / pnpm workspaces
 - Turborepo
 - Rush.
+
+#### Nx
+
+##### Pros
+
+- Easy to use
+- Convenient CLI tools
+- Plugins for lots of frameworks
+- Ready for use configuration
+
+##### Cons
+
+- Centralized dependencies (single `package.json` through all projects)
+- Build through **webpack** only
+
+#### Lerna
+
+##### Pros
+
+- Multiple dependencies (separate `package.json` for each project)
+- Custom builders
+
+##### Cons
+
+- Hard to configure
