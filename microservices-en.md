@@ -603,3 +603,90 @@ nx g controller app/user --project=project1
 
 - **Publish/Subscribe** — One service publishes a notification message, which is consumed by zero or more interested services.
 - **Publish/Async Responses** — One service publishes a request message and then waits for a certain amount of time for responses from interested services.
+
+### Data Formats
+
+#### Plain Text
+
+> `JSON` `XML`
+
+- Easy to read.
+- Back compatibility:
+  - We can safely add a new JSON field and it will work.
+
+#### Binary
+
+> `Protobuf`
+
+- Compact.
+- Strict types:
+  - No back compatibility.
+- Better for high-load.
+
+### Contracts
+
+> **Contract** is an agreed structure of a request and a response between certain microservices.
+
+- JSON Schema.
+- TypeScript classes.
+- TypeScript interfaces.
+- etc.
+
+> Better to use typed contracts (with TypeScript, Golang, Java, C#, etc.). It adds compile-time type-checking which prevents incompatibility errors after updates.
+
+#### Example
+
+```typescript
+export class Request {
+  @IsString()
+  login: string
+
+  @IsString()
+  password: string
+}
+```
+
+￬
+
+```
+Service
+```
+
+￬
+
+```typescript
+export class Response {
+  access_token: string
+}
+```
+
+#### Sharing Contracts
+
+- Shared libraries (in case of monorepo).
+- Published NPM packages.
+
+### Transport
+
+#### Sync
+
+- **HTTP**
+  - Easy to generate documentation
+  - Service have to be available
+- **gRPC**
+  - More optimized
+
+#### Async
+
+- **RabbitMQ**
+  - IMQP Protocol
+  - High capacity
+  - Variety of queue pattenrs
+- **Kafka**
+  - Durable
+  - Message reprocessing
+  - Lower performance
+- **Redis**
+  - In-memory database
+  - Can work with queues with **Redis Pub/Sub**
+  - Simple queue
+  - Fast
