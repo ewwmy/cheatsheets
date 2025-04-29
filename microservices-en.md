@@ -6,16 +6,16 @@
 
 ### Improved Notation
 
-- **Basics**
+- **Basics**:
   - Application
   - Module
   - Component
-- **Links**
+- **Links**:
   - Inner
   - Outer (Requests)
   - DTO
-- **Additional**
-  - Details (List).
+- **Additional**:
+  - Details (List)
 
 #### Application
 
@@ -139,52 +139,52 @@ Can be used to provide any list-based information, e.g., table structure, object
 
 #### Pros
 
-- Easy to develop (at start)
-- Easy to test (at start)
-- Easy to deploy
-- Easy to scale
+- Easy to develop (at start).
+- Easy to test (at start).
+- Easy to deploy.
+- Easy to scale.
 
 #### Cons
 
-- Long way from commit to deploy (each step becomes longer due to higher whole application size and complexity)
-- Build can be slow (needs to build the whole application)
-- Horizontal scaling requires more resources (one module may require more memory but other module may require more CPU)
-- As an application grows it may lead to higher coupling
+- Long way from commit to deploy (each step becomes longer due to higher whole application size and complexity).
+- Build can be slow (needs to build the whole application).
+- Horizontal scaling requires more resources (one module may require more memory but other module may require more CPU).
+- As an application grows it may lead to higher coupling.
 - As tech stack becomes obsolete it's hard to replace it with other overall the application (even just upgrading framework or version of programming language can be challenging).
 
 ### Microservices
 
 #### Pros
 
-- Fast way from commit to deploy (for distinct microservice)
-- Fast build (for distinct microservice)
-- More efficient horizontal scaling
-- Tech stach can be changed for each microservice independently
-- High durability (the whole service can remain working even if one or more microservices are down)
-- Easy to maintain (no need to keep the entire architecture in mind)
+- Fast way from commit to deploy (for distinct microservice).
+- Fast build (for distinct microservice).
+- More efficient horizontal scaling.
+- Tech stach can be changed for each microservice independently.
+- High durability (the whole service can remain working even if one or more microservices are down).
+- Easy to maintain (no need to keep the entire architecture in mind).
 - More Agile-friendly.
 
 #### Cons
 
-- Sophisicated decomposition (wrong decomposition may cost a lot)
-- Complicated deploy (requires DevOps, CI/CD knowledge)
-- Hard to maintain consistency of the whole application (requires strict contracts and asynchronous calls between microservices)
-  - It also may cause worse performance as the data is transferred via network between microservices
+- Sophisicated decomposition (wrong decomposition may cost a lot).
+- Complicated deploy (requires DevOps, CI/CD knowledge).
+- Hard to maintain consistency of the whole application (requires strict contracts and asynchronous calls between microservices).
+  - It also may cause worse performance as the data is transferred via network between microservices.
 - More complicated logging and monitoring.
 
 ### What to choose?
 
 #### Monolithic
 
-- Small pet project
-- Small team
-- Requirements are not clear / Startup
+- Small pet project.
+- Small team.
+- Requirements are not clear / Startup.
 - No DevOps team.
 
 #### Microservices
 
-- Sophisicated project with clear requirements, ready to scale
-- Strong team
+- Sophisicated project with clear requirements, ready to scale.
+- Strong team.
 - Educational purpose / Practicing microservices.
 
 ### Scalability
@@ -304,16 +304,16 @@ Scaling vertically (up/down) means adding resources to (or removing resources fr
 
 #### Properties of a Service
 
-- Least coupling with other services
-- Adequate size
-  - Avoid too small microservices that are responsible for just an inadequately tiny task (e.g., **Users**, **Roles**, **UserSync**, **UserAccessRules**) as well as too large microservices (e.g., god-like microservice)
+- Least coupling with other services.
+- Adequate size:
+  - Avoid too small microservices that are responsible for just an inadequately tiny task (e.g., **Users**, **Roles**, **UserSync**, **UserAccessRules**) as well as too large microservices (e.g., god-like microservice).
 - Not changing contracts with other services.
 
 #### Interactions with a Service
 
 ##### Input
 
-- **Command**: a request that **changes** the state of the service (e.g., create post)
+- **Command**: a request that **changes** the state of the service (e.g., create post).
 - **Query**: a request that does **not** change the state of the service (e.g., get last 10 posts).
 
 ##### Output
@@ -326,7 +326,7 @@ Scaling vertically (up/down) means adding resources to (or removing resources fr
 
 ##### Non-team related Decomposition
 
-- Business tasks (e.g., **Calculations**, **Users**)
+- Business tasks (e.g., **Calculations**, **Users**).
 - Domain (e.g., **Payments**, **Incomes**, **Buyers**, **Sellers**).
 
 ##### Team related Decomposition
@@ -354,18 +354,18 @@ Example:
 
 - As a **Student** I want to:
 
-  - register and buy a desired **Course**
-  - watch **Videos**, pass **Tests**, and watch the **Progress**
-  - leave **Reviews** about passed courses
-  - subscribe to **Newsletters** about new courses.
+  - Register and buy a desired **Course**.
+  - Watch **Videos**, pass **Tests**, and watch the **Progress**.
+  - Leave **Reviews** about passed courses.
+  - Subscribe to **Newsletters** about new courses.
 
 - As a **Teacher** I want to:
 
-  - create **Courses**, **Tests**, and upload **Table of contents** of the courses
-  - upload **Images** and **Videos** for **Lessons**
-  - add new **Posts** to the **Blog** and send **Newsletters**
-  - take **Payments** for **Courses**
-  - send **Email Notifications**.
+  - Create **Courses**, **Tests**, and upload **Table of contents** of the courses.
+  - Upload **Images** and **Videos** for **Lessons**.
+  - Add new **Posts** to the **Blog** and send **Newsletters**.
+  - Accept **Payments** for **Courses**.
+  - Send **Email Notifications**.
 
 At this step it's important to determine the nouns:
 
@@ -376,12 +376,12 @@ At this step it's important to determine the nouns:
 - Progress
 - Video
 - Review
-- Subscription (to newsletters).
+- Subscription (to newsletters)
 - Teacher
 - Table of contents (for a course)
 - Image
 - Blog
-- Notification.
+- Notification
 
 #### 2. Determine functional Blocks and relations between them
 
@@ -422,14 +422,14 @@ File   Newsletter
 - Course + Lesson → **Course**
 - Review → **Review**
 - Post + Subscription → **Blog**
-- Newsletter → **Email**.
+- Newsletter → **Email**
 
 #### 4. Revise Services
 
 - **Users** + **Teachers** → **Accounts** (the only difference is a flag)
 - **Course** + **Review** → **Course** (reviews are only for courses, therefore it's a part of a course)
 - **Blog** - Subscription → **Blog** (subscription is more likely related to the newsletters)
-- **Email** + Subscription → **Email**.
+- **Email** + Subscription → **Email**
 
 Therefore, as the result, we have the following **Services**:
 
@@ -438,7 +438,7 @@ Therefore, as the result, we have the following **Services**:
 - **Files**
 - **Course**
 - **Blog**
-- **Email**.
+- **Email**
 
 > Note: These 4 steps might not the final representation of the architecture. It can change as the development goes.
 
@@ -448,25 +448,25 @@ A **monorepo** is a software-development strategy in which the code for a number
 
 ### Pros
 
-- Easier code reuse
-- Shared contracts between projects without the need to publish them as separate NPM packages
-- Shared libraries
-- Centralized dependency management (can be a disadvantage in some cases)
-- Centralized CI/CD pipelines (can be a disadvantage in some cases)
-- Large-scale code refactoring
+- Easier code reuse.
+- Shared contracts between projects without the need to publish them as separate NPM packages.
+- Shared libraries.
+- Centralized dependency management (can be a disadvantage in some cases).
+- Centralized CI/CD pipelines (can be a disadvantage in some cases).
+- Large-scale code refactoring.
 - Collaboration across teams.
 
 ### Cons
 
-- Loss of version segregation
-- Slower performance of IDE and VCS
-- Lack of per-project access control
+- Loss of version segregation.
+- Slower performance of IDE and VCS.
+- Lack of per-project access control.
 - Often limited to only one programming language.
 
 ### When to use monorepo
 
-- 5-10 projects
-- Shared contracts / libraries are needed
+- 5-10 projects.
+- Shared contracts / libraries are needed.
 - A single programming language / framework across projects.
 
 ### Monorepo tools for Node.js projects
@@ -475,21 +475,21 @@ A **monorepo** is a software-development strategy in which the code for a number
 - **Lerna**: multiple dependencies, custom builders
 - NPM / Yarn / pnpm workspaces
 - Turborepo
-- Rush.
+- Rush
 
 #### Nx
 
 ##### Pros
 
-- Easy to use
-- Convenient CLI tools
-- Presets (plugins) for lots of frameworks
-- Ready for use configuration
+- Easy to use.
+- Convenient CLI tools.
+- Presets (plugins) for lots of frameworks.
+- Ready for use configuration.
 
 ##### Cons
 
-- Centralized dependencies (single `package.json` through all projects)
-- Build through **webpack** only
+- Centralized dependencies (single `package.json` through all projects).
+- Build through **webpack** only.
 
 ##### Structure of Nx project
 
@@ -567,9 +567,39 @@ nx g controller app/user --project=project1
 
 ##### Pros
 
-- Multiple dependencies (separate `package.json` for each project)
-- Custom builders
+- Multiple dependencies (separate `package.json` for each project).
+- Custom builders.
 
 ##### Cons
 
-- Hard to configure
+- Hard to configure.
+
+## Microservices Communication
+
+- Communication styles and dimentions (1-1, 1-\*).
+- Simple communication (HTTP).
+- Broker-based communication (asynchronous).
+- Reducing synchronous communication.
+
+### Communication Styles
+
+|              | 1-1                                                      | 1-\*                                           |
+| ------------ | -------------------------------------------------------- | ---------------------------------------------- |
+| Synchronous  | Request/Response                                         | —                                              |
+| Asynchronous | Asynchronous Request/Response <br> One-way Notifications | Publish/Subscribe <br> Publish/Async Responses |
+
+#### Sync / Async
+
+- **Synchronous** — The sender expects a timely response from the service and might even block while it waits.
+- **Asynchronous** — The sender doesn't block, and the response, if any, isn't necessarily sent immediately.
+
+#### One-to-one
+
+- **Request/Response** — One service sends a request to a service and waits for a response. The sender can block while waiting. This is an interaction style that generally results in services being tightly coupled.
+- **Asynchronous Request-Response** — One service sends a request to a service, which replies asynchronously. The sender doesn't block while waiting.
+- **One-way Notifications** — One service sends a request to a service and doesn't expect any response.
+
+#### One-to-many
+
+- **Publish/Subscribe** — One service publishes a notification message, which is consumed by zero or more interested services.
+- **Publish/Async Responses** — One service publishes a request message and then waits for a certain amount of time for responses from interested services.
