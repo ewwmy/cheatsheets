@@ -690,3 +690,35 @@ export class Response {
   - Can work with queues with **Redis Pub/Sub**
   - Simple queue
   - Fast
+
+### Synchronous Communication
+
+#### Problems
+
+- Poor **Availability**:
+  - The whole application can fail if one of the services is down.
+  - Tight coupling of the services causes reducing the total availability of the application (failure probabilities multiply).
+- Complicated **Service Discovery**:
+  - Each service should know IP addresses / ports / credentials of other services.
+
+#### Solving Problems
+
+##### Poor Availability
+
+- Set a response waiting **timeout**.
+- Set a **limit** on the number of **failed requests**.
+
+> Properly handle timeouts and limit exceedance.
+
+```
+┌────────────────────────┐             ┌───────────────┐
+│               ┌───────┐│   Timeout   │               │
+│   Service 1   │ Proxy ││------------>│   Service 2   │
+│               └───┬───┘│             │               │
+└───────────────────┼────┘             └───────────────┘
+                    │
+          Proxy counts the failed
+          requests and stops
+          further processing
+          when the limit is exceeded
+```
