@@ -596,7 +596,7 @@ nx g controller app/user --project=project1
 #### One-to-one
 
 - **Request/Response** — One service sends a request to a service and waits for a response. The sender can block while waiting. This is an interaction style that generally results in services being tightly coupled.
-- **Asynchronous Request-Response** — One service sends a request to a service, which replies asynchronously. The sender doesn't block while waiting.
+- **Asynchronous Request/Response** — One service sends a request to a service, which replies asynchronously. The sender doesn't block while waiting.
 - **One-way Notifications** — One service sends a request to a service and doesn't expect any response.
 
 #### One-to-many
@@ -717,8 +717,9 @@ export class Response {
 │               └───────────┬──────────┘│             │               │
 └───────────────────────────┼───────────┘             └───────────────┘
                             │
-            Fail fast if limit of active requests
-          is reached (request not sent to Service 2)
+                    Fail fast if limit
+                    of active requests
+                    is reached
 ```
 
 ##### Complicated Service Discovery
@@ -767,3 +768,42 @@ Implementations:
 - Real-time (immediate) response is required
 - Service discovery is available
 - Advantage of HTTP documentation and tooling (e.g., Swagger).
+
+### Broker-Based (Asynchronous) Communication
+
+> A broker is a middleware component that enables services to exchange messages asynchronously via queues or topics. It handles message delivery, buffering, and routing between producers and consumers.
+
+```
+┌─────────────────┐                       ┌─────────────────┐
+│       API       ├-----------╳----------˃│    Payments     │
+├─────────────────┤                       ├─────────────────┤
+│       Lib       │                       │       Lib       │
+└────────┬────────┘                       └─────────────────┘
+         │                                         ˄
+         │                 Broker                  │
+         │        ┌───────────────────────┐        │
+         └───────˃│        Channel        ├────────┘
+                  └───────────────────────┘
+                      📨 [Header, Body]
+```
+
+#### Asynchronous Request-Response
+
+```
+             📨 [Header (correlationId), Body]
+                  ┌───────────────────────┐
+         ┌────────┤     Reply Channel     │˂───────┐
+         │        └───────────────────────┘        │
+         ˅                                         │
+┌─────────────────┐                       ┌────────┴────────┐
+│       API       │                       │    Payments     │
+└────────┬────────┘                       └─────────────────┘
+         │                                         ˄
+         │        ┌───────────────────────┐        │
+         └───────˃│    Request Channel    ├────────┘
+                  └───────────────────────┘
+        📨 [Header (correlationId, replyChannel), Body]
+```
+
+- `correlationId` — a unique value used to relate a response message to its original request.
+- `replyChannel` — channel name or address where the response should be sent.
