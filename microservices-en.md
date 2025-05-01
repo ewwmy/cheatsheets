@@ -596,7 +596,7 @@ nx g controller app/user --project=project1
 #### One-to-one
 
 - **Request/Response** — One service sends a request to a service and waits for a response. The sender can block while waiting. This is an interaction style that generally results in services being tightly coupled.
-- **Asynchronous Request-Response** — One service sends a request to a service, which replies asynchronously. The sender doesn't block while waiting.
+- **Asynchronous Request/Response** — One service sends a request to a service, which replies asynchronously. The sender doesn't block while waiting.
 - **One-way Notifications** — One service sends a request to a service and doesn't expect any response.
 
 #### One-to-many
@@ -717,8 +717,9 @@ export class Response {
 │               └───────────┬──────────┘│             │               │
 └───────────────────────────┼───────────┘             └───────────────┘
                             │
-            Fail fast if limit of active requests
-          is reached (request not sent to Service 2)
+                    Fail fast if limit
+                    of active requests
+                    is reached
 ```
 
 ##### Complicated Service Discovery
@@ -767,3 +768,172 @@ Implementations:
 - Real-time (immediate) response is required
 - Service discovery is available
 - Advantage of HTTP documentation and tooling (e.g., Swagger).
+
+### Broker-Based (Asynchronous) Communication
+
+> A broker is a middleware component that enables services to exchange messages asynchronously via queues or topics. It handles message delivery, buffering, and routing between producers and consumers.
+
+```
+┌─────────────────┐                       ┌─────────────────┐
+│       API       ├-----------╳----------˃│    Payments     │
+├─────────────────┤                       ├─────────────────┤
+│       Lib       │                       │       Lib       │
+└────────┬────────┘                       └─────────────────┘
+         │                                         ˄
+         │                 Broker                  │
+         │        ┌───────────────────────┐        │
+         └───────˃│        Channel        ├────────┘
+                  └───────────────────────┘
+                      📨 [Header, Body]
+```
+
+#### Broker-Based Communication Styles
+
+##### Asynchronous Request/Response
+
+```
+             📨 [Header (correlationId), Body]
+                  ┌───────────────────────┐
+         ┌────────┤     Reply Channel     │˂───────┐
+         │        └───────────────────────┘        │
+         ˅                                         │
+┌─────────────────┐                       ┌────────┴────────┐
+│       API       │                       │    Payments     │
+└────────┬────────┘                       └─────────────────┘
+         │                                         ˄
+         │        ┌───────────────────────┐        │
+         └───────˃│    Request Channel    ├────────┘
+                  └───────────────────────┘
+        📨 [Header (correlationId, replyChannel), Body]
+```
+
+- `correlationId` — a unique value used to relate a response to its original message.
+- `replyChannel` — the name of the channel where the response should be sent.
+
+##### One-way Notifications
+
+```
+┌─────────────────┐                       ┌─────────────────┐
+│     Course      │                       │    Payments     │
+└────────┬────────┘                       └─────────────────┘
+         │                                         ˄
+         │        ┌───────────────────────┐        │
+         └───────˃│    Request Channel    ├────────┘
+                  └───────────────────────┘
+                      📨 [Header, Body]
+```
+
+##### Publish/Subscribe
+
+```
+┌─────────────────┐                       ┌─────────────────┐
+│     Course      │                       │    Payments     │
+└────────┬────────┘                       └─────────────────┘
+         │                                         ˄
+         │      ┌───────────────────────────┐      │
+         └─────˃│    CourseEvent Channel    ├──────┤
+                └───────────────────────────┘      │
+                      📨 [Header, Body]            ˅
+                                          ┌─────────────────┐
+                                          │  Notifications  │
+                                          └─────────────────┘
+```
+
+##### Publish/Async Responses
+
+```
+                📨 [Header (correlationId, author), Body]
+                    ┌────────────────────────────────┐
+         ┌──────────┤    CourseEvent ReplyChannel    │˂────────┐˂──────────────┐
+         │          └────────────────────────────────┘         │               │
+         ˅                                                     │               │
+┌─────────────────┐                                   ┌────────┴────────┐      │
+│     Course      │                                   │    Payments     │      │
+└────────┬────────┘                                   └─────────────────┘      │
+         │                                                     ˄               │
+         │            ┌───────────────────────────┐            │               │
+         └───────────˃│    CourseEvent Channel    ├────────────┤               │
+                      └───────────────────────────┘            │               │
+            📨 [Header (correlationId, replyChannel), Body]    ˅               │
+                                                      ┌─────────────────┐      │
+                                                      │  Notifications  ├──────┘
+                                                      └─────────────────┘
+```
+
+- `correlationId` — a unique value used to relate a response to its original message.
+- `replyChannel` — the name of the channel where responses should be sent.
+- `author` — the name of the responding service (e.g., `Payments`, `Notifications`).
+
+#### Advantages
+
+- **Loose coupling** between services.
+  - Services communicate indirectly through the broker, so they don’t need to know about each other’s existence, implementation details, or availability. This reduces dependencies and improves modularity.
+- **Message buffering.**
+  - The broker acts as a buffer: it stores messages if the consumer is busy, slow, or temporarily unavailable. This prevents message loss and helps balance the load.
+- Support for **different communication patterns**.
+  - Broker-based systems allow for various messaging patterns (one-to-one, one-to-many, with or without responses). This provides flexibility in how services interact.
+- Message **persistence** (optional).
+  - Brokers can save messages to disk, ensuring reliability. Even if a service crashes or restarts, the messages won't be lost and can still be delivered once the system recovers.
+
+#### Problems
+
+- **Complicated** logic when working with **multiple service instances**.
+- **Message duplication** in case of crashes
+  - For example, if an in-flight message was delivered but the broker didn't receive an acknowledgment due to a crash, it may redeliver the message.
+- **Transactional messaging**.
+  - For example, ensuring both a database write and message publish happen atomically.
+
+#### Solving Problems
+
+##### Multiple Service Instances
+
+- Use the **Round Robin** algorithm to distribute messages between instances:
+
+```
+┌─────────────────┐                         ┌────────────────┐
+│     Course      │                         │   Payments/1   │
+└────────┬────────┘                         └────────────────┘
+         │                                         ˄
+         │      ┌───────────────────────────┬──────┴──────┐
+         └─────˃│    CourseEvent Channel    | Round Robin │
+                └───────────────────────────┴──────┬──────┘
+                                                   ˅
+                                            ┌────────────────┐
+                                            │   Payments/2   │
+                                            └────────────────┘
+```
+
+> Be cautious with multiple instances — they require coordination to avoid duplicated cron jobs, race conditions in timers, etc.
+
+##### Message Duplicates
+
+- Use `ACK` / `NACK` flags to indicate whether a message was processed successfully.
+- When a message is received, check whether the required action has already been performed. If so, skip the message to avoid performing it twice.
+
+##### Transactional Messaging
+
+- Use the **Outbox Pattern**:
+
+```
+          ┌─────────────────┐
+          │     Course      │
+          └────────┬────────┘
+                   │
+-------------------│----------------------------------
+                   │ Transaction
+      ┌────────────┴────────────┐
+      ˅                         ˅
+┌──────────┐              ┌────────────┐   Database
+│   Data   │              │   Outbox   │
+└──────────┘              └────────────┘
+                                ˄
+--------------------------------│---------------------
+                                │ Pick message to send
+                    ┌───────────┘
+                    ˅
+            ┌────────────────┐       ┌───────────────────────────┐
+            │   Broker Lib   ├──────˃│    CourseEvent Channel    │
+            └────────────────┘       └───────────────────────────┘
+```
+
+> The `Outbox` is a dedicated table that stores messages to be sent. It ensures consistency between local database operations and external message publishing, preventing cases where a record is saved (for example, in `Data` table) but the message is lost.
