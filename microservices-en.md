@@ -690,3 +690,80 @@ export class Response {
   - Can work with queues with **Redis Pub/Sub**
   - Simple queue
   - Fast
+
+### Synchronous Communication
+
+#### Problems
+
+- Poor **Availability**:
+  - The whole application can fail if one of the services is down.
+  - Tight coupling of the services causes reducing the total availability of the application (failure probabilities multiply).
+- Complicated **Service Discovery**:
+  - Each service should know IP addresses / ports / credentials of other services.
+
+#### Solving Problems
+
+##### Poor Availability
+
+- Set a **timeout** for outgoing requests.
+- Set a **limit** on the number of **active (in-flight) requests** — i.e., requests that have been sent and are still awaiting a response.
+
+> If the timeout is exceeded or the number of active requests reaches the configured limit, the service should **fail fast** and return a `503 Service Unavailable` response without attempting to send more requests.
+
+```
+┌───────────────────────────────────────┐             ┌───────────────┐
+│               ┌──────────────────────┐│   Timeout   │               │
+│   Service 1   │ Middleware / Limiter ││------------>│   Service 2   │
+│               └───────────┬──────────┘│             │               │
+└───────────────────────────┼───────────┘             └───────────────┘
+                            │
+            Fail fast if limit of active requests
+          is reached (request not sent to Service 2)
+```
+
+##### Complicated Service Discovery
+
+- Client-Side Registration (Self-Register)
+- Platform-Managed Registration (Auto-Register)
+
+###### Client-Side Registration
+
+> Each service is responsible for registering itself with a third-party service registry.
+
+```
+┌─────────┐             ┌──────────────┐
+│   API   │------------>│   Payments   │
+└────┬────┘             └───────┬──────┘
+     │                          │
+     V                          V
+┌──────────────────────────────────────┐
+│ Registry                             │
+│                                      │
+│ 10.12.34.102 payments                │
+│ 10.12.34.103 users                   │
+│ ...                                  │
+└──────────────────────────────────────┘
+```
+
+Implementations:
+
+- Apache ZooKeeper
+- Consul
+
+###### Platform-Managed Registration
+
+> The orchestration platform manages service registration and routing automatically.
+
+Implementations:
+
+- Kubernetes
+- Docker / Docker Swarm
+
+#### When to use Synchronous Communication
+
+- Small number of loosely coupled services
+- Low request frequency
+- Services run as single instances or behind a simple load balancer
+- Real-time (immediate) response is required
+- Service discovery is available
+- Advantage of HTTP documentation and tooling (e.g., Swagger).
