@@ -705,10 +705,10 @@ export class Response {
 
 ##### Poor Availability
 
-- Set a response waiting **timeout**.
-- Set a **limit** on the number of **failed requests**.
+- Set a **timeout** for outgoing requests.
+- Set a **limit** on the number of **active requests** — i.e., requests that have been sent and are still awaiting a response.
 
-> Properly handle timeouts and limit exceedance.
+> If the timeout is exceeded or the number of active requests reaches the configured limit, the service should **fail fast** and return a `503 Service Unavailable` response without attempting to send more requests.
 
 ```
 ┌────────────────────────┐             ┌───────────────┐
