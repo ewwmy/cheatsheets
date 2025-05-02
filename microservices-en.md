@@ -982,7 +982,7 @@ If any service fails, the entire client request fails — just like in a monolit
                          ╎   └----------------------►│    Course     │
    Periodically          ╎                           └───────────────┘
  check the status        ╎               Get
-   of payment by         ╎            payment ID     ┌───────────────┐
+ of payment by the         ╎            payment ID     ┌───────────────┐
  given purchase ID       └--------------------------►│    Payment    │
 ────────────────────────────────────────────────────►│               │
                                                      └───────────────┘
@@ -994,7 +994,7 @@ Legend:
 
 1. Buy the course.
 2. Immediately respond with a purchase ID.
-3. Periodically check the status of payment by given purchase ID (through WebSocket or long polling).
+3. Periodically check the status of payment by the given purchase ID (through WebSocket or long polling).
 4. Check whether the course is not bought (queued).
 5. Get price (queued).
 6. Get payment ID (queued).
