@@ -982,7 +982,7 @@ If any service fails, the entire client request fails — just like in a monolit
                          ╎   └----------------------►│    Course     │
    Periodically          ╎                           └───────────────┘
  check the status        ╎               Get
- of payment by the         ╎            payment ID     ┌───────────────┐
+ of payment by the       ╎            payment ID     ┌───────────────┐
  given purchase ID       └--------------------------►│    Payment    │
 ────────────────────────────────────────────────────►│               │
                                                      └───────────────┘
