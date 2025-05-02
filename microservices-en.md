@@ -1153,3 +1153,87 @@ Can be any type of data, either plain text or binary.
                                                 ╎
                                                 ╎ binding: my_event
 ```
+
+### Exchange Types
+
+- Direct
+- Topic
+- Fanout
+- Headers
+
+#### Direct
+
+Routes to one or more bound queues, streams or exchanges using an **exact equivalence** of a binding's **routing key**.
+For example, a **routing key** `my.event` will match `my.event` binding key only.
+
+#### Topic
+
+Uses pattern matching of the message's **routing key** to the binding key **pattern**:
+
+- `*` — any word
+- `#` — any amount of words or empty
+
+For example, a **routing key** `my.event` will match the patterns:
+
+- `my.*`
+- `*.event`
+
+#### Fanout
+
+Routes a copy of every message to **every queue**, stream or exchange bound to it. The message's **routing key** is competely **ignored**.
+
+#### Headers
+
+Routes a message by matching the **headers** of the message to bindings' headers. The message's **routing key** is competely **ignored**.
+
+For example, a message with `format=pdf, type=report` will only match to `format=pdf, type=report` and will not match to `format=bin, type=report` bindings' headers.
+
+#### Other Exchange Types
+
+##### Default
+
+The default exchange is a **direct exchange** that has several special properties:
+
+- It always exists (is pre-declared).
+- Its name for AMQP 0-9-1 clients is an empty string — `""`.
+- When a queue is declared, RabbitMQ will automatically bind that queue to the **default exchange** using the **queue name** as the **routing key**.
+
+##### Dead Letter
+
+Messages from a queue can be "dead-lettered", which means these messages are republished to an exchange when any of the following events occur:
+
+- The message is [negatively acknowledged](https://www.rabbitmq.com/docs/confirms) by an AMQP 1.0 receiver using the [`rejected`](https://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-messaging-v1.0-os.html#type-rejected) outcome or by an AMQP 0.9.1 consumer using `basic.reject` or `basic.nack` with `requeue` parameter set to `false`.
+- The message expires due to [per-message TTL](https://www.rabbitmq.com/docs/ttl).
+- The message is dropped because its queue exceeded a [length limit](https://www.rabbitmq.com/docs/maxlength).
+- The message is returned more times to a quorum queue than the [delivery-limit](https://www.rabbitmq.com/docs/quorum-queues#poison-message-handling).
+
+If an entire [queue expires](https://www.rabbitmq.com/docs/ttl#queue-ttl), the messages in the queue are **not** dead-lettered.
+
+##### `amq.rabbitmq.trace`
+
+`amq.rabbitmq.trace` is used by the [message tracing mechanism](https://www.rabbitmq.com/docs/firehose).
+
+### Bindings
+
+**Bindings** define the relationship between an **exchange** and a **queue**, using a **routing key** to control which messages should go to which queues.
+
+> They act like rules. Messages with **routing key** `X` go to **queue** `A`.
+
+#### Example
+
+Bindings for `OrderEvents` exchange (type: `direct`):
+
+| Routing key       | Queue             |
+| ----------------- | ----------------- |
+| `order.placed`    | `RestaurantQueue` |
+| `order.placed`    | `DeliveryQueue`   |
+| `order.delivered` | `MarketingQueue`  |
+
+A message with routing key `order.placed` goes to:
+
+- `RestaurantQueue` — so the kitchen can start preparing the order
+- `DeliveryQueue` — to assign a courier
+
+A message with routing key `order.delivered` goes only to:
+
+`MarketingQueue` — to trigger a follow-up email with a discount or feedback form
