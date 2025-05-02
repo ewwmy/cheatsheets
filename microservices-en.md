@@ -1000,3 +1000,156 @@ Legend:
 6. Get payment ID (queued).
 
 This approach decouples services and improves resilience. The client receives an immediate response and isn't denied because of service delays or failures. As long as dependent services recover within allowed timeouts, the client request can still complete successfully.
+
+## RabbitMQ
+
+RabbitMQ can be run in [Docker](https://hub.docker.com/_/rabbitmq). For development / learning purpose it's recommended to use images with the `*-management` suffix in tag, which means the image contains **web interface**.
+
+Example of `docker-compose` file to run RabbitMQ:
+
+```yaml
+version: '3.1'
+services:
+  rmq:
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+```
+
+### Under the Hood
+
+#### General Scheme
+
+```
+                                             ┌──────────────┐     ┌──────────────┐
+                                        ┌───►│ Queue        ├────►│ Consumer     │
+                                        │    └──────────────┘     └──────────────┘
+┌──────────────┐     ┌──────────────┐   │
+│ Publisher    ├────►│ Exchannge    ├───┤
+└──────────────┘     └──────────────┘   │
+                                        │    ┌──────────────┐     ┌──────────────┐
+                                        └───►│ Queue        ├────►│ Consumer     │
+                                             └──────────────┘     └──────────────┘
+```
+
+#### Terms
+
+- **Publisher** — sends messages to the **exchange**.
+- **Exchange** — routes messages to one or more **queues** based on rules.
+- **Queue** — holds messages until they're consumed.
+- **Consumer** — receives and processes messages from a queue.
+- **Routing Key** — a string specified by the **publisher** for the message and used by the **exchange** to route the message to the appropriate **queues**, based on the predefined **bindings**.
+- **Binding** — a rule that links an **exchange** to a **queue**, using a **routing key**.
+- **Channel** — a lightweight path over a connection to send or receive messages.
+- **Connection** — a TCP link between the client and the message broker.
+
+#### Delivery and Routing Properties
+
+- Delivery tag
+- Redelivered
+- Exchange
+- **Routing key**
+- Consumer tag
+
+#### Message Structure
+
+- Properties
+  - Headers
+- Payload (Body)
+
+#### Message Properties
+
+| Property         | Type                | Description                                                                                             | Required? |
+| ---------------- | ------------------- | ------------------------------------------------------------------------------------------------------- | --------- |
+| Delivery mode    | Enum (1 or 2)       | 2 for `persistent`, 1 for `transient`. Some client libraries expose this property as a boolean or enum. | Yes       |
+| Type             | String              | Application-specific message type, e.g. "orders.created"                                                | No        |
+| Headers          | Map (string => any) | An arbitrary map of headers with string header names                                                    | No        |
+| Content type     | String              | Content type, e.g. `application/json`. Used by applications, not core RabbitMQ                          | No        |
+| Content encoding | String              | Content encoding, e.g. `gzip`. Used by applications, not core RabbitMQ                                  | No        |
+| Message ID       | String              | Arbitrary message ID                                                                                    | No        |
+| Correlation ID   | String              | Helps correlate requests with responses, see [tutorial 6](https://www.rabbitmq.com/tutorials)           | No        |
+| Reply To         | String              | Carries response queue name, see [tutorial 6](https://www.rabbitmq.com/tutorials)                       | No        |
+| Expiration       | String              | [Per-message TTL](https://www.rabbitmq.com/docs/ttl)                                                    | No        |
+| Timestamp        | Timestamp           | Application-provided timestamp                                                                          | No        |
+| User ID          | String              | User ID, [validated](https://www.rabbitmq.com/docs/validated-user-id) if set                            | No        |
+| App ID           | String              | Application name                                                                                        | No        |
+
+#### Message Payload
+
+Can be any type of data, either plain text or binary.
+
+```json
+{
+  "email": "abc@example.com",
+  "name": "Abc"
+}
+```
+
+#### Getting Messages
+
+> **Warning**: Getting messages from a queue is a destructive action, meaning once the message is consumed, it is no longer available in the queue unless it is explicitly **nacked**.
+
+##### Message Statuses
+
+- **Ready** — message is published and waiting to be delivered.
+- **Unacked** — message has been delivered to a consumer but not yet acknowledged.
+- **Acked** — message has been acknowledged and removed from the queue.
+- **Dead-lettered** — message has been rejected, expired, or failed and is moved to a Dead Letter Exchange (DLX).
+
+##### Actions on Messages
+
+- **Publish** — send a new message to a queue.
+- **Ack** — acknowledge a message as successfully processed; it will be removed from the queue.
+- **Nack** — negative acknowledgment. The message can be requeued or dead-lettered depending on the settings.
+- **Reject** — similar to nack, but typically used for a single message.
+- **Requeue** — return the message to the queue to be redelivered later.
+
+#### Queue Properties
+
+- **Name**
+- **Durable** — the queue will survive a broker restart.
+- **Exclusive** — used by only one connection and the queue will be deleted when that connection closes.
+- **Auto-delete** — queue that has had at least one consumer is deleted when last consumer unsubscribes.
+- **Arguments** — optional; used by plugins and broker-specific features such as message TTL, queue length limit, etc.
+
+> Note: Messages will be stored on disk only if they are marked as **persistent**.
+
+#### Asynchronous Request/Response Implementation
+
+```
+                                           ╎ properties: { correlation_id: 1 }
+                                           ╎ payload: { response }
+                       ┌───────────────┐   ╎
+        ┌──────────────┤  ReplyQueue   │◄──┴─────────────────────────────────┐
+        │              └───────────────┘                                     │
+        │                  Exclusive                                         │
+        │                                 ╎ binding: my_route                │
+        ▼                                 ╎                                  │
+┌───────────────┐      ┌───────────────┐  ╎   ┌───────────────┐      ┌───────┴───────┐
+│   Publisher   ├──┬──►│   Exchange    ├──┴──►│     Queue     ├─────►│   Consumer    │
+└───────────────┘  ╎   └───────────────┘      └───────────────┘      └───────────────┘
+                   ╎
+                   ╎ routing_key: my_route
+                   ╎ properties: { correlation_id: 1, reply_to: 'ReplyQueue' }
+                   ╎ payload: { request }
+```
+
+#### Publish/Subscribe Implementation
+
+```
+                                                ╎ binding: my_event
+                                                ╎
+                                                ╎   ┌───────────────┐      ┌───────────────┐
+                                             ┌──┴──►│    Queue 1    ├─────►│   Consumer    │
+                                             │      └───────────────┘      └───────────────┘
+┌───────────────┐      ┌───────────────┐     │
+│   Publisher   ├──┬──►│   Exchange    ├─────┤
+└───────────────┘  ╎   └───────────────┘     │
+                   ╎                         │      ┌───────────────┐      ┌───────────────┐
+                   ╎ routing_key: my_event   └──┬──►│    Queue 2    ├─────►│   Consumer    │
+                   ╎ payload: { info }          ╎   └───────────────┘      └───────────────┘
+                                                ╎
+                                                ╎ binding: my_event
+```
