@@ -937,3 +937,66 @@ Implementations:
 ```
 
 > The `Outbox` is a dedicated table that stores messages to be sent. It ensures consistency between local database operations and external message publishing, preventing cases where a record is saved (for example, in `Data` table) but the message is lost.
+
+### Minimizing Synchronous Communication
+
+#### Problem
+
+```
+                                     Check whether
+        Buy                           the course
+    the course   ┌───────────────┐   is not bought   ┌───────────────┐
+────────────────►│      API      ├──────────────────►│    Account    │
+                 └───────┬───┬───┘                   └───────────────┘
+                         │   │           Get
+                         │   │          price        ┌───────────────┐
+                         │   └──────────────────────►│    Course     │
+                         │                           └───────────────┘
+                         │               Get
+                         │            payment ID     ┌───────────────┐
+                         └──────────────────────────►│    Payment    │
+                                                     └───────────────┘
+
+Legend:
+  ──────────► Synchronous call
+```
+
+1. Buy the course.
+2. Check whether the course is not bought.
+3. Get price.
+4. Get payment ID.
+
+If any service fails, the entire client request fails — just like in a monolithic system.
+
+#### Solution
+
+```
+                                     Check whether
+       Buy                             the course
+   the course    ┌───────────────┐   is not bought   ┌───────────────┐
+────────────────►│      API      ├------------------►│    Account    │
+◄────────────────┤               │                   │               │
+   Immediately   └───────┬───┬───┘                   └───────────────┘
+  respond with           ╎   ╎           Get
+  a purchase ID          ╎   ╎          price        ┌───────────────┐
+                         ╎   └----------------------►│    Course     │
+   Periodically          ╎                           └───────────────┘
+ check the status        ╎               Get
+   of payment by         ╎            payment ID     ┌───────────────┐
+ given purchase ID       └--------------------------►│    Payment    │
+────────────────────────────────────────────────────►│               │
+                                                     └───────────────┘
+
+Legend:
+  ──────────► Synchronous call
+  ----------► Asynchronous call
+```
+
+1. Buy the course.
+2. Immediately respond with a purchase ID.
+3. Periodically check the status of payment by given purchase ID (through WebSocket or long polling).
+4. Check whether the course is not bought (queued).
+5. Get price (queued).
+6. Get payment ID (queued).
+
+This approach decouples services and improves resilience. The client receives an immediate response and isn't denied because of service delays or failures. As long as dependent services recover within allowed timeouts, the client request can still complete successfully.
