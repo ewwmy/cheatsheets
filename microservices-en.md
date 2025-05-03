@@ -1248,6 +1248,17 @@ touch consumer.js
 touch docker-compose.yml
 ```
 
+`package.json`:
+
+```json
+{
+  ...
+  "type": "module",
+  ...
+}
+
+```
+
 `publisher.js`:
 
 ```javascript
