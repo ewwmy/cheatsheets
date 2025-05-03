@@ -1003,15 +1003,14 @@ This approach decouples services and improves resilience. The client receives an
 
 ## RabbitMQ
 
-RabbitMQ can be run in [Docker](https://hub.docker.com/_/rabbitmq). For development / learning purpose it's recommended to use images with the `*-management` suffix in tag, which means the image contains **web interface**.
+RabbitMQ can be run in [Docker](https://hub.docker.com/_/rabbitmq). For development / learning purpose it's recommended to use images with the `*-management` suffix in tag, which means the image contains **web interface** (username `guest`, password `guest` by default).
 
 Example of `docker-compose` file to run RabbitMQ:
 
 ```yaml
-version: '3.1'
 services:
   rmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:4.1-management
     restart: always
     ports:
       - '15672:15672'
@@ -1237,3 +1236,136 @@ A message with routing key `order.placed` goes to:
 A message with routing key `order.delivered` goes only to:
 
 `MarketingQueue` — to trigger a follow-up email with a discount or feedback form
+
+### Example
+
+```bash
+npm init -y
+npm i amqplib
+
+touch publisher.js
+touch consumer.js
+touch docker-compose.yml
+```
+
+`publisher.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // publish a message to the exchange with 'my.command' routing key
+    channel.publish('my-exchange', 'my.command', Buffer.from('Hello, world!'))
+    // the message will be `ready` after publishing
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+`consumer.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue
+    const queue = await channel.assertQueue('my-queue', { durable: true })
+
+    // bind the queue to the exchange via 'my.command' routing key
+    await channel.bindQueue(queue.queue, 'my-exchange', 'my.command')
+
+    // get messages
+    channel.consume(queue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // read the message
+      console.log(message.content.toString())
+      // the message will be `unacked` after reading and `ready` again
+      // if the consumer disconnects
+
+      if (true) {
+        // some logic here...
+
+        // acknowledge the message to delete it from the queue
+        channel.ack(message)
+      }
+    })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+`docker-compose.yml`:
+
+```yaml
+services:
+  rmq:
+    image: rabbitmq:4.1-management
+    restart: always
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+```
+
+```bash
+# start rabbitmq
+docker compose up -d
+
+# run consumer (will wait for messages)
+node consumer.js
+
+# run publisher (will send a message to the exchange and the consumer will read and acknowledge it)
+node publisher.js
+
+# consumer.js:
+# Hello, world!
+```
+
+#### Auto-acknowledge messages
+
+```javascript
+// get messages
+channel.consume(
+  queue.queue,
+  message => {
+    if (!message) {
+      return
+    }
+
+    // read the message
+    console.log(message.content.toString())
+  },
+  {
+    // auto-acknowledge the message
+    noAck: true,
+  }
+)
+```
