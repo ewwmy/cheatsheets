@@ -1677,3 +1677,117 @@ node publisher.js
 
 docker compose down
 ```
+
+## Implementation
+
+### Contracts
+
+Contract:
+
+- Where to send.
+- What to send.
+- What to receive.
+
+#### Create Shared Contracts (NestJS)
+
+```bash
+# Generate new shared module to share contracts
+nx g @nrwl/nest:lib contracts
+
+# Delete unnecessary module file and remove its export from index.ts
+rm libs/contracts/src/lib/contracts.module.ts
+echo "" > libs/contracts/src/index.ts
+
+# Create a structure for contracts: one service — one directory
+mkdir libs/contracts/src/lib/accounts
+mkdir libs/contracts/src/lib/payments
+mkdir libs/contracts/src/lib/email
+# ...
+
+# Create contracts for a service: one contract — one *.ts file
+touch libs/contracts/src/lib/accounts/account.login.ts
+touch libs/contracts/src/lib/accounts/account.register.ts
+```
+
+Topic structure:
+
+```
+<to-service>.<command-name>.<command-type>
+```
+
+Command type:
+
+- `command`
+- `query`
+- `event`
+
+> Disable ESLint namespece restriction for TypeScript: `"@typescript-eslint/no-namespace": "off"`.
+
+`libs/contracts/src/lib/accounts/account.login.ts`:
+
+```typescript
+export namespace AccountLogin {
+  export const topic = 'account.login.command'
+
+  export class Request {
+    email: string
+    password: string
+  }
+
+  export class Response {
+    access_token: string
+  }
+}
+```
+
+`libs/contracts/src/lib/accounts/account.register.ts`:
+
+```typescript
+export namespace AccountRegister {
+  export const topic = 'account.register.command'
+
+  export class Request {
+    email: string
+    password: string
+    displayName?: string
+  }
+
+  export class Response {
+    email: string
+  }
+}
+```
+
+`libs/contracts/src/index.ts`:
+
+```typescript
+export * from './lib/accounts/account.login'
+export * from './lib/accounts/account.register'
+```
+
+#### Contracts Usage
+
+`apps/accounts/src/app/auth/auth.controller.ts`:
+
+```typescript
+// ...
+@Controller('auth')
+export class AuthController {
+  // ...
+  @Post('login')
+  async login(
+    @Body() { email, password }: AccountLogin.Request
+  ): Promise<AccountLogin.Response> {
+    // ...
+  }
+
+  @Post('register')
+  async register(
+    @Body() dto: AccountRegister.Request
+  ): Promise<AccountRegister.Response> {
+    // ...
+  }
+  // ...
+}
+// ...
+```
