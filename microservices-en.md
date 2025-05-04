@@ -937,3 +937,857 @@ Implementations:
 ```
 
 > The `Outbox` is a dedicated table that stores messages to be sent. It ensures consistency between local database operations and external message publishing, preventing cases where a record is saved (for example, in `Data` table) but the message is lost.
+
+### Minimizing Synchronous Communication
+
+#### Problem
+
+```
+                                     Check whether
+        Buy                           the course
+    the course   ┌───────────────┐   is not bought   ┌───────────────┐
+────────────────►│      API      ├──────────────────►│    Account    │
+                 └───────┬───┬───┘                   └───────────────┘
+                         │   │           Get
+                         │   │          price        ┌───────────────┐
+                         │   └──────────────────────►│    Course     │
+                         │                           └───────────────┘
+                         │               Get
+                         │            payment ID     ┌───────────────┐
+                         └──────────────────────────►│    Payment    │
+                                                     └───────────────┘
+
+Legend:
+  ──────────► Synchronous call
+```
+
+1. Buy the course.
+2. Check whether the course is not bought.
+3. Get price.
+4. Get payment ID.
+
+If any service fails, the entire client request fails — just like in a monolithic system.
+
+#### Solution
+
+```
+                                     Check whether
+       Buy                             the course
+   the course    ┌───────────────┐   is not bought   ┌───────────────┐
+────────────────►│      API      ├------------------►│    Account    │
+◄────────────────┤               │                   │               │
+   Immediately   └───────┬───┬───┘                   └───────────────┘
+  respond with           ╎   ╎           Get
+  a purchase ID          ╎   ╎          price        ┌───────────────┐
+                         ╎   └----------------------►│    Course     │
+   Periodically          ╎                           └───────────────┘
+ check the status        ╎               Get
+ of payment by the       ╎            payment ID     ┌───────────────┐
+ given purchase ID       └--------------------------►│    Payment    │
+────────────────────────────────────────────────────►│               │
+                                                     └───────────────┘
+
+Legend:
+  ──────────► Synchronous call
+  ----------► Asynchronous call
+```
+
+1. Buy the course.
+2. Immediately respond with a purchase ID.
+3. Periodically check the status of payment by the given purchase ID (through WebSocket or long polling).
+4. Check whether the course is not bought (queued).
+5. Get price (queued).
+6. Get payment ID (queued).
+
+This approach decouples services and improves resilience. The client receives an immediate response and isn't denied because of service delays or failures. As long as dependent services recover within allowed timeouts, the client request can still complete successfully.
+
+## RabbitMQ
+
+RabbitMQ can be run in [Docker](https://hub.docker.com/_/rabbitmq). For development / learning purpose it's recommended to use images with the `*-management` suffix in tag, which means the image contains **web interface** (username `guest`, password `guest` by default).
+
+Example of `docker-compose` file to run RabbitMQ:
+
+```yaml
+services:
+  rmq:
+    image: rabbitmq:4.1-management
+    restart: always
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+```
+
+### Under the Hood
+
+#### General Scheme
+
+```
+                                             ┌──────────────┐     ┌──────────────┐
+                                        ┌───►│ Queue        ├────►│ Consumer     │
+                                        │    └──────────────┘     └──────────────┘
+┌──────────────┐     ┌──────────────┐   │
+│ Publisher    ├────►│ Exchannge    ├───┤
+└──────────────┘     └──────────────┘   │
+                                        │    ┌──────────────┐     ┌──────────────┐
+                                        └───►│ Queue        ├────►│ Consumer     │
+                                             └──────────────┘     └──────────────┘
+```
+
+#### Terms
+
+- **Publisher** — sends messages to the **exchange**.
+- **Exchange** — routes messages to one or more **queues** based on rules.
+- **Queue** — holds messages until they're consumed.
+- **Consumer** — receives and processes messages from a queue.
+- **Routing Key** — a string specified by the **publisher** for the message and used by the **exchange** to route the message to the appropriate **queues**, based on the predefined **bindings**.
+- **Binding** — a rule that links an **exchange** to a **queue**, using a **routing key**.
+- **Channel** — a lightweight path over a connection to send or receive messages.
+- **Connection** — a TCP link between the client and the message broker.
+
+#### Delivery and Routing Properties
+
+- Delivery tag
+- Redelivered
+- Exchange
+- **Routing key**
+- Consumer tag
+
+#### Message Structure
+
+- Properties
+  - Headers
+- Payload (Body)
+
+#### Message Properties
+
+| Property         | Type                | Description                                                                                             | Required? |
+| ---------------- | ------------------- | ------------------------------------------------------------------------------------------------------- | --------- |
+| Delivery mode    | Enum (1 or 2)       | 2 for `persistent`, 1 for `transient`. Some client libraries expose this property as a boolean or enum. | Yes       |
+| Type             | String              | Application-specific message type, e.g. "orders.created"                                                | No        |
+| Headers          | Map (string => any) | An arbitrary map of headers with string header names                                                    | No        |
+| Content type     | String              | Content type, e.g. `application/json`. Used by applications, not core RabbitMQ                          | No        |
+| Content encoding | String              | Content encoding, e.g. `gzip`. Used by applications, not core RabbitMQ                                  | No        |
+| Message ID       | String              | Arbitrary message ID                                                                                    | No        |
+| Correlation ID   | String              | Helps correlate requests with responses, see [tutorial 6](https://www.rabbitmq.com/tutorials)           | No        |
+| Reply To         | String              | Carries response queue name, see [tutorial 6](https://www.rabbitmq.com/tutorials)                       | No        |
+| Expiration       | String              | [Per-message TTL](https://www.rabbitmq.com/docs/ttl)                                                    | No        |
+| Timestamp        | Timestamp           | Application-provided timestamp                                                                          | No        |
+| User ID          | String              | User ID, [validated](https://www.rabbitmq.com/docs/validated-user-id) if set                            | No        |
+| App ID           | String              | Application name                                                                                        | No        |
+
+#### Message Payload
+
+Can be any type of data, either plain text or binary.
+
+```json
+{
+  "email": "abc@example.com",
+  "name": "Abc"
+}
+```
+
+#### Getting Messages
+
+> **Warning**: Getting messages from a queue is a destructive action, meaning once the message is consumed, it is no longer available in the queue unless it is explicitly **nacked**.
+
+##### Message Statuses
+
+- **Ready** — message is published and waiting to be delivered.
+- **Unacked** — message has been delivered to a consumer but not yet acknowledged.
+- **Acked** — message has been acknowledged and removed from the queue.
+- **Dead-lettered** — message has been rejected, expired, or failed and is moved to a Dead Letter Exchange (DLX).
+
+##### Actions on Messages
+
+- **Publish** — send a new message to a queue.
+- **Ack** — acknowledge a message as successfully processed; it will be removed from the queue.
+- **Nack** — negative acknowledgment. The message can be requeued or dead-lettered depending on the settings.
+- **Reject** — similar to nack, but typically used for a single message.
+- **Requeue** — return the message to the queue to be redelivered later.
+
+#### Queue Properties
+
+- **Name**
+- **Durable** — the queue will survive a broker restart.
+- **Exclusive** — used by only one connection and the queue will be deleted when that connection closes.
+- **Auto-delete** — queue that has had at least one consumer is deleted when last consumer unsubscribes.
+- **Arguments** — optional; used by plugins and broker-specific features such as message TTL, queue length limit, etc.
+
+> Note: Messages will be stored on disk only if they are marked as **persistent**.
+
+#### Asynchronous Request/Response Implementation
+
+```
+                                           ╎ properties: { correlation_id: 1 }
+                                           ╎ payload: { response }
+                       ┌───────────────┐   ╎
+        ┌──────────────┤  ReplyQueue   │◄──┴─────────────────────────────────┐
+        │              └───────────────┘                                     │
+        │                  Exclusive                                         │
+        │                                 ╎ binding: my_route                │
+        ▼                                 ╎                                  │
+┌───────────────┐      ┌───────────────┐  ╎   ┌───────────────┐      ┌───────┴───────┐
+│   Publisher   ├──┬──►│   Exchange    ├──┴──►│     Queue     ├─────►│   Consumer    │
+└───────────────┘  ╎   └───────────────┘      └───────────────┘      └───────────────┘
+                   ╎
+                   ╎ routing_key: my_route
+                   ╎ properties: { correlation_id: 1, reply_to: 'ReplyQueue' }
+                   ╎ payload: { request }
+```
+
+#### Publish/Subscribe Implementation
+
+```
+                                                ╎ binding: my_event
+                                                ╎
+                                                ╎   ┌───────────────┐      ┌───────────────┐
+                                             ┌──┴──►│    Queue 1    ├─────►│   Consumer    │
+                                             │      └───────────────┘      └───────────────┘
+┌───────────────┐      ┌───────────────┐     │
+│   Publisher   ├──┬──►│   Exchange    ├─────┤
+└───────────────┘  ╎   └───────────────┘     │
+                   ╎                         │      ┌───────────────┐      ┌───────────────┐
+                   ╎ routing_key: my_event   └──┬──►│    Queue 2    ├─────►│   Consumer    │
+                   ╎ payload: { info }          ╎   └───────────────┘      └───────────────┘
+                                                ╎
+                                                ╎ binding: my_event
+```
+
+### Exchange Types
+
+- Direct
+- Topic
+- Fanout
+- Headers
+
+#### Direct
+
+Routes to one or more bound queues, streams or exchanges using an **exact equivalence** of a binding's **routing key**.
+For example, a **routing key** `my.event` will match `my.event` binding key only.
+
+#### Topic
+
+Uses pattern matching of the message's **routing key** to the binding key **pattern**:
+
+- `*` — any word
+- `#` — any amount of words or empty
+
+For example, a **routing key** `my.event` will match the patterns:
+
+- `my.*`
+- `*.event`
+
+#### Fanout
+
+Routes a copy of every message to **every queue**, stream or exchange bound to it. The message's **routing key** is competely **ignored**.
+
+#### Headers
+
+Routes a message by matching the **headers** of the message to bindings' headers. The message's **routing key** is competely **ignored**.
+
+For example, a message with `format=pdf, type=report` will only match to `format=pdf, type=report` and will not match to `format=bin, type=report` bindings' headers.
+
+#### Other Exchange Types
+
+##### Default
+
+The default exchange is a **direct exchange** that has several special properties:
+
+- It always exists (is pre-declared).
+- Its name for AMQP 0-9-1 clients is an empty string — `""`.
+- When a queue is declared, RabbitMQ will automatically bind that queue to the **default exchange** using the **queue name** as the **routing key**.
+
+##### Dead Letter
+
+Messages from a queue can be "dead-lettered", which means these messages are republished to an exchange when any of the following events occur:
+
+- The message is [negatively acknowledged](https://www.rabbitmq.com/docs/confirms) by an AMQP 1.0 receiver using the [`rejected`](https://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-messaging-v1.0-os.html#type-rejected) outcome or by an AMQP 0.9.1 consumer using `basic.reject` or `basic.nack` with `requeue` parameter set to `false`.
+- The message expires due to [per-message TTL](https://www.rabbitmq.com/docs/ttl).
+- The message is dropped because its queue exceeded a [length limit](https://www.rabbitmq.com/docs/maxlength).
+- The message is returned more times to a quorum queue than the [delivery-limit](https://www.rabbitmq.com/docs/quorum-queues#poison-message-handling).
+
+If an entire [queue expires](https://www.rabbitmq.com/docs/ttl#queue-ttl), the messages in the queue are **not** dead-lettered.
+
+##### `amq.rabbitmq.trace`
+
+`amq.rabbitmq.trace` is used by the [message tracing mechanism](https://www.rabbitmq.com/docs/firehose).
+
+### Bindings
+
+**Bindings** define the relationship between an **exchange** and a **queue**, using a **routing key** to control which messages should go to which queues.
+
+> They act like rules. Messages with **routing key** `X` go to **queue** `A`.
+
+#### Example
+
+Bindings for `OrderEvents` exchange (type: `direct`):
+
+| Routing key       | Queue             |
+| ----------------- | ----------------- |
+| `order.placed`    | `RestaurantQueue` |
+| `order.placed`    | `DeliveryQueue`   |
+| `order.delivered` | `MarketingQueue`  |
+
+A message with routing key `order.placed` goes to:
+
+- `RestaurantQueue` — so the kitchen can start preparing the order
+- `DeliveryQueue` — to assign a courier
+
+A message with routing key `order.delivered` goes only to:
+
+`MarketingQueue` — to trigger a follow-up email with a discount or feedback form
+
+### Example
+
+```bash
+npm init -y
+npm i amqplib
+
+touch publisher.js
+touch consumer.js
+touch docker-compose.yml
+```
+
+`package.json`:
+
+```json
+{
+  ...
+  "type": "module",
+  ...
+}
+
+```
+
+`docker-compose.yml`:
+
+```yaml
+services:
+  rmq:
+    image: rabbitmq:4.1-management
+    restart: always
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+```
+
+#### Simple Example (Publish/Subscribe)
+
+`publisher.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // publish a message to the exchange with 'my.command' routing key
+    channel.publish('my-exchange', 'my.command', Buffer.from('Hello, world!'))
+    // the message will be `ready` after publishing
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+`consumer.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue
+    const queue = await channel.assertQueue('my-queue', { durable: true })
+
+    // bind the queue to the exchange via 'my.command' routing key
+    await channel.bindQueue(queue.queue, 'my-exchange', 'my.command')
+
+    // get messages
+    channel.consume(queue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // read the message
+      console.log(message.content.toString())
+      // the message will be `unacked` after reading and `ready` again
+      // if the consumer disconnects
+
+      if (true) {
+        // some logic here...
+
+        // acknowledge the message to delete it from the queue
+        channel.ack(message)
+      }
+    })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+Run:
+
+```bash
+# start rabbitmq
+docker compose up -d
+# web interface is available at http://localhost:15672/ (login: guest, password: guest)
+
+# run consumer (will wait for messages)
+node consumer.js
+
+# run publisher (will send a message to the exchange and the consumer will read and acknowledge it)
+node publisher.js
+
+# consumer.js:
+# Hello, world!
+
+docker compose down
+```
+
+##### Auto-acknowledge messages
+
+```javascript
+// get messages
+channel.consume(
+  queue.queue,
+  message => {
+    if (!message) {
+      return
+    }
+
+    // read the message
+    console.log(message.content.toString())
+  },
+  {
+    // auto-acknowledge the message
+    noAck: true,
+  }
+)
+```
+
+#### Extended Example (Publish/Async Responses)
+
+`publisher.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue for the reply
+    const replyQueue = await channel.assertQueue('', { exclusive: true })
+    // - '' — generates unique name
+    // - exclusive — only available for the current client (this publisher)
+    // and will be deleted after the client disconnects
+
+    // consume the reply message
+    channel.consume(replyQueue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // read the reply message with its correlationId
+      console.log(message.properties.correlationId, message.content.toString())
+
+      // acknowledge the message to delete it from the queue
+      channel.ack(message)
+    })
+
+    // publish a message to the exchange with 'my.command' routing key
+    channel.publish('my-exchange', 'my.command', Buffer.from('Hello, world!'), {
+      // set up the queue name for replies
+      replyTo: replyQueue.queue,
+      // set up the ID to match the response with the request
+      correlationId: '123', // must be auto-generated in real projects
+    })
+    // the message will be `ready` after publishing
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+`consumer.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue
+    const queue = await channel.assertQueue('my-queue', { durable: true })
+
+    // bind the queue to the exchange via 'my.command' routing key
+    await channel.bindQueue(queue.queue, 'my-exchange', 'my.command')
+
+    // get messages
+    channel.consume(queue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // read the message
+      console.log(message.content.toString())
+
+      // if the original message has the field `replyTo` (the name of the queue to accept replies)
+      // we must reply to that queue directly
+      if (message.properties.replyTo) {
+        channel.sendToQueue(
+          // use `replyTo` of the original message as the queue name to send the reply to
+          message.properties.replyTo,
+          Buffer.from('World says hi!'),
+          {
+            // pass `correlationId` of the original message to match the response with the request
+            correlationId: message.properties.correlationId,
+          }
+        )
+
+        // acknowledge the message to delete it from the queue
+        channel.ack(message)
+      }
+    })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+Run:
+
+```bash
+# start rabbitmq
+docker compose up -d
+# web interface is available at http://localhost:15672/ (login: guest, password: guest)
+
+# run consumer (will wait for messages)
+node consumer.js
+
+# run publisher (will send a message to the exchange and the consumer will read and acknowledge it)
+node publisher.js
+
+# consumer.js:
+# Hello, world!
+
+# publisher.js
+# 123 World says hi!
+
+docker compose down
+```
+
+#### Advanced Example (RPC over Queues)
+
+`publisher.js`:
+
+```javascript
+import { connect } from 'amqplib'
+import { randomUUID } from 'crypto'
+
+const pendingResponses = new Map()
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue for the reply
+    const replyQueue = await channel.assertQueue('', { exclusive: true })
+    // - '' — generates unique name
+    // - exclusive — only available for the current client (this publisher)
+    // and will be deleted after the client disconnects
+
+    // consume the reply message (listen once)
+    channel.consume(replyQueue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // get the correlationId of the reply message
+      const correlationId = message.properties.correlationId
+      // get the resolve function for the reply message with the given correlationId
+      const resolve = pendingResponses.get(correlationId)
+
+      // if the resolve function is "callable"
+      if (resolve) {
+        // resolve the awaiting promise with the reply message content
+        resolve(message.content.toString())
+        // delete the Map item with the correlationId key
+        pendingResponses.delete(correlationId)
+      }
+
+      // acknowledge the message to delete it from the queue
+      channel.ack(message)
+    })
+
+    // function to send message and await response
+    const sendMessage = content => {
+      // generate a uinque correlationId
+      const correlationId = randomUUID()
+
+      // return a promise that will be resolved "on the reply read"
+      return new Promise(resolve => {
+        // copy the resolve function to the Map with the generated correlationId
+        pendingResponses.set(correlationId, resolve)
+
+        // publish a message to the exchange with the 'my.command' routing key
+        channel.publish('my-exchange', 'my.command', Buffer.from(content), {
+          // set up the queue name for replies
+          replyTo: replyQueue.queue,
+          // set up correlationId with the generated one
+          correlationId,
+        })
+      })
+    }
+
+    // example usage
+    const response = await sendMessage('Hello, world!')
+    console.log('Got response:', response)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+`consumer.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue
+    const queue = await channel.assertQueue('my-queue', { durable: true })
+
+    // bind the queue to the exchange via 'my.command' routing key
+    await channel.bindQueue(queue.queue, 'my-exchange', 'my.command')
+
+    // get messages
+    channel.consume(queue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // read the message
+      console.log(message.content.toString())
+
+      // if the original message has the field `replyTo` (the name of the queue to accept replies)
+      // we must reply to that queue directly
+      if (message.properties.replyTo) {
+        channel.sendToQueue(
+          // use `replyTo` of the original message as the queue name to send the reply to
+          message.properties.replyTo,
+          Buffer.from('World says hi!'),
+          {
+            // pass `correlationId` of the original message to match the response with the request
+            correlationId: message.properties.correlationId,
+          }
+        )
+
+        // acknowledge the message to delete it from the queue
+        channel.ack(message)
+      }
+    })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+Run:
+
+```bash
+# start rabbitmq
+docker compose up -d
+# web interface is available at http://localhost:15672/ (login: guest, password: guest)
+
+# run consumer (will wait for messages)
+node consumer.js
+
+# run publisher (will send a message to the exchange and the consumer will read and acknowledge it)
+node publisher.js
+
+# consumer.js:
+# Hello, world!
+
+# publisher.js
+# Got response: World says hi!
+
+docker compose down
+```
+
+## Implementation
+
+### Contracts
+
+Contract:
+
+- Where to send.
+- What to send.
+- What to receive.
+
+#### Create Shared Contracts (NestJS)
+
+```bash
+# Generate new shared module to share contracts
+nx g @nrwl/nest:lib contracts
+
+# Delete unnecessary module file and remove its export from index.ts
+rm libs/contracts/src/lib/contracts.module.ts
+echo "" > libs/contracts/src/index.ts
+
+# Create a structure for contracts: one service — one directory
+mkdir libs/contracts/src/lib/accounts
+mkdir libs/contracts/src/lib/payments
+mkdir libs/contracts/src/lib/email
+# ...
+
+# Create contracts for a service: one contract — one *.ts file
+touch libs/contracts/src/lib/accounts/account.login.ts
+touch libs/contracts/src/lib/accounts/account.register.ts
+```
+
+Topic structure:
+
+```
+<to-service>.<command-name>.<command-type>
+```
+
+Command type:
+
+- `command`
+- `query`
+- `event`
+
+> Disable ESLint namespece restriction for TypeScript: `"@typescript-eslint/no-namespace": "off"`.
+
+`libs/contracts/src/lib/accounts/account.login.ts`:
+
+```typescript
+export namespace AccountLogin {
+  export const topic = 'account.login.command'
+
+  export class Request {
+    email: string
+    password: string
+  }
+
+  export class Response {
+    access_token: string
+  }
+}
+```
+
+`libs/contracts/src/lib/accounts/account.register.ts`:
+
+```typescript
+export namespace AccountRegister {
+  export const topic = 'account.register.command'
+
+  export class Request {
+    email: string
+    password: string
+    displayName?: string
+  }
+
+  export class Response {
+    email: string
+  }
+}
+```
+
+`libs/contracts/src/index.ts`:
+
+```typescript
+export * from './lib/accounts/account.login'
+export * from './lib/accounts/account.register'
+```
+
+#### Contracts Usage
+
+`apps/accounts/src/app/auth/auth.controller.ts`:
+
+```typescript
+// ...
+@Controller('auth')
+export class AuthController {
+  // ...
+  @Post('login')
+  async login(
+    @Body() { email, password }: AccountLogin.Request
+  ): Promise<AccountLogin.Response> {
+    // ...
+  }
+
+  @Post('register')
+  async register(
+    @Body() dto: AccountRegister.Request
+  ): Promise<AccountRegister.Response> {
+    // ...
+  }
+  // ...
+}
+// ...
+```
