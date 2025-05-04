@@ -1259,6 +1259,20 @@ touch docker-compose.yml
 
 ```
 
+`docker-compose.yml`:
+
+```yaml
+services:
+  rmq:
+    image: rabbitmq:4.1-management
+    restart: always
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+```
+
+#### Simple Example (Publish/Subscribe)
+
 `publisher.js`:
 
 ```javascript
@@ -1334,21 +1348,12 @@ const run = async () => {
 run()
 ```
 
-`docker-compose.yml`:
-
-```yaml
-services:
-  rmq:
-    image: rabbitmq:4.1-management
-    restart: always
-    ports:
-      - '15672:15672'
-      - '5672:5672'
-```
+Run:
 
 ```bash
 # start rabbitmq
 docker compose up -d
+# web interface is available at http://localhost:15672/ (login: guest, password: guest)
 
 # run consumer (will wait for messages)
 node consumer.js
@@ -1358,9 +1363,11 @@ node publisher.js
 
 # consumer.js:
 # Hello, world!
+
+docker compose down
 ```
 
-#### Auto-acknowledge messages
+##### Auto-acknowledge messages
 
 ```javascript
 // get messages
@@ -1379,4 +1386,135 @@ channel.consume(
     noAck: true,
   }
 )
+```
+
+#### Extended Example (Publish/Async Responses)
+
+`publisher.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue for the reply
+    const replyQueue = await channel.assertQueue('', { exclusive: true })
+    // - '' — generates unique name
+    // - exclusive — only available for the current client (this publisher)
+    // and will be deleted after the client disconnects
+
+    // consume the reply message
+    channel.consume(replyQueue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // read the reply message with its correlationId
+      console.log(message.properties.correlationId, message.content.toString())
+
+      // acknowledge the message to delete it from the queue
+      channel.ack(message)
+    })
+
+    // publish a message to the exchange with 'my.command' routing key
+    channel.publish('my-exchange', 'my.command', Buffer.from('Hello, world!'), {
+      // set up the queue name for replies
+      replyTo: replyQueue.queue,
+      // set up the ID to match the response with the request
+      correlationId: '123', // must be auto-generated in real projects
+    })
+    // the message will be `ready` after publishing
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+`consumer.js`:
+
+```javascript
+import { connect } from 'amqplib'
+
+const run = async () => {
+  try {
+    // create a connection
+    const connection = await connect('amqp://localhost')
+
+    // create a channel within the connection
+    const channel = await connection.createChannel()
+
+    // create an exchange (if was not created)
+    await channel.assertExchange('my-exchange', 'topic', { durable: true })
+
+    // create a queue
+    const queue = await channel.assertQueue('my-queue', { durable: true })
+
+    // bind the queue to the exchange via 'my.command' routing key
+    await channel.bindQueue(queue.queue, 'my-exchange', 'my.command')
+
+    // get messages
+    channel.consume(queue.queue, message => {
+      if (!message) {
+        return
+      }
+
+      // read the message
+      console.log(message.content.toString())
+
+      // if the original message has the field `replyTo` (the name of the queue to accept replies)
+      // we must reply to that queue directly
+      if (message.properties.replyTo) {
+        channel.sendToQueue(
+          // use `replyTo` of the original message as the queue name to send the reply to
+          message.properties.replyTo,
+          Buffer.from('World says hi!'),
+          {
+            // pass `correlationId` of the original message to match the response with the request
+            correlationId: message.properties.correlationId,
+          }
+        )
+
+        // acknowledge the message to delete it from the queue
+        channel.ack(message)
+      }
+    })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+run()
+```
+
+Run:
+
+```bash
+# start rabbitmq
+docker compose up -d
+# web interface is available at http://localhost:15672/ (login: guest, password: guest)
+
+# run consumer (will wait for messages)
+node consumer.js
+
+# run publisher (will send a message to the exchange and the consumer will read and acknowledge it)
+node publisher.js
+
+# consumer.js:
+# Hello, world!
+
+# publisher.js
+# 123 World says hi!
+
+docker compose down
 ```
