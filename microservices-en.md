@@ -1816,12 +1816,12 @@ export class AuthController {
 
 ### API Design Styles
 
-- Microservices as API
+- Microservices as APIs
 - API Gateway
 - GraphQL Gateway
 - Backend for Frontend (BFF)
 
-#### Microservices as API
+#### Microservices as APIs
 
 > Each microservice provides its own public API. Microservices don't communicate with each other.
 
