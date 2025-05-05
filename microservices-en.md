@@ -1042,6 +1042,7 @@ services:
 - **Routing Key** — a string specified by the **publisher** for the message and used by the **exchange** to route the message to the appropriate **queues**, based on the predefined **bindings**.
 - **Binding** — a rule that links an **exchange** to a **queue**, using a **routing key**.
 - **Channel** — a lightweight path over a connection to send or receive messages.
+  - **Prefetch Count** — limits the number of unacknowledged messages a **consumer** can receive at a time, ensuring it doesn't get overwhelmed.
 - **Connection** — a TCP link between the client and the message broker.
 
 #### Delivery and Routing Properties
@@ -1726,11 +1727,16 @@ Command type:
 `libs/contracts/src/lib/accounts/account.login.ts`:
 
 ```typescript
+// ...
+
 export namespace AccountLogin {
   export const topic = 'account.login.command'
 
   export class Request {
+    @IsEmail()
     email: string
+
+    @IsString()
     password: string
   }
 
@@ -1743,12 +1749,20 @@ export namespace AccountLogin {
 `libs/contracts/src/lib/accounts/account.register.ts`:
 
 ```typescript
+// ...
+
 export namespace AccountRegister {
   export const topic = 'account.register.command'
 
   export class Request {
+    @IsEmail()
     email: string
+
+    @IsString()
     password: string
+
+    @IsString()
+    @IsOptional()
     displayName?: string
   }
 
@@ -1771,22 +1785,26 @@ export * from './lib/accounts/account.register'
 
 ```typescript
 // ...
-@Controller('auth')
+@Controller()
 export class AuthController {
   // ...
-  @Post('login')
+
+  @RMQValidate()
+  @RMQRoute(AccountLogin.topic)
   async login(
     @Body() { email, password }: AccountLogin.Request
   ): Promise<AccountLogin.Response> {
     // ...
   }
 
-  @Post('register')
+  @RMQValidate()
+  @RMQRoute(AccountRegister.topic)
   async register(
     @Body() dto: AccountRegister.Request
   ): Promise<AccountRegister.Response> {
     // ...
   }
+
   // ...
 }
 // ...
