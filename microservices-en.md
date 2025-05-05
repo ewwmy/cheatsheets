@@ -1809,3 +1809,127 @@ export class AuthController {
 }
 // ...
 ```
+
+## API Design
+
+### API Design Styles
+
+- Microservices as API
+- API gateway
+
+#### Microservices as API
+
+> Each microservice provides its own public API. Microservices don't communicate with each other.
+
+```
+                                   /get-courses      ┌──────────────┐
+                              ┌─────────────────────►│   Courses    │
+                              │                      └──────────────┘
+┌──────────────┐              │
+│  Web client  ├─────────────►│
+└──────────────┘              │
+                              │  /get-paid-courses   ┌──────────────┐
+                              ├─────────────────────►│   Payments   │
+                              │                      └──────────────┘
+┌──────────────┐              │
+│  Mobile app  ├─────────────►│
+└──────────────┘              │
+                              │       /login         ┌──────────────┐
+                              └─────────────────────►│    Users     │
+                                                     └──────────────┘
+```
+
+##### Pros
+
+- **Easy to implement** on the backend side.
+
+##### Cons
+
+- **Data aggregation** on a frontend side.
+- **Logic duplication** on each frontend client.
+- **Complicated authentication** and authorization (need for validation in every service).
+
+##### Usecases
+
+- Totally different domains of services (not intersected).
+
+#### API Gateway
+
+> Centralized API, that accepts requests from all the clients and routes them to the services.
+
+```
+                                                         get.courses      ┌──────────────┐
+                                                   ┌─────────────────────►│   Courses    │
+                                                   │                      └──────────────┘
+┌──────────────┐                                   │
+│  Web client  ├──┐                                │
+└──────────────┘  │                                │
+                  │ /get-my-courses  ┌─────────┐   │   get.paid.courses   ┌──────────────┐
+                  ├─────────────────►│   API   ├───┼─────────────────────►│   Payments   │
+                  │                  └─────────┘   │                      └──────────────┘
+┌──────────────┐  │                                │
+│  Mobile app  ├──┘                                │
+└──────────────┘                                   │
+                                                   │        login         ┌──────────────┐
+                                                   └─────────────────────►│    Users     │
+                                                                          └──────────────┘
+```
+
+##### Pros
+
+- **Single entrypoint**.
+- **Data aggregation** on the backend side.
+- **No logic duplication**.
+- **Pattern Command/Query (CQRS)**.
+
+##### Cons
+
+- API service tends to become thick because of logic concentration.
+
+##### What to use API service for
+
+- Authentication
+- Rate limiting
+- Caching
+- Metric collection
+- Logging
+
+##### What to avoid in API service
+
+- Complicated business logic
+
+#### GraphQL gateway
+
+> Same as **API Gateway** but uses **GraphQL** service as an entrypoint.
+
+#### Backend for Frontend (BFF)
+
+> Each type of client has its own API gateway.
+
+```
+                                                      get-courses      ┌──────────────┐
+                                                ┌─────────────────────►│   Courses    │
+                                                │                      └──────────────┘
+┌──────────────┐        ┌──────────────┐        │
+│  Web client  ├───────►│   Web API    ├───────►│
+└──────────────┘        └──────────────┘        │
+                                                │  /get-paid-courses   ┌──────────────┐
+                                                ├─────────────────────►│   Payments   │
+                                                │                      └──────────────┘
+┌──────────────┐        ┌──────────────┐        │
+│  Mobile app  ├───────►│  Mobile API  ├───────►│
+└──────────────┘        └──────────────┘        │
+                                                │       /login         ┌──────────────┐
+                                                └─────────────────────►│    Users     │
+                                                                       └──────────────┘
+```
+
+##### Pros
+
+- **Convenient for frontend**.
+- All pros of **API Gateway**.
+
+##### Cons
+
+- **Logic duplication** on each API service.
+- All cons of **API Gateway**.
