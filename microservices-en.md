@@ -1810,6 +1810,8 @@ export class AuthController {
 // ...
 ```
 
+> `RMQValidate` and `RMQRoute` decorators are provided by the [nestjs-rmq](https://github.com/AlariCode/nestjs-rmq) library.
+
 ## API Design
 
 ### API Design Styles
@@ -1847,6 +1849,7 @@ export class AuthController {
 
 ##### Cons
 
+- **Manual data aggregation**.
 - **Data aggregation** on a frontend side.
 - **Logic duplication** on each frontend client.
 - **Complicated authentication** and authorization (need for validation in every service).
@@ -1886,9 +1889,10 @@ export class AuthController {
 
 ##### Cons
 
-- API service tends to become thick because of logic concentration.
+- **Manual data aggregation**.
+- The **API service** tends to become **thick** because of business logic concentration.
 
-##### What to use API service for
+##### What to use the API service for
 
 - Authentication
 - Rate limiting
@@ -1896,7 +1900,7 @@ export class AuthController {
 - Metric collection
 - Logging
 
-##### What to avoid in API service
+##### What to avoid in the API service
 
 - Complicated business logic
 
