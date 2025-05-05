@@ -1815,7 +1815,9 @@ export class AuthController {
 ### API Design Styles
 
 - Microservices as API
-- API gateway
+- API Gateway
+- GraphQL Gateway
+- Backend for Frontend (BFF)
 
 #### Microservices as API
 
@@ -1898,7 +1900,7 @@ export class AuthController {
 
 - Complicated business logic
 
-#### GraphQL gateway
+#### GraphQL Gateway
 
 > Same as **API Gateway** but uses **GraphQL** service as an entrypoint.
 
