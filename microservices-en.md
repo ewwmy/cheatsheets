@@ -1939,3 +1939,138 @@ export class AuthController {
 
 - **Logic duplication** on each API service.
 - All cons of **API Gateway**.
+
+### Data Aggregation Patterns
+
+> Each microservice has its own database or scope in common database (e.g., permissions to certain tables only).
+
+There are patterns of data aggregation between services:
+
+- Centralized aggregation (in the API service)
+- Chained aggregation (in affected domain services)
+- CQRS
+
+#### Centralized aggregation
+
+> Data is aggregated in the API service.
+
+```
+                                                          get.course      ┌──────────────┐
+                                                   ┌─────────────────────►│   Courses    │
+                                                   │                      └──────────────┘
+┌──────────────┐                                   │
+│  Web client  ├──┐                                │
+└──────────────┘  │                                │
+                  │   /get-course    ┌─────────┐   │     get.reviews      ┌──────────────┐
+                  ├─────────────────►│   API   ├───┼─────────────────────►│   Reviews    │
+                  │                  └─────────┘   │                      └──────────────┘
+┌──────────────┐  │                                │
+│  Mobile app  ├──┘                                │
+└──────────────┘                                   │
+                                                   │    get.user-info     ┌──────────────┐
+                                                   └─────────────────────►│    Users     │
+                                                                          └──────────────┘
+```
+
+#### Chained aggregation
+
+> Data is aggregated in the top-level domain service and then go through the chain to the needed services.
+
+```
+                                                       get.course    ┌──────────────┐
+                                                   ┌────────────────►│   Courses    │
+                                                   │                 └──────┬───────┘
+┌──────────────┐                                   │                        │
+│  Web client  ├──┐                                │                        │ get.reviews
+└──────────────┘  │                                │                        ▼
+                  │   /get-course    ┌─────────┐   │                 ┌──────────────┐
+                  ├─────────────────►│   API   ├───┘                 │   Reviews    │
+                  │                  └─────────┘                     └──────┬───────┘
+┌──────────────┐  │                                                         │
+│  Mobile app  ├──┘                                                         │ get.user-info
+└──────────────┘                                                            ▼
+                                                                     ┌──────────────┐
+                                                                     │    Users     │
+                                                                     └──────────────┘
+```
+
+#### Pros of Centralized and Chained aggregation
+
+- Easy to implement.
+
+#### Cons of Centralized and Chained aggregation
+
+- Need of data composition in code.
+- Lack of resilience.
+
+#### CQRS
+
+> **CQRS (Command Query Responsibility Segregation)** is an architectural pattern that separates **commands** (which change state) from **queries** (which read data).
+
+- Commands perform actions like `create.order` or `update.user`.
+- Queries retrieve data, often from a separate, optimized read model.
+
+Data is pre-aggregated and stored in a read model (database) that is updated asynchronously via events.
+
+```
+                             │
+    Without CQRS             │                               CQRS
+                             │
+┌───────────────────┐        │        ┌─────────────────────────────────────────────────┐
+│      Client       │        │        │                     Client                      │
+└─────────┬─────────┘        │        └────────────────────────┬────────────────────────┘
+          │                  │                                 │
+          │                  │                                 │
+┌---------┼---------┐        │        ┌------------------------┼------------------------┐
+╎         │         ╎        │        ╎              CUD       │        R               ╎
+╎         │ CRUD    ╎        │        ╎       ┌────────────────┴────────────────┐       ╎
+╎         ▼         ╎        │        ╎       ▼                                 ▼       ╎
+╎ ┌───────────────┐ ╎        │        ╎ ┌───────────┐  Event  ┌───────────┬───────────┐ ╎
+╎ │    Domain     │ ╎        │        ╎ │  Domain   ├────────►│  Handler  ╎   Query   │ ╎
+╎ └───────┬───────┘ ╎        │        ╎ └─────┬─────┘         └─────┬─────┴─────┬─────┘ ╎
+└---------┼---------┘        │        └-------┼---------------------┼-----------┼-------┘
+          │                  │                │                     │           │
+          ▼                  │                ▼                     ▼           ▼
+┌───────────────────┐        │        ┌───────────────────────┐ ┌───────────────────────┐
+│     Database      │        │        │        Database       │ │         View          │
+└───────────────────┘        │        └───────────────────────┘ └───────────────────────┘
+                             │
+```
+
+##### Example
+
+```
+┌────────────────────────┐
+│         Client         │
+└──────┬─────────────────┘
+       │                            course.update.event  ┌──────────────┐
+       │ /purchase-history       ┌───────────────────────┤   Courses    │
+       │                         │                       └──────────────┘
+┌------┼-----------------┐       │
+╎      ▼                 ╎       │
+╎ ┌─────────┐┌─────────┐ ╎       │ status.changed.event  ┌──────────────┐
+╎ │  Query  ││ Handler │◄┼───────┼───────────────────────┤   Payments   │
+╎ └─────────┘└─────────┘ ╎       │                       └──────────────┘
+╎                        ╎       │
+╎    Purchase History    ╎       │
+╎                        ╎       │   user.created.event  ┌──────────────┐
+└------------------------┘       └───────────────────────┤    Users     │
+┌────────────────────────┐                               └──────────────┘
+│      View Database     │
+└────────────────────────┘
+```
+
+##### Pros of CQRS
+
+- Fast and efficient reads.
+- No need for runtime data aggregation.
+- Improved resilience — queries don't depend on availability of all source services.
+- View and modification segragation.
+
+##### Cons of CQRS
+
+- Increased complexity.
+- Eventual consistency.
+- Requires maintaining separate read (view) models.
+- Needs handling of duplicate events to ensure idempotency.
+- More events result in more complex debugging and state recovery.
