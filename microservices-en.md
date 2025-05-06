@@ -526,11 +526,17 @@ A **monorepo** is a software-development strategy in which the code for a number
 📄 workspace.json                 Projects and their folders
 ```
 
+##### Create new service (NestJS)
+
+```bash
+nx g @nx/nest:app my-nest-app
+```
+
 ##### Create new shared library for interfaces (NestJS)
 
 ```bash
 # Generate new shared module
-nx g @nrwl/nest:lib interfaces
+nx g @nx/nest:lib interfaces
 
 # Delete unnecessary module file and remove its export from index.ts
 rm libs/interfaces/src/lib/interfaces.module.ts
@@ -1693,7 +1699,7 @@ Contract:
 
 ```bash
 # Generate new shared module to share contracts
-nx g @nrwl/nest:lib contracts
+nx g @nx/nest:lib contracts
 
 # Delete unnecessary module file and remove its export from index.ts
 rm libs/contracts/src/lib/contracts.module.ts
@@ -1974,7 +1980,7 @@ There are patterns of data aggregation between services:
 
 #### Chained aggregation
 
-> Data is aggregated in the top-level domain service and then go through the chain to the needed services.
+> Data is aggregated in the top-level domain service, going through the chain to the needed services.
 
 ```
                                                        get.course    ┌──────────────┐
@@ -2010,7 +2016,7 @@ There are patterns of data aggregation between services:
 - Commands perform actions like `create.order` or `update.user`.
 - Queries retrieve data, often from a separate, optimized read model.
 
-Data is pre-aggregated and stored in a read model (database) that is updated asynchronously via events.
+Data is pre-aggregated and stored in a read model (view database) that is updated asynchronously via events.
 
 ```
                              │
@@ -2032,7 +2038,7 @@ Data is pre-aggregated and stored in a read model (database) that is updated asy
           │                  │                │                     │           │
           ▼                  │                ▼                     ▼           ▼
 ┌───────────────────┐        │        ┌───────────────────────┐ ┌───────────────────────┐
-│     Database      │        │        │        Database       │ │         View          │
+│     Database      │        │        │        Database       │ │     View Database     │
 └───────────────────┘        │        └───────────────────────┘ └───────────────────────┘
                              │
 ```
@@ -2065,12 +2071,79 @@ Data is pre-aggregated and stored in a read model (database) that is updated asy
 - Fast and efficient reads.
 - No need for runtime data aggregation.
 - Improved resilience — queries don't depend on availability of all source services.
-- View and modification segragation.
+- Read and modification segragation.
 
 ##### Cons of CQRS
 
 - Increased complexity.
 - Eventual consistency.
-- Requires maintaining separate read (view) models.
+- Requires maintaining separate read models (view databases).
 - Needs handling of duplicate events to ensure idempotency.
-- More events result in more complex tracing, debugging, and state recovery.
+- More events result in more complex tracing, debugging, and state recovery — especially with Event Sourcing, where you need to replay all events to rebuild the current state.
+
+## Business Logic and Event Handling in Microservices
+
+### Typical Service Structure
+
+```
+        events              commands              queries
+           │                    │                    │
+           │                    │                    │
+┌----------┼--------------------┼--------------------┼----------┐
+╎          ▼                    ▼                    ▼          ╎
+╎┌───────────────────┐┌───────────────────┐┌───────────────────┐╎
+╎│   Event Handler   ││  Command Handler  ││   Query Handler   │╎
+╎└─────────┬─────────┘└─────────┬─────────┘└─────────┬─────────┘╎
+╎          │                    │                    │          ╎
+╎          │                    ├────────────────────┘          ╎
+╎          │                    ▼                               ╎
+╎          │            ┌───────────────┐                       ╎
+╎          │            │               │    ┌─────────────────┐╎
+╎          └───────────►│ Core Service  ├───►│ Event Publisher ├┼─────►
+╎                       │               │    └─────────────────┘╎
+╎                       └───────┬───────┘                       ╎
+╎                               │                               ╎
+╎                               └─────────┐                     ╎
+╎                                         ▼                     ╎
+╎          ┌─────────────────┐    ┌─────────────────┐           ╎
+╎          │   Repository    │◄───┤  Entity Model   │           ╎
+╎          └────────┬────────┘    └─────────────────┘           ╎
+└-------------------┼-------------------------------------------┘
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│                          Database                             │
+└───────────────────────────────────────────────────────────────┘
+```
+
+> **Handlers** are usually presented as **Controllers**.
+
+#### Core Service
+
+- Contains **business logic** (can consist of multiple classes, not necessarily one).
+- Works with **Entity Models**.
+  - Entity Models can contain some domain-related business logic, or the methods to change their state.
+- Publishes **events** on state change.
+- Handles incoming **events**.
+
+#### Entity Model
+
+> Represents the domain model.
+
+Best practices:
+
+- Work with the domain logic primarily through the **Entity Model**.
+- Reconstruct the **Entity Model** when **reading** from the database.
+- Prefer **writing** to the database only via the **Entity Model**.
+
+#### Domain Events
+
+> **Domain Events** are emitted when the state of the domain changes — for example, when an **Entity Model** is created, modified, or persisted to the database. They are used to **asynchronously** notify interested services about important domain-level changes.
+
+**Domain Events** are used to:
+
+- Provide data consistency across services (e.g., increment or decrement related data in another service).
+- Update **Read Models (View Database)**.
+- Trigger business logic in other services (e.g., purchasing a course triggers an email notification from the Email service).
+- Support logging and debugging.
+
+> **Domain Events** decouple services by allowing them to react to changes independently. This enables flexible system evolution, improves resilience, and ensures that actions are eventually processed even if some services are temporarily unavailable.
