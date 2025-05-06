@@ -2079,4 +2079,69 @@ Data is pre-aggregated and stored in a read model (view database) that is update
 - Eventual consistency.
 - Requires maintaining separate read models (view databases).
 - Needs handling of duplicate events to ensure idempotency.
-- More events result in more complex tracing, debugging, and state recovery.
+- More events result in more complex tracing, debugging, and state recovery — especially with Event Sourcing, where you need to replay all events to rebuild the current state.
+
+## Business Logic and Event Handling in Microservices
+
+### Typical Service Structure
+
+```
+        events              commands              queries
+           │                    │                    │
+           │                    │                    │
+┌----------┼--------------------┼--------------------┼----------┐
+╎          ▼                    ▼                    ▼          ╎
+╎┌───────────────────┐┌───────────────────┐┌───────────────────┐╎
+╎│   Event Handler   ││  Command Handler  ││   Query Handler   │╎
+╎└─────────┬─────────┘└─────────┬─────────┘└─────────┬─────────┘╎
+╎          │                    │                    │          ╎
+╎          │                    ├────────────────────┘          ╎
+╎          │                    ▼                               ╎
+╎          │            ┌───────────────┐                       ╎
+╎          │            │               │    ┌─────────────────┐╎
+╎          └───────────►│ Core Service  ├───►│ Event Publisher ├┼─────►
+╎                       │               │    └─────────────────┘╎
+╎                       └───────┬───────┘                       ╎
+╎                               │                               ╎
+╎                               └─────────┐                     ╎
+╎                                         ▼                     ╎
+╎          ┌─────────────────┐    ┌─────────────────┐           ╎
+╎          │   Repository    │◄───┤  Entity Model   │           ╎
+╎          └────────┬────────┘    └─────────────────┘           ╎
+└-------------------┼-------------------------------------------┘
+                    ▼
+┌───────────────────────────────────────────────────────────────┐
+│                          Database                             │
+└───────────────────────────────────────────────────────────────┘
+```
+
+#### Core Service
+
+- Contains **business logic** (can consist of multiple classes, modules, not necessarily one).
+- Works with **Entity Models**.
+  - Entity Models can contain some domain-related business logic, or the methods to change their state.
+- Publishes **events** on state change.
+- Handles incoming **events**.
+
+#### Entity Model
+
+> Represents the domain model.
+
+Best practices:
+
+- Work with the domain logic primarily through the **Entity Model**.
+- Reconstruct the **Entity Model** when **reading** from the database.
+- Prefer **writing** to the database only via the **Entity Model**.
+
+#### Domain Events
+
+> **Domain Events** are emitted when the state of the domain changes — for example, when an **Entity Model** is created, modified, or persisted to the database. They are used to **asynchronously** notify interested services about important domain-level changes.
+
+**Domain Events** are used to:
+
+- Provide data consistency across services (e.g., increment or decrement related data in another service).
+- Update **Read Models (View Database)**.
+- Trigger business logic in other services (e.g., purchasing a course triggers an email notification from the Email service).
+- Support logging and debugging.
+
+> **Domain Events** decouple services by allowing them to react to changes independently. This enables flexible system evolution, improves resilience, and ensures that actions are eventually processed even if some services are temporarily unavailable.
