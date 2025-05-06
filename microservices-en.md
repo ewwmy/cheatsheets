@@ -2073,4 +2073,4 @@ Data is pre-aggregated and stored in a read model (database) that is updated asy
 - Eventual consistency.
 - Requires maintaining separate read (view) models.
 - Needs handling of duplicate events to ensure idempotency.
-- More events result in more complex debugging and state recovery.
+- More events result in more complex tracing, debugging, and state recovery.
