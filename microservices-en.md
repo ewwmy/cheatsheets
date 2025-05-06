@@ -1974,7 +1974,7 @@ There are patterns of data aggregation between services:
 
 #### Chained aggregation
 
-> Data is aggregated in the top-level domain service and then go through the chain to the needed services.
+> Data is aggregated in the top-level domain service, going through the chain to the needed services.
 
 ```
                                                        get.course    ┌──────────────┐
@@ -2010,7 +2010,7 @@ There are patterns of data aggregation between services:
 - Commands perform actions like `create.order` or `update.user`.
 - Queries retrieve data, often from a separate, optimized read model.
 
-Data is pre-aggregated and stored in a read model (database) that is updated asynchronously via events.
+Data is pre-aggregated and stored in a read model (view database) that is updated asynchronously via events.
 
 ```
                              │
@@ -2032,7 +2032,7 @@ Data is pre-aggregated and stored in a read model (database) that is updated asy
           │                  │                │                     │           │
           ▼                  │                ▼                     ▼           ▼
 ┌───────────────────┐        │        ┌───────────────────────┐ ┌───────────────────────┐
-│     Database      │        │        │        Database       │ │         View          │
+│     Database      │        │        │        Database       │ │     View Database     │
 └───────────────────┘        │        └───────────────────────┘ └───────────────────────┘
                              │
 ```
@@ -2065,12 +2065,12 @@ Data is pre-aggregated and stored in a read model (database) that is updated asy
 - Fast and efficient reads.
 - No need for runtime data aggregation.
 - Improved resilience — queries don't depend on availability of all source services.
-- View and modification segragation.
+- Read and modification segragation.
 
 ##### Cons of CQRS
 
 - Increased complexity.
 - Eventual consistency.
-- Requires maintaining separate read (view) models.
+- Requires maintaining separate read models (view databases).
 - Needs handling of duplicate events to ensure idempotency.
 - More events result in more complex tracing, debugging, and state recovery.
