@@ -2115,6 +2115,8 @@ Data is pre-aggregated and stored in a read model (view database) that is update
 └───────────────────────────────────────────────────────────────┘
 ```
 
+> **Handlers** are usually presented as **Controllers**.
+
 #### Core Service
 
 - Contains **business logic** (can consist of multiple classes, modules, not necessarily one).
