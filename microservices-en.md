@@ -2119,7 +2119,7 @@ Data is pre-aggregated and stored in a read model (view database) that is update
 
 #### Core Service
 
-- Contains **business logic** (can consist of multiple classes, modules, not necessarily one).
+- Contains **business logic** (can consist of multiple services, not necessarily one).
 - Works with **Entity Models**.
   - Entity Models can contain some domain-related business logic, or the methods to change their state.
 - Publishes **events** on state change.
