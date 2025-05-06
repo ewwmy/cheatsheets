@@ -1042,6 +1042,7 @@ services:
 - **Routing Key** — a string specified by the **publisher** for the message and used by the **exchange** to route the message to the appropriate **queues**, based on the predefined **bindings**.
 - **Binding** — a rule that links an **exchange** to a **queue**, using a **routing key**.
 - **Channel** — a lightweight path over a connection to send or receive messages.
+  - **Prefetch Count** — limits the number of unacknowledged messages a **consumer** can receive at a time, ensuring it doesn't get overwhelmed.
 - **Connection** — a TCP link between the client and the message broker.
 
 #### Delivery and Routing Properties
@@ -1726,11 +1727,16 @@ Command type:
 `libs/contracts/src/lib/accounts/account.login.ts`:
 
 ```typescript
+// ...
+
 export namespace AccountLogin {
   export const topic = 'account.login.command'
 
   export class Request {
+    @IsEmail()
     email: string
+
+    @IsString()
     password: string
   }
 
@@ -1743,12 +1749,20 @@ export namespace AccountLogin {
 `libs/contracts/src/lib/accounts/account.register.ts`:
 
 ```typescript
+// ...
+
 export namespace AccountRegister {
   export const topic = 'account.register.command'
 
   export class Request {
+    @IsEmail()
     email: string
+
+    @IsString()
     password: string
+
+    @IsString()
+    @IsOptional()
     displayName?: string
   }
 
@@ -1771,23 +1785,292 @@ export * from './lib/accounts/account.register'
 
 ```typescript
 // ...
-@Controller('auth')
+@Controller()
 export class AuthController {
   // ...
-  @Post('login')
+
+  @RMQValidate()
+  @RMQRoute(AccountLogin.topic)
   async login(
     @Body() { email, password }: AccountLogin.Request
   ): Promise<AccountLogin.Response> {
     // ...
   }
 
-  @Post('register')
+  @RMQValidate()
+  @RMQRoute(AccountRegister.topic)
   async register(
     @Body() dto: AccountRegister.Request
   ): Promise<AccountRegister.Response> {
     // ...
   }
+
   // ...
 }
 // ...
 ```
+
+> `RMQValidate` and `RMQRoute` decorators are provided by the [nestjs-rmq](https://github.com/AlariCode/nestjs-rmq) library.
+
+## API Design
+
+### API Design Styles
+
+- Microservices as APIs
+- API Gateway
+- GraphQL Gateway
+- Backend for Frontend (BFF)
+
+#### Microservices as APIs
+
+> Each microservice provides its own public API. Microservices don't communicate with each other.
+
+```
+                                   /get-courses      ┌──────────────┐
+                              ┌─────────────────────►│   Courses    │
+                              │                      └──────────────┘
+┌──────────────┐              │
+│  Web client  ├─────────────►│
+└──────────────┘              │
+                              │  /get-paid-courses   ┌──────────────┐
+                              ├─────────────────────►│   Payments   │
+                              │                      └──────────────┘
+┌──────────────┐              │
+│  Mobile app  ├─────────────►│
+└──────────────┘              │
+                              │       /login         ┌──────────────┐
+                              └─────────────────────►│    Users     │
+                                                     └──────────────┘
+```
+
+##### Pros
+
+- **Easy to implement** on the backend side.
+
+##### Cons
+
+- **Manual data aggregation**.
+- **Data aggregation** on a frontend side.
+- **Logic duplication** on each frontend client.
+- **Complicated authentication** and authorization (need for validation in every service).
+
+##### Usecases
+
+- Totally different domains of services (not intersected).
+
+#### API Gateway
+
+> Centralized API, that accepts requests from all the clients and routes them to the services.
+
+```
+                                                         get.courses      ┌──────────────┐
+                                                   ┌─────────────────────►│   Courses    │
+                                                   │                      └──────────────┘
+┌──────────────┐                                   │
+│  Web client  ├──┐                                │
+└──────────────┘  │                                │
+                  │ /get-my-courses  ┌─────────┐   │   get.paid.courses   ┌──────────────┐
+                  ├─────────────────►│   API   ├───┼─────────────────────►│   Payments   │
+                  │                  └─────────┘   │                      └──────────────┘
+┌──────────────┐  │                                │
+│  Mobile app  ├──┘                                │
+└──────────────┘                                   │
+                                                   │        login         ┌──────────────┐
+                                                   └─────────────────────►│    Users     │
+                                                                          └──────────────┘
+```
+
+##### Pros
+
+- **Single entrypoint**.
+- **Data aggregation** on the backend side.
+- **No logic duplication**.
+- **Pattern Command/Query (CQRS)**.
+
+##### Cons
+
+- **Manual data aggregation**.
+- The **API service** tends to become **thick** because of business logic concentration.
+
+##### What to use the API service for
+
+- Authentication
+- Rate limiting
+- Caching
+- Metric collection
+- Logging
+
+##### What to avoid in the API service
+
+- Complicated business logic
+
+#### GraphQL Gateway
+
+> Same as **API Gateway** but uses **GraphQL** service as an entrypoint.
+
+#### Backend for Frontend (BFF)
+
+> Each type of client has its own API gateway.
+
+```
+                                                      get.courses      ┌──────────────┐
+                                                ┌─────────────────────►│   Courses    │
+                                                │                      └──────────────┘
+┌──────────────┐        ┌──────────────┐        │
+│  Web client  ├───────►│   Web API    ├───────►│
+└──────────────┘        └──────────────┘        │
+                                                │   get.paid.courses   ┌──────────────┐
+                                                ├─────────────────────►│   Payments   │
+                                                │                      └──────────────┘
+┌──────────────┐        ┌──────────────┐        │
+│  Mobile app  ├───────►│  Mobile API  ├───────►│
+└──────────────┘        └──────────────┘        │
+                                                │        login         ┌──────────────┐
+                                                └─────────────────────►│    Users     │
+                                                                       └──────────────┘
+```
+
+##### Pros
+
+- **Convenient for frontend**.
+- All pros of **API Gateway**.
+
+##### Cons
+
+- **Logic duplication** on each API service.
+- All cons of **API Gateway**.
+
+### Data Aggregation Patterns
+
+> Each microservice has its own database or scope in common database (e.g., permissions to certain tables only).
+
+There are patterns of data aggregation between services:
+
+- Centralized aggregation (in the API service)
+- Chained aggregation (in affected domain services)
+- CQRS
+
+#### Centralized aggregation
+
+> Data is aggregated in the API service.
+
+```
+                                                          get.course      ┌──────────────┐
+                                                   ┌─────────────────────►│   Courses    │
+                                                   │                      └──────────────┘
+┌──────────────┐                                   │
+│  Web client  ├──┐                                │
+└──────────────┘  │                                │
+                  │   /get-course    ┌─────────┐   │     get.reviews      ┌──────────────┐
+                  ├─────────────────►│   API   ├───┼─────────────────────►│   Reviews    │
+                  │                  └─────────┘   │                      └──────────────┘
+┌──────────────┐  │                                │
+│  Mobile app  ├──┘                                │
+└──────────────┘                                   │
+                                                   │    get.user-info     ┌──────────────┐
+                                                   └─────────────────────►│    Users     │
+                                                                          └──────────────┘
+```
+
+#### Chained aggregation
+
+> Data is aggregated in the top-level domain service and then go through the chain to the needed services.
+
+```
+                                                       get.course    ┌──────────────┐
+                                                   ┌────────────────►│   Courses    │
+                                                   │                 └──────┬───────┘
+┌──────────────┐                                   │                        │
+│  Web client  ├──┐                                │                        │ get.reviews
+└──────────────┘  │                                │                        ▼
+                  │   /get-course    ┌─────────┐   │                 ┌──────────────┐
+                  ├─────────────────►│   API   ├───┘                 │   Reviews    │
+                  │                  └─────────┘                     └──────┬───────┘
+┌──────────────┐  │                                                         │
+│  Mobile app  ├──┘                                                         │ get.user-info
+└──────────────┘                                                            ▼
+                                                                     ┌──────────────┐
+                                                                     │    Users     │
+                                                                     └──────────────┘
+```
+
+#### Pros of Centralized and Chained aggregation
+
+- Easy to implement.
+
+#### Cons of Centralized and Chained aggregation
+
+- Need of data composition in code.
+- Lack of resilience.
+
+#### CQRS
+
+> **CQRS (Command Query Responsibility Segregation)** is an architectural pattern that separates **commands** (which change state) from **queries** (which read data).
+
+- Commands perform actions like `create.order` or `update.user`.
+- Queries retrieve data, often from a separate, optimized read model.
+
+Data is pre-aggregated and stored in a read model (database) that is updated asynchronously via events.
+
+```
+                             │
+    Without CQRS             │                               CQRS
+                             │
+┌───────────────────┐        │        ┌─────────────────────────────────────────────────┐
+│      Client       │        │        │                     Client                      │
+└─────────┬─────────┘        │        └────────────────────────┬────────────────────────┘
+          │                  │                                 │
+          │                  │                                 │
+┌---------┼---------┐        │        ┌------------------------┼------------------------┐
+╎         │         ╎        │        ╎              CUD       │        R               ╎
+╎         │ CRUD    ╎        │        ╎       ┌────────────────┴────────────────┐       ╎
+╎         ▼         ╎        │        ╎       ▼                                 ▼       ╎
+╎ ┌───────────────┐ ╎        │        ╎ ┌───────────┐  Event  ┌───────────┬───────────┐ ╎
+╎ │    Domain     │ ╎        │        ╎ │  Domain   ├────────►│  Handler  ╎   Query   │ ╎
+╎ └───────┬───────┘ ╎        │        ╎ └─────┬─────┘         └─────┬─────┴─────┬─────┘ ╎
+└---------┼---------┘        │        └-------┼---------------------┼-----------┼-------┘
+          │                  │                │                     │           │
+          ▼                  │                ▼                     ▼           ▼
+┌───────────────────┐        │        ┌───────────────────────┐ ┌───────────────────────┐
+│     Database      │        │        │        Database       │ │         View          │
+└───────────────────┘        │        └───────────────────────┘ └───────────────────────┘
+                             │
+```
+
+##### Example
+
+```
+┌────────────────────────┐
+│         Client         │
+└──────┬─────────────────┘
+       │                            course.update.event  ┌──────────────┐
+       │ /purchase-history       ┌───────────────────────┤   Courses    │
+       │                         │                       └──────────────┘
+┌------┼-----------------┐       │
+╎      ▼                 ╎       │
+╎ ┌─────────┐┌─────────┐ ╎       │ status.changed.event  ┌──────────────┐
+╎ │  Query  ││ Handler │◄┼───────┼───────────────────────┤   Payments   │
+╎ └─────────┘└─────────┘ ╎       │                       └──────────────┘
+╎                        ╎       │
+╎    Purchase History    ╎       │
+╎                        ╎       │   user.created.event  ┌──────────────┐
+└------------------------┘       └───────────────────────┤    Users     │
+┌────────────────────────┐                               └──────────────┘
+│      View Database     │
+└────────────────────────┘
+```
+
+##### Pros of CQRS
+
+- Fast and efficient reads.
+- No need for runtime data aggregation.
+- Improved resilience — queries don't depend on availability of all source services.
+- View and modification segragation.
+
+##### Cons of CQRS
+
+- Increased complexity.
+- Eventual consistency.
+- Requires maintaining separate read (view) models.
+- Needs handling of duplicate events to ensure idempotency.
+- More events result in more complex tracing, debugging, and state recovery.
