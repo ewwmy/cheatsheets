@@ -526,11 +526,17 @@ A **monorepo** is a software-development strategy in which the code for a number
 📄 workspace.json                 Projects and their folders
 ```
 
+##### Create new service (NestJS)
+
+```bash
+nx g @nx/nest:app my-nest-app
+```
+
 ##### Create new shared library for interfaces (NestJS)
 
 ```bash
 # Generate new shared module
-nx g @nrwl/nest:lib interfaces
+nx g @nx/nest:lib interfaces
 
 # Delete unnecessary module file and remove its export from index.ts
 rm libs/interfaces/src/lib/interfaces.module.ts
@@ -1693,7 +1699,7 @@ Contract:
 
 ```bash
 # Generate new shared module to share contracts
-nx g @nrwl/nest:lib contracts
+nx g @nx/nest:lib contracts
 
 # Delete unnecessary module file and remove its export from index.ts
 rm libs/contracts/src/lib/contracts.module.ts
