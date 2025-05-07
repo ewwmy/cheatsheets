@@ -2147,3 +2147,120 @@ Best practices:
 - Support logging and debugging.
 
 > **Domain Events** decouple services by allowing them to react to changes independently. This enables flexible system evolution, improves resilience, and ensures that actions are eventually processed even if some services are temporarily unavailable.
+
+## Data Consistency
+
+### Saga Pattern
+
+> **Sagas** help coordinate long-running business **transactions across multiple services**.
+
+- Used when a process spans several services that must all complete or roll back together.
+- Each step in the saga is a local transaction in a service.
+- If one step fails, compensating actions are triggered to undo previous steps.
+- Sagas ensure data consistency without distributed transactions.
+
+Can be implemented in two main ways:
+
+- **Choreography** — each service listens to events and reacts accordingly.
+- **Orchestration** — a central coordinator sends commands to each service.
+
+#### Planning Sagas
+
+> The table below serves as a planning tool for designing sagas. It helps identify which microservices are involved, what actions they perform, and what compensating (reverse) actions are required if something goes wrong during the process.
+
+| Order of Action | Affected Microservice | Method Called                 | Reverse Action     | Comment on the Reverse Action                |
+| --------------- | --------------------- | ----------------------------- | ------------------ | -------------------------------------------- |
+| 1               | Accounts              | ↓ `AddCourse()`               | ↑ `DeleteCourse()` | Roll back the course addition                |
+| 2               | Courses               | ↓ `ChechCourseAvailability()` | ↑ —                | No action needed because no data was changed |
+| 3               | Payments              | ↓ `GenerateUrl()`             | ↑ —                | No action needed because no data was changed |
+
+#### Choreography Sagas
+
+```
+   /buy-course
+       ▲ │
+       │ │     account.course-added.event            payment.generated.event
+       │ ▼                 │                                     │
+┌──────┴────────┐        ┌─┴─┐        ┌───────────────┐        ┌─┴─┐
+│   Accounts    ├───────►│   ├───────►│    Courses    ├───────►│   │
+└───────────────┘        └───┘        └───────────────┘        └─┬─┘
+        ▲                                                        │
+        │ link.generated.event                                   │
+        │     │                                                  │
+        │   ┌─┴─┐        ┌───────────────┐                       │
+        └───┤   │◄───────┤   Payments    │◄──────────────────────┘
+            └─┬─┘        └───────────────┘
+              │
+              │          ┌───────────────┐
+              └─────────►│ Notifications │
+                         └───────────────┘
+```
+
+##### Pros
+
+- Easy to implement.
+
+##### Cons
+
+- Hard to understand and maintain.
+- Can cause circular dependencies.
+- Make services tight coupled.
+
+##### When to use
+
+- 2-3 services.
+
+#### Orchestration Sagas
+
+```
+                   ┌────────────── add-course-saga-queue ◄───────────────────────┬───┬───┐
+                   │                                                             ▲   ▲   ▲
+/buy-course        │                                                             │   │   │
+    ▲ │            │                                                             │   │   │
+    │ │            │             account.course-added.event                      │   │   │
+    │ ▼            ▼                         │                                   │   │   │
+┌───┴──────┬────────────────┐     1        ┌─┴─┐             ┌───────────────┐   │   │   │
+│ Accounts ╎  Orchestrator  ├──►┬─────────►│   ├────────────►│    Courses    ├───┘   │   │
+└──────────┴────────────────┘   │          └───┘             └───────────────┘       │   │
+                                │                                                    │   │
+                                │                                                    │   │
+                                │ payment.generated.event                            │   │
+                                │            │                                       │   │
+                                │ 2        ┌─┴─┐             ┌───────────────┐       │   │
+                                ├─────────►│   ├────────────►│   Payments    ├───────┘   │
+                                │          └───┘             └───────────────┘           │
+                                │                                                        │
+                                │                                                        │
+                                │   link.generated.event                                 │
+                                │            │                                           │
+                                │ 3        ┌─┴─┐             ┌───────────────┐           │
+                                └─────────►│   ├────────────►│ Notifications ├───────────┘
+                                           └───┘             └───────────────┘
+```
+
+##### Pros
+
+- Make services less coupled.
+- Centralized mechanism makes them easy to understand and maintain.
+
+##### Cons
+
+- Shift other domain responsibilities to the orchestrator service and makes it thick (monolith-like).
+
+##### When to use
+
+- 4 or more services.
+- The domain scope of the orchestration service can be wide.
+
+> **Orchestration Sagas** can be **RPC-based** (**commands** instead of events), which can be used with small sagas.
+
+#### Multiple Sagas Problems
+
+- One saga can **rewrite** the data written by another saga.
+  - **Solution**: Lock data when a saga is in process.
+- The data **read** by one saga can be **changed** by another saga.
+  - **Solution**: Repeat reading of crucial data before "committing".
+
+#### State Pattern
+
+> A **Saga** can be represented as a **finite-state machine** and can be implemented with the **State Design Pattern**.
