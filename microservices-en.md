@@ -2264,3 +2264,84 @@ Can be implemented in two main ways:
 #### State Pattern
 
 > A **Saga** can be represented as a **finite-state machine** and can be implemented with the **State Design Pattern**.
+
+Example of State Pattern in TypeScript:
+
+```typescript
+class Article {
+  public content: string
+  protected state: ArticleState
+
+  constructor(content: string = '') {
+    this.content = content
+    this.state = new DraftArticleState(this)
+  }
+
+  public getState() {
+    return this.state
+  }
+
+  public setState(state: ArticleState) {
+    this.state = state
+  }
+
+  public publish() {
+    this.state.publish()
+  }
+
+  public unpublish() {
+    this.state.unpublish()
+  }
+}
+
+abstract class ArticleState {
+  public abstract name: string
+  protected context: Article
+
+  constructor(context: Article) {
+    this.context = context
+  }
+
+  public abstract publish(): void
+  public abstract unpublish(): void
+}
+
+class DraftArticleState extends ArticleState {
+  public name = 'draft'
+
+  public publish(): void {
+    this.context.setState(new PublishedArticleState(this.context))
+    console.log('Article is published')
+  }
+
+  public unpublish(): void {
+    throw new Error(
+      "Cannot unpublish the article as it's already in draft state"
+    )
+  }
+}
+
+class PublishedArticleState extends ArticleState {
+  public name = 'published'
+
+  public publish(): void {
+    throw new Error('Article is already published')
+  }
+
+  public unpublish(): void {
+    this.context.setState(new DraftArticleState(this.context))
+    console.log('Article is unpublished')
+  }
+}
+
+try {
+  const article = new Article('Hello world!')
+  article.publish() // Article is published
+  article.unpublish() // Article is unpublished
+  article.unpublish() // Error: Cannot unpublish the article as it's already in draft state
+} catch (e) {
+  if (e instanceof Error) {
+    console.error(`Error: ${e.message}`)
+  }
+}
+```
