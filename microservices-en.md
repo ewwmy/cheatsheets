@@ -2298,7 +2298,7 @@ class Article {
 }
 
 abstract class ArticleState {
-  public abstract name: string
+  protected abstract name: string
   protected context: Article
 
   constructor(context: Article) {
@@ -2310,7 +2310,7 @@ abstract class ArticleState {
 }
 
 class DraftArticleState extends ArticleState {
-  public name = 'draft'
+  protected name = 'draft'
 
   public publish(): void {
     this.context.setState(new PublishedArticleState(this.context))
@@ -2325,7 +2325,7 @@ class DraftArticleState extends ArticleState {
 }
 
 class PublishedArticleState extends ArticleState {
-  public name = 'published'
+  protected name = 'published'
 
   public publish(): void {
     throw new Error('Article is already published')
