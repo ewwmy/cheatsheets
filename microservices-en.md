@@ -2155,7 +2155,6 @@ Best practices:
 > **Sagas** help coordinate long-running business **transactions across multiple services**.
 
 - Used when a process spans several services that must all complete or roll back together.
-- Each step in the saga is a local transaction in a service.
 - If one step fails, compensating actions are triggered to undo previous steps.
 - Sagas ensure data consistency without distributed transactions.
 
@@ -2175,6 +2174,8 @@ Can be implemented in two main ways:
 | 3               | Payments              | ↓ `GenerateUrl()`             | ↑ —                | No action needed because no data was changed |
 
 #### Choreography Sagas
+
+> Each service listens for specific events and, upon receiving one, performs its action and emits the next event in the chain — no central coordinator is involved.
 
 ```
    /buy-course
@@ -2204,13 +2205,15 @@ Can be implemented in two main ways:
 
 - Hard to understand and maintain.
 - Can cause circular dependencies.
-- Make services tight coupled.
+- Make services tightly coupled.
 
 ##### When to use
 
-- 2-3 services.
+- 2-3 services involved.
 
 #### Orchestration Sagas
+
+> The orchestrator coordinates the entire workflow, deciding which action to perform next based on the outcomes of previous steps.
 
 ```
                    ┌────────────── add-course-saga-queue ◄───────────────────────┬───┬───┐
@@ -2240,8 +2243,8 @@ Can be implemented in two main ways:
 
 ##### Pros
 
-- Make services less coupled.
-- Centralized mechanism makes them easy to understand and maintain.
+- Services are loosely coupled.
+- Centralized logic is easier to read, test, and maintain.
 
 ##### Cons
 
@@ -2249,17 +2252,17 @@ Can be implemented in two main ways:
 
 ##### When to use
 
-- 4 or more services.
+- 4 or more services involved.
 - The domain scope of the orchestration service can be wide.
 
 > **Orchestration Sagas** can be **RPC-based** (**commands** instead of events), which can be used with small sagas.
 
 #### Multiple Sagas Problems
 
-- One saga can **rewrite** the data written by another saga.
-  - **Solution**: Lock data when a saga is in process.
-- The data **read** by one saga can be **changed** by another saga.
-  - **Solution**: Repeat reading of crucial data before "committing".
+| Problem                                                        | Solution                                       |
+| -------------------------------------------------------------- | ---------------------------------------------- |
+| One saga can **overwrite changes** made by another saga        | Lock data during saga execution                |
+| One saga may **read data** that another saga **changes later** | Re-read critical data before final commit step |
 
 #### State Pattern
 
