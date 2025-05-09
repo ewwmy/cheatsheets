@@ -2160,8 +2160,8 @@ Best practices:
 
 Can be implemented in two main ways:
 
-- **Choreography** — each service listens to events and reacts accordingly.
-- **Orchestration** — a central coordinator sends commands to each service.
+- **Choreography** — each service reacts to events from other services to perform its part of the flow.
+- **Orchestration** — a central service controls the flow by telling each service what to do and in what order.
 
 #### Planning Sagas
 
@@ -2268,7 +2268,7 @@ Can be implemented in two main ways:
 
 > A **Saga** can be represented as a **finite-state machine** and can be implemented with the **State Design Pattern**.
 
-Example of State Pattern in TypeScript:
+Example of the State Pattern in TypeScript:
 
 ```typescript
 class Article {
