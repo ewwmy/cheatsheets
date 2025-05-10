@@ -2348,3 +2348,78 @@ try {
   }
 }
 ```
+
+## Testing
+
+### Testing Pyramid
+
+```
+        -------------------------------------------------------------------
+       ╱    E2E    ╲          API or UI tests, the entire system
+      ---------------------------------------------------------------------
+     ╱    Service    ╲        An entire microservice
+    -----------------------------------------------------------------------
+   ╱    Integration    ╲      In combination with databases, cache, etc.
+  -------------------------------------------------------------------------
+ ╱         Unit          ╲    Isolated functions, components, modules
+---------------------------------------------------------------------------
+```
+
+#### Unit Tests
+
+- Unit tests run without external environment.
+- Better to test pure functions (or modules with no dependencies).
+- Need to mock external dependencies if present.
+
+#### Integration Tests
+
+- Integration tests run with connected database, cache, other service, etc.
+- Need testing environment.
+  - Set up needed initial testing data (e.g., in a database).
+  - Check down (undo changes).
+
+#### Service Tests
+
+> Test of how an entire microservice works.
+
+```
+                            │ user-info              get-course
+                            │ user-courses         ┌──────────────► Courses
+                            │                      │
+                            ▼                      │
+                   ┌─────────────────┐             │
+──────────────────►│    Accounts     ├─────────────┤
+change-profile     └────────┬────────┘             │
+buy-course                  │                      │
+register                  ┌─┴─┐                    │ generate-link
+login                     │   │ domain-events      └──────────────► Payments
+                          └─┬─┘
+                            │
+                            ▼
+```
+
+> All external services are mocked.
+
+Types:
+
+- With database connected.
+- With mocked database.
+
+#### E2E Tests
+
+- Test of the entire application.
+- Need all working environment.
+
+Types:
+
+- API tests.
+- UI tests (run on a frontend side and affect the backend); e.g., with Cypress.
+
+> Recommended to write E2E tests for the key business logic.
+
+### Testing Pipeline
+
+- **Lint** — Before commit.
+- **Unit** — On every commit.
+- **Integration** / Service — On merge.
+- **E2E** — Before release.
