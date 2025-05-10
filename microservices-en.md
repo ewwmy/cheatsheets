@@ -2423,3 +2423,153 @@ Types:
 - **Unit** — On every commit.
 - **Integration** / Service — On merge.
 - **E2E** — Before release.
+
+### Nx
+
+```bash
+nx run test <service-name> # run tests for <service-name> service
+nx run test <service-name> --skip-nx-cache # ignore cached results from the previous running (can be useful if tests use a database)
+nx run test <service-name> --runInBand # run tests one after another in the current process to prevent possible conflicts (jest option)
+```
+
+## Deployment
+
+### Database
+
+- **Single DB** — One database instance through all microservices.
+- **Multiple Type DB** One database instance per one database type (e.g., 1 PostgreSQL + 1 MongoDB).
+- **Multiple DB** — Many database instances of different database types (e.g., 3 PostgreSQL + 1 MongoDB).
+
+> It's recommended to separate privileges to tables between microservices in case of using one database.
+
+#### Single DB
+
+##### Pros
+
+- Possibility to use `JOIN` across all data.
+- Easy to deploy.
+
+##### Cons
+
+- Hard to scale.
+- Need to set up privileges for tables.
+
+#### Multiple Type DB
+
+- All pros of **Single DB**.
+- Multiple database types.
+
+##### Cons
+
+- All cons of **Single DB**.
+
+#### Multiple DB
+
+##### Pros
+
+- Easy to scale.
+
+##### Cons
+
+- Hard to `JOIN` data.
+- Increased resource usage.
+
+### Cron Jobs
+
+To avoid cron job conflicts between multiple service instances:
+
+- Flag `isMaster` — Only `isMaster = true` instance performs cron jobs.
+- Flag `isMaster` with external configurator.
+- Cron as a service — Cron is a part of a service that is not supposed to scale (one instance, e.g., API entrypoint).
+
+### Logging
+
+> The problem of logging between microservices is that they're distributed.
+
+#### Solution
+
+1. Generate `RequestID` on each API request.
+2. Send generated `RequestID` with all internal requests.
+3. Aggregate logs (there is a lot of solutions).
+
+- Exporter collects logs from the services / containers
+- Exporter saves collected logs to the centralized log storage.
+
+4. Implement search.
+
+#### Well-known Solutions
+
+- Grafana + Prometeus + Loki
+- ElasticSearch + LogStash + Kibana
+
+#### Example of `RequestID` usage in NestJS
+
+API Controller:
+
+```typescript
+@Controller('auth')
+export class AuthController {
+  // ...
+
+  @Post('login')
+  async login(@Body() dto: LoginDto) {
+    return await this.rmqService.send(AccountLogin.topic, dto, {
+      headers: {
+        requestId: generateRequestId(), // generate unique `requestId` and pass it into the RMQ message header
+      },
+    })
+  }
+
+  // ...
+}
+```
+
+RMQ Controller:
+
+```typescript
+@Controller()
+export class AuthController {
+  // ...
+
+  @RMQValidate()
+  @RMQRoute(AccountLogin.topic)
+  async login(
+    dto: AccountLogin.Request,
+    @RMQMessage() msg: Message
+  ): Promise<AccountLogin.Response> {
+    const requestId = msg.properties.headers?.requestId // get `requestId` from the RMQ message headers
+    const logger = new Logger(requestId) // set `requestId` as the context for the logger
+    logger.log('User login') // [f34b4cb3-49a9-4545-8852-111d6892401f]: User login
+
+    const { id } = await this.authService.validateUser(dto.email, dto.password)
+    return this.authService.login(id)
+  }
+
+  // ...
+}
+```
+
+### Deploy
+
+- Docker Swarm
+- Kubernetes
+
+#### Tips
+
+- **Don't store internal state** of containers inside containers.
+- Implement **zero-downtime deployment** — while one instance is upgrading, the second instance is still working and accepting user requests.
+- Implement **health check** methods in services
+
+##### Example of HealthCheck method in NestJS
+
+```typescript
+@Get('healthcheck')
+async healthCheck() {
+  const isRmqOk = await this.rmqService.healthCheck() // checks whether the rabbitmq service is accessible
+  const isDbOk = await this.repository.healthCheck() // checks whether the database service is alive
+  return {
+    rmq: isRmqOk,
+    db: isDbOk,
+  }
+}
+```
