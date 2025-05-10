@@ -2147,3 +2147,440 @@ Best practices:
 - Support logging and debugging.
 
 > **Domain Events** decouple services by allowing them to react to changes independently. This enables flexible system evolution, improves resilience, and ensures that actions are eventually processed even if some services are temporarily unavailable.
+
+## Data Consistency
+
+### Saga Pattern
+
+> **Sagas** help coordinate long-running business **transactions across multiple services**.
+
+- Used when a process spans several services that must all complete or roll back together.
+- If one step fails, compensating actions are triggered to undo previous steps.
+- Sagas ensure data consistency without distributed transactions.
+
+Can be implemented in two main ways:
+
+- **Choreography** — each service reacts to events from other services to perform its part of the flow.
+- **Orchestration** — a central service controls the flow by telling each service what to do and in what order.
+
+#### Planning Sagas
+
+> The table below serves as a planning tool for designing sagas. It helps identify which microservices are involved, what actions they perform, and what compensating (reverse) actions are required if something goes wrong during the process.
+
+| Order of Action | Affected Microservice | Method Called                 | Reverse Action     | Comment on the Reverse Action                |
+| --------------- | --------------------- | ----------------------------- | ------------------ | -------------------------------------------- |
+| 1               | Accounts              | ↓ `AddCourse()`               | ↑ `DeleteCourse()` | Roll back the course addition                |
+| 2               | Courses               | ↓ `ChechCourseAvailability()` | ↑ —                | No action needed because no data was changed |
+| 3               | Payments              | ↓ `GenerateUrl()`             | ↑ —                | No action needed because no data was changed |
+
+#### Choreography Sagas
+
+> Each service listens for specific events and, upon receiving one, performs its action and emits the next event in the chain — no central coordinator is involved.
+
+```
+   /buy-course
+       ▲ │
+       │ │     account.course-added.event            payment.generated.event
+       │ ▼                 │                                     │
+┌──────┴────────┐        ┌─┴─┐        ┌───────────────┐        ┌─┴─┐
+│   Accounts    ├───────►│   ├───────►│    Courses    ├───────►│   │
+└───────────────┘        └───┘        └───────────────┘        └─┬─┘
+        ▲                                                        │
+        │ link.generated.event                                   │
+        │     │                                                  │
+        │   ┌─┴─┐        ┌───────────────┐                       │
+        └───┤   │◄───────┤   Payments    │◄──────────────────────┘
+            └─┬─┘        └───────────────┘
+              │
+              │          ┌───────────────┐
+              └─────────►│ Notifications │
+                         └───────────────┘
+```
+
+##### Pros
+
+- Easy to implement.
+
+##### Cons
+
+- Hard to understand and maintain.
+- Can cause circular dependencies.
+- Make services tightly coupled.
+
+##### When to use
+
+- 2-3 services involved.
+
+#### Orchestration Sagas
+
+> The orchestrator coordinates the entire workflow, deciding which action to perform next based on the outcomes of previous steps.
+
+```
+                   ┌────────────── add-course-saga-queue ◄───────────────────────┬───┬───┐
+                   │                                                             ▲   ▲   ▲
+/buy-course        │                                                             │   │   │
+    ▲ │            │                                                             │   │   │
+    │ │            │             account.course-added.event                      │   │   │
+    │ ▼            ▼                         │                                   │   │   │
+┌───┴──────┬────────────────┐     1        ┌─┴─┐             ┌───────────────┐   │   │   │
+│ Accounts ╎  Orchestrator  ├──►┬─────────►│   ├────────────►│    Courses    ├───┘   │   │
+└──────────┴────────────────┘   │          └───┘             └───────────────┘       │   │
+                                │                                                    │   │
+                                │                                                    │   │
+                                │ payment.generated.event                            │   │
+                                │            │                                       │   │
+                                │ 2        ┌─┴─┐             ┌───────────────┐       │   │
+                                ├─────────►│   ├────────────►│   Payments    ├───────┘   │
+                                │          └───┘             └───────────────┘           │
+                                │                                                        │
+                                │                                                        │
+                                │   link.generated.event                                 │
+                                │            │                                           │
+                                │ 3        ┌─┴─┐             ┌───────────────┐           │
+                                └─────────►│   ├────────────►│ Notifications ├───────────┘
+                                           └───┘             └───────────────┘
+```
+
+##### Pros
+
+- Services are loosely coupled.
+- Centralized logic is easier to read, test, and maintain.
+
+##### Cons
+
+- Shift other domain responsibilities to the orchestrator service and makes it thick (monolith-like).
+
+##### When to use
+
+- 4 or more services involved.
+- The domain scope of the orchestration service can be wide.
+
+> **Orchestration Sagas** can be **RPC-based** (**commands** instead of events), which can be used with small sagas.
+
+#### Multiple Sagas Problems
+
+| Problem                                                        | Solution                                       |
+| -------------------------------------------------------------- | ---------------------------------------------- |
+| One saga can **overwrite changes** made by another saga        | Lock data during saga execution                |
+| One saga may **read data** that another saga **changes later** | Re-read critical data before final commit step |
+
+#### State Pattern
+
+> A **Saga** can be represented as a **finite-state machine** and can be implemented with the **State Design Pattern**.
+
+Example of the State Pattern in TypeScript:
+
+```typescript
+class Article {
+  public content: string
+  protected state: ArticleState
+
+  constructor(content: string = '') {
+    this.content = content
+    this.state = new DraftArticleState(this)
+  }
+
+  public getState() {
+    return this.state
+  }
+
+  public setState(state: ArticleState) {
+    this.state = state
+  }
+
+  public publish() {
+    this.state.publish()
+  }
+
+  public unpublish() {
+    this.state.unpublish()
+  }
+}
+
+abstract class ArticleState {
+  protected abstract name: string
+  protected context: Article
+
+  constructor(context: Article) {
+    this.context = context
+  }
+
+  public abstract publish(): void
+  public abstract unpublish(): void
+}
+
+class DraftArticleState extends ArticleState {
+  protected name = 'draft'
+
+  public publish(): void {
+    this.context.setState(new PublishedArticleState(this.context))
+    console.log('Article is published')
+  }
+
+  public unpublish(): void {
+    throw new Error(
+      "Cannot unpublish the article as it's already in draft state"
+    )
+  }
+}
+
+class PublishedArticleState extends ArticleState {
+  protected name = 'published'
+
+  public publish(): void {
+    throw new Error('Article is already published')
+  }
+
+  public unpublish(): void {
+    this.context.setState(new DraftArticleState(this.context))
+    console.log('Article is unpublished')
+  }
+}
+
+try {
+  const article = new Article('Hello world!')
+  article.publish() // Article is published
+  article.unpublish() // Article is unpublished
+  article.unpublish() // Error: Cannot unpublish the article as it's already in draft state
+} catch (e) {
+  if (e instanceof Error) {
+    console.error(`Error: ${e.message}`)
+  }
+}
+```
+
+## Testing
+
+### Testing Pyramid
+
+```
+        -------------------------------------------------------------------
+       ╱    E2E    ╲          API or UI tests, the entire system
+      ---------------------------------------------------------------------
+     ╱    Service    ╲        An entire microservice
+    -----------------------------------------------------------------------
+   ╱    Integration    ╲      In combination with databases, cache, etc.
+  -------------------------------------------------------------------------
+ ╱         Unit          ╲    Isolated functions, components, modules
+---------------------------------------------------------------------------
+```
+
+#### Unit Tests
+
+- Unit tests run without external environment.
+- Better to test pure functions (or modules with no dependencies).
+- Need to mock external dependencies if present.
+
+#### Integration Tests
+
+- Integration tests run with connected database, cache, other service, etc.
+- Need testing environment.
+  - Set up needed initial testing data (e.g., in a database).
+  - Check down (undo changes).
+
+#### Service (Contract) Tests
+
+> Test of how an entire microservice works.
+
+```
+                            │ user-info              get-course
+                            │ user-courses         ┌──────────────► Courses
+                            │                      │
+                            ▼                      │
+                   ┌─────────────────┐             │
+──────────────────►│    Accounts     ├─────────────┤
+change-profile     └────────┬────────┘             │
+buy-course                  │                      │
+register                  ┌─┴─┐                    │ generate-link
+login                     │   │ domain-events      └──────────────► Payments
+                          └─┬─┘
+                            │
+                            ▼
+```
+
+Types:
+
+- **Internal** — All external services are mocked.
+  - The database can be either mocked or used running.
+- **External** — All external services are running (closer to E2E testing).
+
+#### E2E Tests
+
+- Test of the entire application.
+- Need all working environment.
+
+Types:
+
+- API tests.
+- UI tests (run on a frontend side and affect the backend); e.g., with Cypress.
+
+> Recommended to write E2E tests for the key business logic.
+
+### Testing Pipeline
+
+- **Lint** — Before commit.
+- **Unit** — On every commit.
+- **Integration** / Service — On merge.
+- **E2E** — Before release.
+
+### Nx
+
+```bash
+nx run test <service-name> # run tests for <service-name> service
+nx run test <service-name> --skip-nx-cache # ignore cached results from the previous running (can be useful if tests use a database)
+nx run test <service-name> --runInBand # run tests one after another in the current process to prevent possible conflicts (jest option)
+```
+
+## Deployment
+
+### Database
+
+- **Single DB** — One database instance through all microservices.
+- **Multiple Type DB** One database instance per one database type (e.g., 1 PostgreSQL + 1 MongoDB).
+- **Multiple DB** — Many database instances of different database types (e.g., 3 PostgreSQL + 1 MongoDB).
+
+> It's recommended to separate privileges to tables between microservices in case of using one database.
+
+#### Single DB
+
+##### Pros
+
+- Possibility to use `JOIN` across all data.
+- Easy to deploy.
+
+##### Cons
+
+- Hard to scale.
+- Need to set up privileges for tables.
+
+#### Multiple Type DB
+
+- All pros of **Single DB**.
+- Multiple database types.
+
+##### Cons
+
+- All cons of **Single DB**.
+
+#### Multiple DB
+
+##### Pros
+
+- Easy to scale.
+
+##### Cons
+
+- Hard to `JOIN` data.
+- Increased resource usage.
+
+### Cron Jobs
+
+To avoid cron job conflicts between multiple service instances:
+
+- Flag `isMaster` — Only `isMaster = true` instance performs cron jobs.
+- Flag `isMaster` with external configurator.
+- Cron as a service — Cron is a part of a service that is not supposed to scale (one instance, e.g., API entrypoint).
+
+### Logging
+
+> The problem of logging between microservices is that they're distributed.
+
+#### Solution
+
+1. Generate `RequestID` on each API request.
+2. Send generated `RequestID` with all internal requests.
+3. Aggregate logs (there is a lot of solutions).
+
+- Exporter collects logs from the services / containers
+- Exporter saves collected logs to the centralized log storage.
+
+4. Implement search.
+
+#### Well-known Solutions
+
+- Grafana + Prometeus + Loki
+- ElasticSearch + LogStash + Kibana
+
+#### Example of `RequestID` usage in NestJS
+
+API Controller:
+
+```typescript
+@Controller('auth')
+export class AuthController {
+  // ...
+
+  @Post('login')
+  async login(@Body() dto: LoginDto) {
+    return await this.rmqService.send(AccountLogin.topic, dto, {
+      headers: {
+        requestId: generateRequestId(), // generate unique `requestId` and pass it into the RMQ message header
+      },
+    })
+  }
+
+  // ...
+}
+```
+
+RMQ Controller:
+
+```typescript
+@Controller()
+export class AuthController {
+  // ...
+
+  @RMQValidate()
+  @RMQRoute(AccountLogin.topic)
+  async login(
+    dto: AccountLogin.Request,
+    @RMQMessage() msg: Message
+  ): Promise<AccountLogin.Response> {
+    const requestId = msg.properties.headers?.requestId // get `requestId` from the RMQ message headers
+    const logger = new Logger(requestId) // set `requestId` as the context for the logger
+    logger.log('User login') // [f34b4cb3-49a9-4545-8852-111d6892401f]: User login
+
+    const { id } = await this.authService.validateUser(dto.email, dto.password)
+    return this.authService.login(id)
+  }
+
+  // ...
+}
+```
+
+### Deploy
+
+- Docker Swarm
+- Kubernetes
+
+#### Tips
+
+- **Don't store internal state** of containers inside containers.
+- Implement **zero-downtime deployment** — while one instance is upgrading, the second instance is still working and accepting user requests.
+- Implement **health check** methods in services
+
+##### Example of HealthCheck method in NestJS
+
+```typescript
+@Get('healthcheck')
+async healthCheck() {
+  const isRmqOk = await this.rmqService.healthCheck() // checks whether the rabbitmq service is accessible
+  const isDbOk = await this.repository.healthCheck() // checks whether the database service is alive
+  return {
+    rmq: isRmqOk,
+    db: isDbOk,
+  }
+}
+```
+
+### From Monolithic Architecture to Microservices
+
+- Detect modules or components that are:
+  - High-loaded
+  - Easy to decouple
+  - Event-driven
+- Draw a diagram of the services.
+- Implement contracts.
+- Implement the services and tests for it.
+- Implement the Adapter Pattern to allow existing monolith components to interact with newly introduced microservices transparently, ensuring zero-downtime during the migration.
+- Remove the adapters little by little.
