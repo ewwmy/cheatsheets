@@ -2378,7 +2378,7 @@ try {
   - Set up needed initial testing data (e.g., in a database).
   - Check down (undo changes).
 
-#### Service Tests
+#### Service (Contract) Tests
 
 > Test of how an entire microservice works.
 
@@ -2398,12 +2398,11 @@ login                     │   │ domain-events      └───────�
                             ▼
 ```
 
-> All external services are mocked.
-
 Types:
 
-- With database connected.
-- With mocked database.
+- **Internal** — All external services are mocked.
+  - The database can be either mocked or used running.
+- **External** — All external services are running (closer to E2E testing).
 
 #### E2E Tests
 
@@ -2573,3 +2572,15 @@ async healthCheck() {
   }
 }
 ```
+
+### From Monolithic Architecture to Microservices
+
+- Detect modules or components that are:
+  - High-loaded
+  - Easy to decouple
+  - Event-driven
+- Draw a diagram of the services.
+- Implement contracts.
+- Implement the services and tests for it.
+- Implement the Adapter Pattern to allow existing monolith components to interact with newly introduced microservices transparently, ensuring zero-downtime during the migration.
+- Remove the adapters little by little.
