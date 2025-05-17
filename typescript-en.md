@@ -847,7 +847,20 @@ const user: User = {
 } // ✅
 ```
 
-Difference between an optional property and `T | undefined`:
+Difference between an optional property and `T | undefined` (simple):
+
+```typescript
+interface User {
+  name: string
+  age: number | undefined
+}
+
+const user: User = {
+  name: 'Alex',
+} // ❌
+```
+
+Difference between an optional property and `T | undefined` (advanced):
 
 ```typescript
 class MyClass {
