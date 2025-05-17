@@ -566,9 +566,9 @@ type User = {
 
 ```typescript
 type User = {
-  name: string
-  age: number
-  skills: string[]
+  name: string,
+  age: number,
+  skills: string[],
 }
 ```
 
@@ -576,9 +576,9 @@ type User = {
 
 ```typescript
 type User = {
-  name: string
-  age: number
-  skills: string[]
+  name: string;
+  age: number;
+  skills: string[];
 }
 ```
 
@@ -660,9 +660,9 @@ interface User {
 
 ```typescript
 interface User {
-  name: string
-  age: number
-  skills: string[]
+  name: string,
+  age: number,
+  skills: string[],
 }
 ```
 
@@ -670,9 +670,9 @@ interface User {
 
 ```typescript
 interface User {
-  name: string
-  age: number
-  skills: string[]
+  name: string;
+  age: number;
+  skills: string[];
 }
 ```
 
