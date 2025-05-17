@@ -834,7 +834,7 @@ type User = {
 
 ### Optional
 
-Optional object properties:
+#### Optional object properties
 
 ```typescript
 interface User {
@@ -886,7 +886,7 @@ const obj2: MyClass = { optional: undefined } // ❌
 const obj3: MyClass = { required: undefined } // ✅
 ```
 
-Optional function or method arguments:
+#### Optional function or method arguments
 
 ```typescript
 const multiply = (a: number, b?: number): number => {
@@ -901,7 +901,7 @@ console.log(multiply(5, 2)) // 10
 console.log(multiply(5)) // 25
 ```
 
-Default function or method arguments:
+#### Default function or method arguments
 
 ```typescript
 const multiply = (a: number, b: number = 10): number => a * b
@@ -910,23 +910,43 @@ console.log(multiply(3, 3)) // 9
 console.log(multiply(5)) // 50
 ```
 
-Optional chaining:
+#### Optional Chaining
 
 ```typescript
 type User = {
-  name?: string
+  name: string
 }
 
-const user: User = {}
+function getUser(): User | undefined {
+  return undefined
+}
+
+const user = getUser()
 
 // safely access the `name` property of `user` if `user` is `null` or `undefined`, returning `undefined` instead of throwing an error
 console.log(user?.name) // undefined
-
-// forcefully access the `name` property of `user`, assuming we know `user` is neither `null` nor `undefined`
-console.log(user!.name) // undefined
 ```
 
-Nullish coalescing:
+#### Non-null Assertion
+
+```typescript
+type User = {
+  name: string
+}
+
+function getUser(): User | undefined {
+  return {
+    name: 'Alex',
+  }
+}
+
+const user = getUser()
+
+// forcefully access the `name` property of `user`, assuming we know `user` is neither `null` nor `undefined`
+console.log(user!.name) // 'Alex'
+```
+
+#### Nullish Coalescing
 
 ```typescript
 const str: string | null = null
