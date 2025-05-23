@@ -820,7 +820,7 @@ const user: User = {
 
 > It's a good way to expand external functionality but should be avoided among your own code.
 
-Types can't be merged that way:
+Types cannot be merged that way:
 
 ```typescript
 type User = {
@@ -1229,7 +1229,7 @@ const isUserWithRoleAlt = (user: User | UserWithRole): user is UserWithRole => {
 #### `asserts`
 
 > `asserts` keyword marks a type guard which should throw an error if the result expression is not true.
-> `asserts` [can't be used in arrow functions](https://github.com/microsoft/TypeScript/issues/34523).
+> `asserts` [cannot be used in arrow functions](https://github.com/microsoft/TypeScript/issues/34523).
 
 ```typescript
 interface User {
@@ -1290,7 +1290,7 @@ class Payment {
 
   unhold(): void {
     if (this.status === PaymentStatus.Processed) {
-      throw new Error(`The payment can't be undone`)
+      throw new Error(`The payment cannot be undone`)
     }
     this.status = PaymentStatus.Reversed
     this.updatedAt = new Date()
@@ -1721,7 +1721,7 @@ class PaymentPersisted extends Payment {
   }
 
   saveWrong() {
-    return super.getDateArrow() // ❌ can't call the method that is defined by arrow function in the parent class
+    return super.getDateArrow() // ❌ cannot call the method that is defined by arrow function in the parent class
   }
 }
 ```
