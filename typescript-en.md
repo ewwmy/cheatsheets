@@ -792,7 +792,7 @@ const obj: MyDict = {
 
 ### Interfaces vs Types
 
-> Main difference between interfaces and types is that **types can be intersected and unioned** with any other type or interface but **interfaces can't**.
+> The main conceptual difference between interfaces and types is that **`interface`** can **only** represent **object types** (`{ ... }`), while **`type`** can represent **primitives (such as `number` or `string`), object types, unions, intersections, etc.**
 
 Only types can be used to describe primitives:
 
@@ -1124,7 +1124,7 @@ const processActionExtended = (action: PaymentActionExtended): void => {
       break
     default:
       // `action` is narrowed to 'reject' here
-      const _: never = action // ❌ will cauase compiler error so we need to implement 'reject' case
+      const _: never = action // ❌ will cause the compilation error meaning that we need to implement the 'reject' case
       throw new Error('Not yet available')
   }
 }
