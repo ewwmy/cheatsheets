@@ -792,7 +792,7 @@ const obj: MyDict = {
 
 ### Interfaces vs Types
 
-> Main difference between interfaces and types is that **types can be intersected and unioned** with any other type or interface but **interfaces can't**.
+> The main conceptual difference between interfaces and types is that **`interface`** can **only** represent **object types** (`{ ... }`), while **`type`** can represent **primitives (such as `number` or `string`), object types, unions, intersections, etc.**
 
 Only types can be used to describe primitives:
 
@@ -1124,7 +1124,7 @@ const processActionExtended = (action: PaymentActionExtended): void => {
       break
     default:
       // `action` is narrowed to 'reject' here
-      const _: never = action // ❌ will cauase compiler error so we need to implement 'reject' case
+      const _: never = action // ❌ will cause the compilation error meaning that we need to implement the 'reject' case
       throw new Error('Not yet available')
   }
 }
@@ -2729,7 +2729,7 @@ function Log(target: Function) {
 
 ```typescript
 @SetPrice(300) // |        ^
-@SetPrice(50) // | init   | run
+@SetPrice(50) //  | init   | run
 @SetPrice(110) // V        |
 class Product {
   price: number = 0
@@ -2944,7 +2944,7 @@ function Max(max: number) {
     let value: number
     const setter = function (newValue: number) {
       if (newValue > max) {
-        console.warn(`Нельзя установить значение больше ${max}`)
+        console.warn(`Unable to set the value greater than ${max}`)
       } else {
         value = newValue
       }
@@ -2967,7 +2967,7 @@ console.log(product.price) // 50
 product.price = 100
 console.log(product.price) // 100
 
-product.price = 150 // Нельзя установить значение больше 100
+product.price = 150 // Unable to set the value greater than 100
 ```
 
 ### Accessor Decorators
