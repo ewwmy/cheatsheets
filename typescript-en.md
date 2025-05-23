@@ -2729,7 +2729,7 @@ function Log(target: Function) {
 
 ```typescript
 @SetPrice(300) // |        ^
-@SetPrice(50) // | init   | run
+@SetPrice(50) //  | init   | run
 @SetPrice(110) // V        |
 class Product {
   price: number = 0
@@ -2944,7 +2944,7 @@ function Max(max: number) {
     let value: number
     const setter = function (newValue: number) {
       if (newValue > max) {
-        console.warn(`Нельзя установить значение больше ${max}`)
+        console.warn(`Unable to set the value greater than ${max}`)
       } else {
         value = newValue
       }
@@ -2967,7 +2967,7 @@ console.log(product.price) // 50
 product.price = 100
 console.log(product.price) // 100
 
-product.price = 150 // Нельзя установить значение больше 100
+product.price = 150 // Unable to set the value greater than 100
 ```
 
 ### Accessor Decorators
