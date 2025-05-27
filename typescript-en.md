@@ -162,14 +162,33 @@ enum Direction {
 let dir: Direction = Direction.Up
 ```
 
-### Type Assertion (Type Casting) (Утверждение типа)
+### Type Assertion (Утверждение типа)
 
-Tell TypeScript to treat a value as a specific type.
+Tell TypeScript to treat a value as a specific type at compile time.
 
 ```typescript
 let someValue: unknown = 'Hello'
 let strLength: number = (someValue as string).length
 ```
+
+### Explicit Type Conversion (Явное преобразование типа)
+
+Explicitly convert one type to another at runtime.
+
+```typescript
+let num: number = 123
+let str: string = num.toString()
+```
+
+### Type Coercion (Неявное приведение типа)
+
+Implicitly convert one type to another.
+
+```typescript
+let result = '5' + 1  // '51'
+```
+
+> Not a TypeScript feature — this is JavaScript behavior.
 
 ### Never Type (Тип Never)
 
@@ -1141,7 +1160,7 @@ With `strictNullChecks` set to `true` it's only allowed to set the `null` value 
 - `null` means the value that is undefined **explicitly**
 - `undefined` means the value that is undefined **implicitly**.
 
-### Type Coercion
+### Explicit Type Conversion
 
 ```typescript
 let str: string = 'abc'
@@ -1150,7 +1169,7 @@ str = num // ❌
 str = num.toString() // ✅
 ```
 
-#### Custom Type Coercion
+#### Custom Type Conversion
 
 ```typescript
 interface Box {
@@ -1174,15 +1193,15 @@ const box: Box = {
   color: 'green',
 }
 
-// ✅ type coercion using the mapping function
+// ✅ type conversion using the mapping function
 const sphere1: Sphere = boxToSphere(box) // Sphere { size: 123 }
 
-// ❌ bad way of type coercion: the result object may actually have unwanted properties though they are unreachable in typescript but will be present in javascript which may cause side effects
+// ❌ a bad way of type conversion: the result object may actually have unwanted properties though they are unreachable in typescript but will be present in javascript which may cause side effects
 const sphere2: Sphere = {
   ...box,
 }
 
-// ❌ worst way of type coercion: the result object will also be just a link to another object
+// ❌ the worst way of type conversion: the result object will also be just a link to another object
 const sphere3: Sphere = box
 ```
 
@@ -2387,7 +2406,7 @@ type UserOrUserPersisted<T extends string | number> = T extends number
 
 function getUser<T extends string | number>(id: T): UserOrUserPersisted<T> {
   if (typeof id === 'number') {
-    // need to explicitly cast to `UserOrUserPersisted<T>` because `typeof id === 'number'` is an only JavaScript runtime check and is not related to type-checking in TypeScript
+    // need to explicitly assert as `UserOrUserPersisted<T>` because `typeof id === 'number'` is an only JavaScript runtime check and is not related to type-checking in TypeScript
     return new User() as UserOrUserPersisted<T>
   } else {
     return new UserPersisted() as UserOrUserPersisted<T>
@@ -2846,7 +2865,7 @@ const pause = (ms: number) =>
   })
 
 ;(async () => {
-  // there is no other option to use properties added by decorators except type casting the instance with the custom type
+  // there is no other option to use properties added by decorators except type assertion of the instance with the custom type
   const product1 = new Product() as ProductWithCreatedAt
   console.log(product1)
   // Product {
@@ -2859,7 +2878,7 @@ const pause = (ms: number) =>
 
   await pause(5000)
 
-  // there is no other option to use properties added by decorators except type casting the instance with the custom type
+  // there is no other option to use properties added by decorators except type assertion of the instance with the custom type
   const product2 = new Product() as ProductWithCreatedAt
   console.log(product2)
   // Product {
