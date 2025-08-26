@@ -35,13 +35,17 @@ git rm --cached file.txt # удалить файл file.txt из индекса,
 git restore --staged file.txt # отменить изменения в индексе до состояния последнего коммита для файла file.txt (unstage)
 git restore file.txt # отменить все изменения в рабочем каталоге для файла file.txt до состояния индекса — то же, что `git checkout file.txt`
 git restore . # отменить все изменения в текущем каталоге до состояния индекса
-git restore --source HEAD~3 file.txt # отменить все изменения в рабочем каталоге для файла file.txt до состояния 3 коммитов назад
+git restore --source=HEAD~3 file.txt # загружает файл file.txt в рабочий каталог из 3-го коммита перед текущим (индекс не изменяется)
+git restore --source=<commit-hash> file.txt # загружает файл file.txt в рабочий каталог из коммита <commit-hash> (индекс не изменяется)
+git restore --source=<commit-hash> --worktree file.txt # то же, что `git restore --source=<commit-hash> file.txt` (--worktree означает, что откатывается только рабочий каталог)
+git restore --source=<commit-hash> --staged --worktree file.txt # то же, что `git restore --source=<commit-hash> file.txt`, но с откатом и рабочего каталога, и индекса для файла file.txt
 git clean -fd # удалить все неотслеживаемые (непроиндексированные) файлы и папки в рабочем каталоге
 git commit -m "Комментарий для коммита" # зафиксировать все staged-изменения
 git commit -a -m "Комментарий для коммита" # добавить все изменения в отслеживаемых файлах в индекс (stage) и сразу зафиксировать
 git commit --amend # добавить изменения в последний коммит и отредактировать его сообщение в интерактивном режиме
 git commit --amend -m "Комментарий для коммита" # добавить изменения в последний коммит и заменить его сообщение на новое
 git commit --amend --no-edit # добавить изменения в последний коммит без редактирования его сообщения
+git show <commit-hash> # показывает все изменения, содержащиеся в коммите <commit-hash>
 ```
 
 ## Ветки
